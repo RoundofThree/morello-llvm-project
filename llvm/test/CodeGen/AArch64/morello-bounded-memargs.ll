@@ -242,8 +242,8 @@ define void @tail_call(i32 %0, i32 %1, i32 %2, i32 %3, i32 %4, i32 %5, i32 %6, i
 ; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    sub csp, csp, #32
+; CHECK-NEXT:    .cfi_def_cfa csp, -32
 ; CHECK-NEXT:    str c30, [csp, #16] // 16-byte Folded Spill
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    .cfi_offset c30, -16
 ; CHECK-NEXT:    ldr w8, [c9]
 ; CHECK-NEXT:    scbnds c9, csp, #4 // =4
