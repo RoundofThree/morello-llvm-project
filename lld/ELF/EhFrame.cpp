@@ -171,7 +171,7 @@ uint8_t EhReader::getFdeEncoding() {
       readByte();
     else if (c == 'P')
       skipAugP();
-    else if (c != 'B' && c != 'S' && c != 'G')
+    else if (c != 'B' && c != 'S')
       failOn(aug.data(), "unknown .eh_frame augmentation string: " + aug);
   }
   return DW_EH_PE_absptr;
@@ -189,7 +189,7 @@ bool EhReader::hasLSDA() {
     else if (c == 'R')
       readByte();
     // TODO: Deprecate and remove purecap C augmentation
-    else if (c != 'B' && c != 'C' && c != 'S' && c != 'G')
+    else if (c != 'B' && c != 'C' && c != 'S')
       failOn(aug.data(), "unknown .eh_frame augmentation string: " + aug);
   }
   return false;
