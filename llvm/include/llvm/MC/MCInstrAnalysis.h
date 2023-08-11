@@ -14,11 +14,14 @@
 #ifndef LLVM_MC_MCINSTRANALYSIS_H
 #define LLVM_MC_MCINSTRANALYSIS_H
 
+#include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/Optional.h"
 #include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCInstrDesc.h"
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/SubtargetFeature.h"
 #include <cstdint>
+#include <vector>
 
 namespace llvm {
 
