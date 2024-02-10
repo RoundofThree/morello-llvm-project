@@ -804,21 +804,21 @@ def CZR : AArch64Reg<31, "czr", [XZR]>, DwarfRegAlias<CSP>;
 }
 
 // Cap register class, excluding CSP/CZR and CLR (because a pair can not be formed with it)
-def Capcommon : RegisterClass<"AArch64", [iFATPTR128], 128, (add (sequence "C%u", 0, 28), CFP)> {
+def Capcommon : RegisterClass<"AArch64", [c128], 128, (add (sequence "C%u", 0, 28), CFP)> {
   let Size = 128;
 }
 
 // Cap register class common + CLR + CZR
-def Cap : RegisterClass<"AArch64", [iFATPTR128], 128, (add Capcommon, CLR, CZR)> {
+def Cap : RegisterClass<"AArch64", [c128], 128, (add Capcommon, CLR, CZR)> {
   let Size = 128;
 }
 
 // Cap register class + CLR + CSP
-def Capsp : RegisterClass<"AArch64", [iFATPTR128], 128, (add Capcommon, CLR, CSP)> {
+def Capsp : RegisterClass<"AArch64", [c128], 128, (add Capcommon, CLR, CSP)> {
   let Size = 128;
 }
 
-def Capall : RegisterClass<"AArch64", [iFATPTR128], 128, (add Capcommon, CLR, CSP, CZR)> {
+def Capall : RegisterClass<"AArch64", [c128], 128, (add Capcommon, CLR, CSP, CZR)> {
   let Size = 128;
 }
 
@@ -829,12 +829,12 @@ def Capz : RegisterOperand<Cap> {
 // For tail calls, we can't use callee-saved registers, as they are restored
 // to the saved value before the tail call, which would clobber a call address.
 // This is for indirect tail calls to store the address of the destination.
-def tcCap : RegisterClass<"AArch64", [iFATPTR128], 128,
+def tcCap : RegisterClass<"AArch64", [c128], 128,
     (sub Capcommon, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, CFP, CLR)> {
   let Size = 128;
 }
 
-def tcCapDesc : RegisterClass<"AArch64", [iFATPTR128], 128,
+def tcCapDesc : RegisterClass<"AArch64", [c128], 128,
     (sub Capcommon, C19, C20, C21, C22, C23, C24, C25, C26, C27, C17, CLR)> {
   let Size = 128;
 }

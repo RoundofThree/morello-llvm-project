@@ -594,7 +594,7 @@ RTLIB::Libcall RTLIB::getSYNC(unsigned Opc, MVT VT, bool FatPtr) {
       return FatPtr ? Enum##_8##_C : Enum##_8;                                 \
     case MVT::i128:                                                            \
       return FatPtr ? Enum##_16##_C : Enum##_16;                               \
-    case MVT::iFATPTR128:                                                      \
+    case MVT::c128:                                                            \
       return FatPtr ? Enum##_CAP##_C : Enum##_CAP;                             \
     }
 
@@ -1859,11 +1859,6 @@ TargetLoweringBase::getTypeLegalizationCost(const DataLayout &DL,
   // the only operation that costs anything is the split. After splitting
   // we need to handle two types.
   while (true) {
-    if (MTy == MVT::iFATPTRAny) {
-      auto T = MTy.getTypeForEVT(C);
-      MTy = MVT::getFatPointerVT(
-          DL.getPointerSizeInBits(T->getPointerAddressSpace()));
-    }
     assert(!MTy.isOverloaded());
     LegalizeKind LK = getTypeConversion(C, MTy);
 

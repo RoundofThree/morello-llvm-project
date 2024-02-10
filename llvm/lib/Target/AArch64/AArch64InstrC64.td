@@ -10,18 +10,20 @@
 //
 //====-------------------------------------------------------------------=====//
 
-def SDT_AArch64CPREFETCH : SDTypeProfile<0, 2, [SDTCisVT<0, i32>, SDTCisFatPtrTy<1>]>;
-def SDTFatPtrLeaf: SDTypeProfile<1, 0, [SDTCisFatPtrTy<0>]>;
+def SDT_AArch64CPREFETCH : SDTypeProfile<0, 2, [SDTCisVT<0, i32>, SDTCisCapPtrTy<1>]>;
+def SDTCapLeaf: SDTypeProfile<1, 0, [SDTCisCapPtrTy<0>]>;
 
 def SDT_AArch64TLSDescC64CallSeq : SDTypeProfile<0,1,
-                                          [SDTCisFatPtrTy<0>]>;
+                                          [SDTCisCapPtrTy<0>]>;
 def AArch64CPrefetch        : SDNode<"AArch64ISD::PREFETCH", SDT_AArch64CPREFETCH,
                                [SDNPHasChain, SDNPSideEffect]>;
-def AArch64cthreadpointer : SDNode<"AArch64ISD::THREAD_POINTER", SDTFatPtrLeaf>;
+def AArch64cthreadpointer : SDNode<"AArch64ISD::THREAD_POINTER", SDTCapLeaf>;
 def AArch64C64tlsdesc_callseq : SDNode<"AArch64ISD::TLSDESC_CALLSEQ",
                                        SDT_AArch64TLSDescC64CallSeq,
                                        [SDNPInGlue, SDNPOutGlue, SDNPHasChain,
                                         SDNPVariadic]>;
+
+def cap_label_operand : Operand<c128>;
 
 //===------------------------------------------------
 // Pure capability instructions from AArch64 variants
@@ -1990,7 +1992,7 @@ def CMOVbaseTLS : Pseudo<(outs Cap:$dst), (ins),
 let isCall = 1, Defs = [CLR, C0, X1], Uses = [C2], hasSideEffects = 1, Size = 20,
     isCodeGenOnly = 1 in
 def TLSDESC_C64_CALLSEQ
-    : Pseudo<(outs), (ins i64imm:$sym),
+    : Pseudo<(outs), (ins cap_label_operand:$sym),
              [(AArch64C64tlsdesc_callseq tglobaltlsaddr:$sym)]>,
       Sched<[WriteI, WriteLD, WriteI, WriteBrReg]>;
 def : Pat<(AArch64C64tlsdesc_callseq texternalsym:$sym),

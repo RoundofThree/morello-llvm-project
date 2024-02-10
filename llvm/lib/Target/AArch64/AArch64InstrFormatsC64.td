@@ -8,11 +8,11 @@
 
 // Some capability-specific SDNodes. These are in fact CHERI-specific,
 // so we should share them at some point.
-def CapTagGet    : SDNode<"AArch64ISD::CapTagGet",    SDTFatPtrToInt>;
-def CapSealedGet : SDNode<"AArch64ISD::CapSealedGet", SDTFatPtrToInt>;
+def CapTagGet    : SDNode<"AArch64ISD::CapTagGet",    SDTCapToInt>;
+def CapSealedGet : SDNode<"AArch64ISD::CapSealedGet", SDTCapToInt>;
 
 def SDTCapUnary : SDTypeProfile<1, 2, [
-  SDTCisFatPtrTy<0>, SDTCisFatPtrTy<1>, SDTCisInt<2>
+  SDTCisCapPtrTy<0>, SDTCisCapPtrTy<1>, SDTCisInt<2>
 ]>;
 
 def ClearPerms  : SDNode<"AArch64ISD::ClearPerms",    SDTCapUnary>;

@@ -159,14 +159,11 @@ std::string EVT::getEVTString() const {
              getVectorElementType().getEVTString();
     if (isInteger())
       return "i" + utostr(getSizeInBits());
+    if (isCapability())
+      return "c" + utostr(getSizeInBits());
     if (isFloatingPoint())
       return "f" + utostr(getSizeInBits());
     llvm_unreachable("Invalid EVT!");
-  case MVT::iFATPTR64: return "iFATPTR64";
-  case MVT::iFATPTR128: return "iFATPTR128";
-  case MVT::iFATPTR256: return "iFATPTR256";
-  case MVT::iFATPTR512: return "iFATPTR512";
-  case MVT::iFATPTRAny: return "iFATPTRAny";
   case MVT::bf16:      return "bf16";
   case MVT::ppcf128:   return "ppcf128";
   case MVT::isVoid:    return "isVoid";
@@ -537,11 +534,10 @@ Type *EVT::getTypeForEVT(LLVMContext &Context) const {
   case MVT::nxv8f64:
     return ScalableVectorType::get(Type::getDoubleTy(Context), 8);
   case MVT::Metadata: return Type::getMetadataTy(Context);
-  case MVT::iFATPTR64:
-  case MVT::iFATPTR128:
-  case MVT::iFATPTR256:
-  case MVT::iFATPTR512:
-  case MVT::iFATPTRAny:
+  case MVT::c64:
+  case MVT::c128:
+  case MVT::c256:
+    // XXX: Hard-coded AS
     return PointerType::get(Type::getInt8Ty(Context), 200);
   }
   // clang-format on
@@ -569,13 +565,13 @@ MVT MVT::getVT(Type *Ty, bool HandleUnknown){
   case Type::FP128TyID:     return MVT(MVT::f128);
   case Type::PPC_FP128TyID: return MVT(MVT::ppcf128);
   case Type::PointerTyID: {
-    // FIXME: This used to return a iFATPTRAny, but it doesn't work because
+    // FIXME: This used to return a cPTR, but it doesn't work because
     // now we can't round-trip EVTs through the IR and get the same thing.
     // This means EVTs containing vectors of capabilities can't work.
     // Perhaps we should have the diffrent capability types in different
     // address spaces?
     if (isCheriPointer(Ty, nullptr))
-      return MVT(MVT::iFATPTR128);
+      return MVT(MVT::c128);
     return MVT(MVT::iPTR);
   }
   case Type::FixedVectorTyID:

@@ -1,11 +1,11 @@
 @IF-MORELLO@; !DO NOT AUTOGEN! Fails with Morello right now:
 @IF-MORELLO@; Reported as https://git.morello-project.org/morello/llvm-project/-/issues/35
 @IF-MORELLO@; UNSUPPORTED: true
-@IF-MORELLO@; LLVM ERROR: Cannot select: t5: iFATPTR128,ch = AtomicSwap<(load store monotonic 16 on %ir.ptr, addrspace 200)> t0, t2, t4
-@IF-MORELLO@;   t2: iFATPTR128,ch = CopyFromReg t0, Register:iFATPTR128 %0
-@IF-MORELLO@;     t1: iFATPTR128 = Register %0
-@IF-MORELLO@;   t4: iFATPTR128,ch = CopyFromReg t0, Register:iFATPTR128 %1
-@IF-MORELLO@;     t3: iFATPTR128 = Register %1
+@IF-MORELLO@; LLVM ERROR: Cannot select: t5: c128,ch = AtomicSwap<(load store monotonic 16 on %ir.ptr, addrspace 200)> t0, t2, t4
+@IF-MORELLO@;   t2: c128,ch = CopyFromReg t0, Register:c128 %0
+@IF-MORELLO@;     t1: c128 = Register %0
+@IF-MORELLO@;   t4: c128,ch = CopyFromReg t0, Register:c128 %1
+@IF-MORELLO@;     t3: c128 = Register %1
 @IF-MORELLO@; In function: atomic_cap_ptr_xchg_relaxed
 
 ; Check that we can generate sensible code for atomic operations using capability pointers on capabilities

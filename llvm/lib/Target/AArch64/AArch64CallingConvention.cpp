@@ -108,8 +108,8 @@ static bool finishStackBlock(SmallVectorImpl<CCValAssign> &PendingMembers,
   for (auto &It : PendingMembers) {
     unsigned Size = It.getLocVT().getSizeInBits() / 8;
     It.convertToMem(State.AllocateStack(Size,
-        It.getLocVT() == MVT::iFATPTR128 ? std::max(SlotAlign, Align(16u))
-                                         : SlotAlign));
+        It.getLocVT() == MVT::c128 ? std::max(SlotAlign, Align(16u))
+                                   : SlotAlign));
     State.addLoc(It);
     SlotAlign = Align(1);
   }
@@ -164,8 +164,8 @@ unsigned getRegisterForPending(const AArch64RegisterInfo *RegInfo,
   if (PendingLocVT == LocVT)
     return RegResult;
 
-  // Allow a mix of i64/iFATPTR128 in the register block.
-  if (PendingLocVT == MVT::iFATPTR128) {
+  // Allow a mix of i64/c128 in the register block.
+  if (PendingLocVT == MVT::c128) {
     assert(LocVT == MVT::i64);
     for (MCSuperRegIterator AI(RegResult, RegInfo, false); AI.isValid();
          ++AI)
@@ -173,7 +173,7 @@ unsigned getRegisterForPending(const AArch64RegisterInfo *RegInfo,
         return *AI;
   }
 
-  if (LocVT == MVT::iFATPTR128) {
+  if (LocVT == MVT::c128) {
     assert(PendingLocVT == MVT::i64);
     return RegInfo->getSubReg(RegResult, AArch64::sub_64);
   }
@@ -202,7 +202,7 @@ static bool CC_AArch64_Custom_Block(unsigned &ValNo, MVT &ValVT, MVT &LocVT,
     RegList = XRegList;
     ReducedList = XPureCapRegList;
     UseReduced = (HasPureCap && Use16CapRegs);
-  } else if (LocVT.SimpleTy == MVT::iFATPTR128) {
+  } else if (LocVT.SimpleTy == MVT::c128) {
     RegList = CRegList;
     ReducedList = CPureCapRegList;
     UseReduced = HasPureCap && Use16CapRegs;
@@ -291,7 +291,7 @@ static bool CC_AArch64_Custom_CCall_Block(unsigned &ValNo, MVT &ValVT, MVT &LocV
   ArrayRef<MCPhysReg> RegList;
   if (LocVT.SimpleTy == MVT::i64) {
     RegList = XCCallRegList;
-  } else if (LocVT.SimpleTy == MVT::MVT::iFATPTR128) {
+  } else if (LocVT.SimpleTy == MVT::MVT::c128) {
     RegList = CCCallRegList;
   } else if (LocVT.SimpleTy == MVT::f16)
     RegList = HRegList;

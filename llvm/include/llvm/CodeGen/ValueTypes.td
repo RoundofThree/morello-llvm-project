@@ -226,12 +226,14 @@ def externref : ValueType<0,    182>;  // WebAssembly's externref type
 def x86amx    : ValueType<8192, 183>;  // X86 AMX value
 def i64x8     : ValueType<512,  184>;  // 8 Consecutive GPRs (AArch64)
 
-def iFATPTR64 : ValueType<64,   !add(i64x8.Value, 1)>;       // 64-bit fat pointer.
-def iFATPTR128: ValueType<128,  !add(iFATPTR64.Value, 1)>;   // 128-bit fat pointer.
-def iFATPTR256: ValueType<256,  !add(iFATPTR128.Value, 1)>;  // 256-bit fat pointer.
-def iFATPTR512: ValueType<512,  !add(iFATPTR256.Value, 1)>;  // 512-bit fat pointer.
-def iFATPTRAny: ValueType<0,    !add(iFATPTR512.Value, 1)>;  // Any fat pointer.
-def v1iFATPTR128 : ValueType<128 , !add(iFATPTRAny.Value, 1)>;
+def c64  : ValueType<64,  !add(i64x8.Value, 1)>;  // 64-bit capability value
+def c128 : ValueType<128, !add(c64.Value,   1)>;  // 128-bit capability value
+def c256 : ValueType<256, !add(c128.Value,  1)>;  // 256-bit capability value
+
+def v1c128 : ValueType<128, !add(c256.Value, 1)>;
+
+// Pseudo valuetype mapped to the current capability pointer size.
+def cPTR       : ValueType<0, 247>;
 
 def token      : ValueType<0, 248>;  // TokenTy
 def MetadataVT : ValueType<0, 249>;  // Metadata

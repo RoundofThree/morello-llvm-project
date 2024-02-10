@@ -11,7 +11,7 @@
 //==------------------------------------------------------------------------==//
 
 def AArch64desccall         : SDNode<"AArch64ISD::CCALL",
-                                SDTypeProfile<0, -1, [SDTCisFatPtrTy<0>]>,
+                                SDTypeProfile<0, -1, [SDTCisCapPtrTy<0>]>,
                                 [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue,
                                  SDNPVariadic]>;
 
@@ -112,21 +112,21 @@ def MCJumpTableDest8 : Pseudo<(outs Cap:$dst, GPR64sp:$scratch),
 }
 
 def ldxr_fatptr : PatFrag<(ops node:$ptr), (int_aarch64_cldxr node:$ptr), [{
-  return cast<MemIntrinsicSDNode>(N)->getMemoryVT() == MVT::iFATPTR128;
+  return cast<MemIntrinsicSDNode>(N)->getMemoryVT() == MVT::c128;
 }]>;
 
 def ldaxr_fatptr : PatFrag<(ops node:$ptr), (int_aarch64_cldaxr node:$ptr), [{
-  return cast<MemIntrinsicSDNode>(N)->getMemoryVT() == MVT::iFATPTR128;
+  return cast<MemIntrinsicSDNode>(N)->getMemoryVT() == MVT::c128;
 }]>;
 
 def stxr_fatptr : PatFrag<(ops node:$val, node:$ptr),
                      (int_aarch64_cstxr node:$val, node:$ptr), [{
-  return cast<MemIntrinsicSDNode>(N)->getMemoryVT() == MVT::iFATPTR128;
+  return cast<MemIntrinsicSDNode>(N)->getMemoryVT() == MVT::c128;
 }]>;
 
 def stlxr_fatptr : PatFrag<(ops node:$val, node:$ptr),
                      (int_aarch64_cstlxr node:$val, node:$ptr), [{
-  return cast<MemIntrinsicSDNode>(N)->getMemoryVT() == MVT::iFATPTR128;
+  return cast<MemIntrinsicSDNode>(N)->getMemoryVT() == MVT::c128;
 }]>;
 
 //===------------------------------------
@@ -134,10 +134,10 @@ def stlxr_fatptr : PatFrag<(ops node:$val, node:$ptr),
 //===------------------------------------
 
 def SDTCAtomicCap3 : SDTypeProfile<1, 3, [
-  SDTCisSameAs<0,2>,  SDTCisSameAs<0,3>, SDTCisFatPtrTy<0>, SDTCisFatPtrTy<1>
+  SDTCisSameAs<0,2>,  SDTCisSameAs<0,3>, SDTCisCapPtrTy<0>, SDTCisCapPtrTy<1>
 ]>;
 def SDTCAtomicCap2 : SDTypeProfile<1, 2, [
-  SDTCisSameAs<0,2>, SDTCisFatPtrTy<0>, SDTCisFatPtrTy<1>
+  SDTCisSameAs<0,2>, SDTCisCapPtrTy<0>, SDTCisCapPtrTy<1>
 ]>;
 
 def atomic_cload_add : SDNode<"ISD::ATOMIC_LOAD_ADD" , SDTCAtomic2,

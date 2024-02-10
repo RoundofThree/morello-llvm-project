@@ -27,9 +27,9 @@ class SDTCisVT<int OpNum, ValueType vt> : SDTypeConstraint<OpNum> {
   ValueType VT = vt;
 }
 
-class SDTCisAnyPtrTy<int OpNum> : SDTypeConstraint<OpNum>;
 class SDTCisPtrTy<int OpNum> : SDTypeConstraint<OpNum>;
-class SDTCisFatPtrTy<int OpNum> : SDTypeConstraint<OpNum>;
+class SDTCisIntPtrTy<int OpNum> : SDTCisVT<OpNum, iPTR>;
+class SDTCisCapPtrTy<int OpNum> : SDTCisVT<OpNum, cPTR>;
 
 // SDTCisInt - The specified operand has integer type.
 class SDTCisInt<int OpNum> : SDTypeConstraint<OpNum>;
@@ -111,12 +111,12 @@ def SDTOther  : SDTypeProfile<1, 0, [SDTCisVT<0, OtherVT>]>; // for 'vt'.
 def SDTUNDEF  : SDTypeProfile<1, 0, []>;                     // for 'undef'.
 def SDTUnaryOp  : SDTypeProfile<1, 1, []>;                   // for bitconvert.
 
-def SDTFatPtrAddOp : SDTypeProfile<1, 2, [
+def SDTPtrAddOp : SDTypeProfile<1, 2, [
   SDTCisSameAs<0, 1>, SDTCisPtrTy<0>, SDTCisInt<2>
 ]>;
 
-def SDTFatPtrToInt : SDTypeProfile<1, 1, [
-  SDTCisInt<0>, SDTCisFatPtrTy<1>
+def SDTCapToInt : SDTypeProfile<1, 1, [
+  SDTCisInt<0>, SDTCisCapPtrTy<1>
 ]>;
 
 def SDTIntBinOp : SDTypeProfile<1, 2, [     // add, and, or, xor, udiv, etc.
@@ -220,7 +220,7 @@ def SDTBrind : SDTypeProfile<0, 1, [        // brind
 ]>;
 
 def SDTCBrind : SDTypeProfile<0, 1, [        // Fat pointer brind
-  SDTCisFatPtrTy<0>
+  SDTCisCapPtrTy<0>
 ]>;
 
 def SDTCatchret : SDTypeProfile<0, 2, [     // catchret
@@ -235,14 +235,14 @@ def SDTLoad : SDTypeProfile<1, 1, [         // load
   SDTCisPtrTy<1>
 ]>;
 def SDTCLoad : SDTypeProfile<1, 1, [         // load via capability
-  SDTCisFatPtrTy<1>
+  SDTCisCapPtrTy<1>
 ]>;
 
 def SDTStore : SDTypeProfile<0, 2, [        // store
   SDTCisPtrTy<1>
 ]>;
 def SDTCStore : SDTypeProfile<0, 2, [       // store via capability
-  SDTCisFatPtrTy<1>
+  SDTCisCapPtrTy<1>
 ]>;
 
 def SDTIStore : SDTypeProfile<1, 3, [       // indexed store
@@ -250,15 +250,15 @@ def SDTIStore : SDTypeProfile<1, 3, [       // indexed store
 ]>;
 
 def SDTICStore : SDTypeProfile<1, 3, [       // indexed store via capability
-  SDTCisSameAs<0, 2>, SDTCisFatPtrTy<0>, SDTCisPtrTy<3>
+  SDTCisSameAs<0, 2>, SDTCisCapPtrTy<0>, SDTCisPtrTy<3>
 ]>;
 
 def SDTMaskedStore: SDTypeProfile<0, 4, [       // masked store
-  SDTCisVec<0>, SDTCisPtrTy<1>, SDTCisPtrTy<2>, SDTCisVec<3>, SDTCisSameNumEltsAs<0, 3>
+  SDTCisVec<0>, SDTCisPtrTy<1>, SDTCisIntPtrTy<2>, SDTCisVec<3>, SDTCisSameNumEltsAs<0, 3>
 ]>;
 
 def SDTMaskedLoad: SDTypeProfile<1, 4, [       // masked load
-  SDTCisVec<0>, SDTCisPtrTy<1>, SDTCisPtrTy<2>, SDTCisVec<3>, SDTCisSameAs<0, 4>,
+  SDTCisVec<0>, SDTCisPtrTy<1>, SDTCisIntPtrTy<2>, SDTCisVec<3>, SDTCisSameAs<0, 4>,
   SDTCisSameNumEltsAs<0, 3>
 ]>;
 
@@ -321,10 +321,10 @@ def SDTAtomic2 : SDTypeProfile<1, 2, [
 ]>;
 
 def SDTCAtomic2 : SDTypeProfile<1, 2, [
-  SDTCisSameAs<0,2>, SDTCisInt<0>, SDTCisFatPtrTy<1>
+  SDTCisSameAs<0,2>, SDTCisInt<0>, SDTCisCapPtrTy<1>
 ]>;
 def SDTCAtomic3 : SDTypeProfile<1, 3, [
-  SDTCisSameAs<0,2>,  SDTCisSameAs<0,3>, SDTCisInt<0>, SDTCisFatPtrTy<1>
+  SDTCisSameAs<0,2>,  SDTCisSameAs<0,3>, SDTCisInt<0>, SDTCisCapPtrTy<1>
 ]>;
 
 def SDTFPAtomic2 : SDTypeProfile<1, 2, [
@@ -337,22 +337,22 @@ def SDTAtomicLoad : SDTypeProfile<1, 1, [
   SDTCisInt<0>, SDTCisPtrTy<1>
 ]>;
 def SDTCAtomicStore : SDTypeProfile<0, 2, [
-  SDTCisFatPtrTy<0>, SDTCisInt<1>
+  SDTCisCapPtrTy<0>, SDTCisInt<1>
 ]>;
 def SDTCAtomicCStore : SDTypeProfile<0, 2, [
-  SDTCisFatPtrTy<0>, SDTCisFatPtrTy<1>
+  SDTCisCapPtrTy<0>, SDTCisCapPtrTy<1>
 ]>;
 def SDTCCAtomicStore : SDTypeProfile<0, 2, [
-  SDTCisPtrTy<0>, SDTCisFatPtrTy<1>
+  SDTCisPtrTy<0>, SDTCisCapPtrTy<1>
 ]>;
 def SDTCAtomicLoad : SDTypeProfile<1, 1, [
-  SDTCisInt<0>, SDTCisFatPtrTy<1>
+  SDTCisInt<0>, SDTCisCapPtrTy<1>
 ]>;
 def SDTCAtomicCLoad : SDTypeProfile<1, 1, [
-  SDTCisFatPtrTy<0>, SDTCisFatPtrTy<1>
+  SDTCisCapPtrTy<0>, SDTCisCapPtrTy<1>
 ]>;
 def SDTCCAtomicLoad : SDTypeProfile<1, 1, [
-  SDTCisFatPtrTy<0>, SDTCisPtrTy<1>
+  SDTCisCapPtrTy<0>, SDTCisPtrTy<1>
 ]>;
 
 
@@ -364,10 +364,10 @@ def SDTAtomicCapStore : SDTypeProfile<0, 2, [
   SDTCisPtrTy<0>, SDTCisPtrTy<1>
 ]>;
 def SDTAtomicCap3 : SDTypeProfile<1, 3, [
-  SDTCisSameAs<0,2>,  SDTCisSameAs<0,3>, SDTCisFatPtrTy<0>, SDTCisPtrTy<1>
+  SDTCisSameAs<0,2>,  SDTCisSameAs<0,3>, SDTCisCapPtrTy<0>, SDTCisPtrTy<1>
 ]>;
 def SDTAtomicCap2 : SDTypeProfile<1, 2, [
-  SDTCisSameAs<0,2>, SDTCisFatPtrTy<0>, SDTCisPtrTy<1>
+  SDTCisSameAs<0,2>, SDTCisCapPtrTy<0>, SDTCisPtrTy<1>
 ]>;
 
 class SDCallSeqStart<list<SDTypeConstraint> constraints> :
@@ -517,7 +517,7 @@ def trunc      : SDNode<"ISD::TRUNCATE"   , SDTIntTruncOp>;
 def bitconvert : SDNode<"ISD::BITCAST"    , SDTUnaryOp>;
 def inttoptr   : SDNode<"ISD::INTTOPTR"   , SDTUnaryOp>;
 def ptrtoint   : SDNode<"ISD::PTRTOINT"   , SDTUnaryOp>;
-def ptradd     : SDNode<"ISD::PTRADD"     , SDTFatPtrAddOp>;
+def ptradd     : SDNode<"ISD::PTRADD"     , SDTPtrAddOp>;
 def addrspacecast : SDNode<"ISD::ADDRSPACECAST", SDTUnaryOp>;
 def extractelt : SDNode<"ISD::EXTRACT_VECTOR_ELT", SDTVecExtract>;
 def insertelt  : SDNode<"ISD::INSERT_VECTOR_ELT", SDTVecInsert>;
@@ -2365,14 +2365,14 @@ def trunc_masked_scatter_i32 :
          MSN->getMemoryVT().getScalarType() == MVT::i32;
 }]>;
 
-// We can't use let MemoryVT = iFATPTRAny here since by the time it runs we
-// have turned it into an iFATPTR128, etc -> use the C++ predicate below. We
-// also can't set IsAtomic, since that requires MemoryVT, but that only
-// influences the auto-generated code predicate, and ours should suffice.
+// We can't use let MemoryVT = cPTR here since by the time it runs we have
+// turned it into a c128, etc -> use the C++ predicate below. We also can't
+// set IsAtomic, since that requires MemoryVT, but that only influences the
+// auto-generated code predicate, and ours should suffice.
 multiclass binary_atomic_op_cap<SDNode atomic_op> {
   def "" : PatFrag<(ops node:$ptr, node:$val),
                 (atomic_op node:$ptr, node:$val), [{
-    return cast<AtomicSDNode>(N)->getMemoryVT().isFatPointer();
+    return cast<AtomicSDNode>(N)->getMemoryVT().isCapability();
   }]>;
 
   defm NAME : binary_atomic_op_ord;
@@ -2381,7 +2381,7 @@ multiclass binary_atomic_op_cap<SDNode atomic_op> {
 multiclass ternary_atomic_op_cap<SDNode atomic_op> {
   def "" : PatFrag<(ops node:$ptr, node:$cmp, node:$val),
                 (atomic_op node:$ptr, node:$cmp, node:$val), [{
-    return cast<AtomicSDNode>(N)->getMemoryVT().isFatPointer();
+    return cast<AtomicSDNode>(N)->getMemoryVT().isCapability();
   }]>;
 
   defm NAME : ternary_atomic_op_ord;
@@ -2405,7 +2405,7 @@ defm atomic_cmp_swap_cap  : ternary_atomic_op_cap<atomic_cmp_swap_cap_node>;
 def atomic_load_cap :
   PatFrag<(ops node:$ptr),
           (atomic_load_cap_node node:$ptr), [{
-  return cast<AtomicSDNode>(N)->getMemoryVT().isFatPointer();
+  return cast<AtomicSDNode>(N)->getMemoryVT().isCapability();
 }]>;
 
 //===----------------------------------------------------------------------===//

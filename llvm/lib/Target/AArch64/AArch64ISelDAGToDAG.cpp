@@ -1351,7 +1351,7 @@ bool AArch64DAGToDAGISel::SelectCAddrModeWRO(SDValue N, unsigned Size,
   SDValue RHS = N.getOperand(1);
   SDLoc dl(N);
 
-  if (LHS.getValueType() != MVT::iFATPTR128)
+  if (LHS.getValueType() != MVT::c128)
     return false;
 
   // We don't want to match immediate adds here, because they are better lowered
@@ -1483,7 +1483,7 @@ bool AArch64DAGToDAGISel::SelectCAddrModeXRO(SDValue N, unsigned Size,
   SDValue LHS = N.getOperand(0);
   SDValue RHS = N.getOperand(1);
 
-  if (LHS.getValueType() != MVT::iFATPTR128)
+  if (LHS.getValueType() != MVT::c128)
     return false;
 
   SDLoc DL(N);
@@ -1527,7 +1527,7 @@ bool AArch64DAGToDAGISel::SelectCAddrModeXRO(SDValue N, unsigned Size,
     SDValue MOVIV = SDValue(MOVI, 0);
     // This ADD of a fatptr and an X register will be selected into
     // [CReg+Reg] mode.
-    N = CurDAG->getNode(ISD::PTRADD, DL, MVT::iFATPTR128, LHS, MOVIV);
+    N = CurDAG->getNode(ISD::PTRADD, DL, MVT::c128, LHS, MOVIV);
   }
 
   // Remember if it is worth folding N when it produces extended register.
@@ -1740,7 +1740,7 @@ bool AArch64DAGToDAGISel::tryIndexedStore(SDNode *N) {
 
   // Only match some of the fat pointer indexed stores. The others are done
   // through tablegen.
-  if (VT != MVT::iFATPTR128)
+  if (VT != MVT::c128)
     return false;
 
   ISD::MemIndexedMode AM = ST->getAddressingMode();
@@ -1816,7 +1816,7 @@ bool AArch64DAGToDAGISel::tryIndexedLoad(SDNode *N) {
     llvm_unreachable("Unexpected addressing mode");
   }
 
-  if (VT == MVT::iFATPTR128) {
+  if (VT == MVT::c128) {
     if (CapabilityBase && HasC64) {
       Opcode = IsPre ? AArch64::PCapLoadImmPreW
                      : AArch64::PCapLoadImmPost;
@@ -3910,7 +3910,7 @@ SDNode *AArch64DAGToDAGISel::SelectPointerToCapabilityOp(SDNode *N) {
   if (ConstantSDNode *ConstNode = dyn_cast<ConstantSDNode>(N->getOperand(0))) {
     if (ConstNode->isNullValue())
       return CurDAG->getCopyFromReg(CurDAG->getEntryNode(), DL,
-                                    AArch64::CZR, MVT::iFATPTR128).getNode();
+                                    AArch64::CZR, MVT::c128).getNode();
     // Otherwise materialize the immediate and get the super-register.
     uint64_t Value = ConstNode->getZExtValue();
     SDValue Val = SDValue(CurDAG->getMachineNode(AArch64::MOVi64imm, DL,
@@ -3918,7 +3918,7 @@ SDNode *AArch64DAGToDAGISel::SelectPointerToCapabilityOp(SDNode *N) {
                               CurDAG->getTargetConstant(Value, DL, MVT::i64)),
                   0);
     SDValue SubReg = CurDAG->getTargetConstant(AArch64::sub_64, DL, MVT::i32);
-    return CurDAG->getMachineNode(AArch64::SUBREG_TO_REG, DL, MVT::iFATPTR128,
+    return CurDAG->getMachineNode(AArch64::SUBREG_TO_REG, DL, MVT::c128,
                                   CurDAG->getTargetConstant(0, DL, MVT::i64),
                                   Val, SubReg);
   }
@@ -3935,13 +3935,13 @@ SDNode *AArch64DAGToDAGISel::SelectPointerToCapabilityOp(SDNode *N) {
   }
 
   Op = SDValue(CurDAG->getMachineNode(AArch64::SUBREG_TO_REG, DL,
-                   MVT::iFATPTR128,
+                   MVT::c128,
                    CurDAG->getTargetConstant(0, DL, MVT::i64), Op,
                    CurDAG->getTargetConstant(AArch64::sub_64, DL, MVT::i32)),
                0);
 
   // Generate a null-derived capabiility.
-  return CurDAG->getMachineNode(AArch64::SUBREG_TO_REG, DL, MVT::iFATPTR128,
+  return CurDAG->getMachineNode(AArch64::SUBREG_TO_REG, DL, MVT::c128,
       CurDAG->getTargetConstant(0, DL, MVT::i64),
       SDValue(CurDAG->getMachineNode(AArch64::CapGetValue, DL, MVT::i64, Op), 0),
       CurDAG->getTargetConstant(AArch64::sub_64, DL, MVT::i32));
@@ -4269,11 +4269,11 @@ bool AArch64DAGToDAGISel::SelectCMP_SWAP(SDNode *N) {
   if (Subtarget->hasLSE()) return false;
 
   bool FatPtrBase =
-      cast<MemSDNode>(N)->getBasePtr().getValueType() == MVT::iFATPTR128;
+      cast<MemSDNode>(N)->getBasePtr().getValueType() == MVT::c128;
 
   // Morello has compare swap capability instructions for non-alternate
   // addressing.
-  if (MemTy == MVT::iFATPTR128 && (Subtarget->hasC64() == FatPtrBase))
+  if (MemTy == MVT::c128 && (Subtarget->hasC64() == FatPtrBase))
     return false;
 
   if (MemTy == MVT::i8)
@@ -4284,15 +4284,15 @@ bool AArch64DAGToDAGISel::SelectCMP_SWAP(SDNode *N) {
     Opcode = FatPtrBase ? AArch64::CMP_SWAP_CAP_32 : AArch64::CMP_SWAP_32;
   else if (MemTy == MVT::i64)
     Opcode = FatPtrBase ? AArch64::CMP_SWAP_CAP_64 : AArch64::CMP_SWAP_64;
-  else if (MemTy == MVT::iFATPTR128)
+  else if (MemTy == MVT::c128)
     Opcode = FatPtrBase ? AArch64::CMP_SWAP_CAP_FATPTR
                         : AArch64::CMP_SWAP_FATPTR;
   else
     llvm_unreachable("Unknown AtomicCmpSwap type");
 
   MVT RegTy = MemTy == MVT::i64 ? MVT::i64 : MVT::i32;
-  if (MemTy == MVT::iFATPTR128)
-    RegTy = MVT::iFATPTR128;
+  if (MemTy == MVT::c128)
+    RegTy = MVT::c128;
 
   SDValue Ops[] = {N->getOperand(1), N->getOperand(2), N->getOperand(3),
                    N->getOperand(0)};
@@ -4823,13 +4823,13 @@ void AArch64DAGToDAGISel::Select(SDNode *Node) {
     unsigned Shifter = AArch64_AM::getShifterImm(AArch64_AM::LSL, 0);
     const bool HasPureCap = Subtarget->hasPureCap();
     SDValue TFI =
-        CurDAG->getTargetFrameIndex(FI, HasPureCap ? MVT::iFATPTR128 : MVT::i64);
+        CurDAG->getTargetFrameIndex(FI, HasPureCap ? MVT::c128 : MVT::i64);
     SDLoc DL(Node);
     SDValue Ops[] = { TFI, CurDAG->getTargetConstant(0, DL, MVT::i32),
                       CurDAG->getTargetConstant(Shifter, DL, MVT::i32) };
 
     if (Subtarget->hasPureCap()) {
-      CurDAG->SelectNodeTo(Node, AArch64::CapAddImm, MVT::iFATPTR128, Ops);
+      CurDAG->SelectNodeTo(Node, AArch64::CapAddImm, MVT::c128, Ops);
     } else
       CurDAG->SelectNodeTo(Node, AArch64::ADDXri, MVT::i64, Ops);
 
@@ -4919,7 +4919,7 @@ void AArch64DAGToDAGISel::Select(SDNode *Node) {
       SDValue LoadedVal = SDValue(Ld, 0);
 
       // Insert to 64 if required.
-      if (Ty != MVT::i64 && Ty != MVT::i128 && Ty != MVT::iFATPTR128) {
+      if (Ty != MVT::i64 && Ty != MVT::i128 && Ty != MVT::c128) {
         SDValue SubReg = CurDAG->getTargetConstant(AArch64::sub_32, DL, MVT::i32);
         LoadedVal = SDValue(CurDAG->getMachineNode(
                         AArch64::SUBREG_TO_REG, DL, MVT::i64,
@@ -5163,7 +5163,7 @@ void AArch64DAGToDAGISel::Select(SDNode *Node) {
     case Intrinsic::cheri_stack_cap_get: {
       SDLoc DL(Node);
       SDValue CSP = CurDAG->getCopyFromReg(CurDAG->getEntryNode(), SDLoc(Node),
-          AArch64::CSP, MVT::iFATPTR128);
+          AArch64::CSP, MVT::c128);
       ReplaceNode(Node, CSP.getNode());
       return;
     }

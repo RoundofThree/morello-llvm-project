@@ -381,10 +381,9 @@ struct SDTypeConstraint {
 
   unsigned OperandNo;   // The operand # this constraint applies to.
   enum {
-    SDTCisVT, SDTCisPtrTy, SDTCisFatPtrTy, SDTCisAnyPtrTy, SDTCisInt, SDTCisFP,
-    SDTCisVec, SDTCisSameAs, SDTCisVTSmallerThanOp, SDTCisOpSmallerThanOp,
-    SDTCisEltOfVec, SDTCisSubVecOfVec, SDTCVecEltisVT, SDTCisSameNumEltsAs,
-    SDTCisSameSizeAs
+    SDTCisVT, SDTCisPtrTy, SDTCisInt, SDTCisFP, SDTCisVec, SDTCisSameAs,
+    SDTCisVTSmallerThanOp, SDTCisOpSmallerThanOp, SDTCisEltOfVec,
+    SDTCisSubVecOfVec, SDTCVecEltisVT, SDTCisSameNumEltsAs, SDTCisSameSizeAs
   } ConstraintType;
 
   union {   // The discriminated union.
@@ -1126,10 +1125,8 @@ class CodeGenDAGPatterns {
   /// emit.
   std::vector<PatternToMatch> PatternsToMatch;
 
-  /// Flag indicating whether fat pointers should be supported.
-  bool FatPointers;
-
   TypeSetByHwMode LegalVTS;
+  TypeSetByHwMode LegalPtrVTS;
 
   using PatternRewriterFn = std::function<void (TreePattern *)>;
   PatternRewriterFn PatternRewriter;
@@ -1143,8 +1140,7 @@ public:
   CodeGenTarget &getTargetInfo() { return Target; }
   const CodeGenTarget &getTargetInfo() const { return Target; }
   const TypeSetByHwMode &getLegalTypes() const { return LegalVTS; }
-
-  bool enableFatPointers() { return FatPointers; }
+  const TypeSetByHwMode &getLegalPtrTypes() const { return LegalPtrVTS; }
 
   Record *getSDNodeNamed(StringRef Name) const;
 
@@ -1247,6 +1243,7 @@ public:
   }
 
 private:
+  TypeSetByHwMode ComputeLegalPtrTypes() const;
   void ParseNodeInfo();
   void ParseNodeTransforms();
   void ParseComplexPatterns();

@@ -2,8 +2,8 @@
 ; Reported as https://git.morello-project.org/morello/llvm-project/-/issues/34
 ; UNSUPPORTED: true
 ; LLVM ERROR: Cannot select: t5: f32,ch = AtomicLoadFAdd<(load store seq_cst 4 on %ir.ptr, addrspace 200)> t0, t2, t4
-;   t2: iFATPTR128,ch = CopyFromReg t0, Register:iFATPTR128 %0
-;     t1: iFATPTR128 = Register %0
+;   t2: c128,ch = CopyFromReg t0, Register:c128 %0
+;     t1: c128 = Register %0
 ;   t4: f32,ch = CopyFromReg t0, Register:f32 %1
 ;     t3: f32 = Register %1
 ; In function: atomic_cap_ptr_fadd

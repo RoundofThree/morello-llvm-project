@@ -544,7 +544,7 @@ public:
   MVT getPointerTy(const DataLayout &DL, uint32_t AS = 0) const override {
     // Use a capability if required.
     if (DL.isFatPointer(AS))
-      return MVT::getFatPointerVT(DL.getPointerSizeInBits(AS));
+      return MVT::getCapabilityVT(DL.getPointerSizeInBits(AS));
     // Returning i64 unconditionally here (i.e. even for ILP32) means that the
     // *DAG* representation of pointers will always be 64-bits. They will be
     // truncated and extended when transferred to memory, but the 64-bit DAG

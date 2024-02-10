@@ -280,23 +280,20 @@ namespace llvm {
       x86amx         = 183,    // This is an X86 AMX value
       i64x8          = 184,    // 8 Consecutive GPRs (AArch64)
 
-      iFATPTR64      = i64x8 + 1,     // 64-bit fat pointer type
-      iFATPTR128     = iFATPTR64 + 1,  // 128-bit fat pointer type
-      iFATPTR256     = iFATPTR128 + 1, // 256-bit fat pointer type
-      iFATPTR512     = iFATPTR256 + 1, // 512-bit fat pointer type
-      iFATPTRAny     = iFATPTR512 + 1, // Generic fat pointer type (must be
-      // legalised to a sized  version)
-      FIRST_FAT_POINTER = iFATPTR64,
-      LAST_FAT_POINTER = iFATPTRAny,
+      c64            = i64x8 + 1,  // This is a 64 bit capability value
+      c128           = c64 + 1,    // This is a 128 bit capability value
+      c256           = c128 + 1,   // This is a 256 bit capability value
 
-      v1iFATPTR128   = LAST_FAT_POINTER + 1,
+      FIRST_CAPABILITY_VALUETYPE = c64,
+      LAST_CAPABILITY_VALUETYPE = c256,
 
-      FIRST_FAT_POINTER_VECTOR_VALUETYPE = v1iFATPTR128,
-      LAST_FAT_POINTER_VECTOR_VALUETYPE = v1iFATPTR128,
+      v1c128         = LAST_CAPABILITY_VALUETYPE + 1,
+
+      FIRST_CAPABILITY_VECTOR_VALUETYPE = v1c128,
+      LAST_CAPABILITY_VECTOR_VALUETYPE = v1c128,
 
       FIRST_VALUETYPE =  1,    // This is always the beginning of the list.
-      LAST_VALUETYPE =
-          v1iFATPTR128,  // This always remains at the end of the list.
+      LAST_VALUETYPE = v1c128, // This always remains at the end of the list.
       VALUETYPE_SIZE = LAST_VALUETYPE + 1,
 
       // This is the current maximum for LAST_VALUETYPE.
@@ -304,15 +301,20 @@ namespace llvm {
       // This value must be a multiple of 32.
       MAX_ALLOWED_VALUETYPE = 192,
 
+      // A capability value the size of the capability pointer of the current
+      // target.  This should only be used internal to tblgen!
+      cPTR           = 247,
+
       // A value of type llvm::TokenTy
       token          = 248,
 
       // This is MDNode or MDString.
       Metadata       = 249,
 
-      // An int value the size of the pointer of the current
-      // target to any address space. This must only be used internal to
-      // tblgen. Other than for overloading, we treat iPTRAny the same as iPTR.
+      // An int or capability value the size of the int or capability pointer
+      // of the current target to any address space. This must only be used
+      // internal to tblgen. Other than for overloading, we treat iPTRAny the
+      // same as iPTR and/or cPTR.
       iPTRAny        = 250,
 
       // A vector with any length and element size. This is used
@@ -379,13 +381,16 @@ namespace llvm {
                SimpleTy <= MVT::LAST_INTEGER_SCALABLE_VECTOR_VALUETYPE));
     }
 
-    /// Return true if this is a fat pointer type.
-    bool isFatPointer() const {
-      return ((SimpleTy >= MVT::FIRST_FAT_POINTER &&
-               SimpleTy <= MVT::LAST_FAT_POINTER) ||
-              (SimpleTy >= MVT::FIRST_FAT_POINTER_VECTOR_VALUETYPE &&
-               SimpleTy <= MVT::LAST_FAT_POINTER_VECTOR_VALUETYPE));
+    /// Return true if this is a capability type.
+    bool isCapability() const {
+      return ((SimpleTy >= MVT::FIRST_CAPABILITY_VALUETYPE &&
+               SimpleTy <= MVT::LAST_CAPABILITY_VALUETYPE) ||
+              (SimpleTy >= MVT::FIRST_CAPABILITY_VECTOR_VALUETYPE &&
+               SimpleTy <= MVT::LAST_CAPABILITY_VECTOR_VALUETYPE));
     }
+
+    /// Return true if this is a capability type. Deprecated.
+    bool isFatPointer() const { return isCapability(); }
 
     /// Return true if this is an integer, not including vectors.
     bool isScalarInteger() const {
@@ -409,7 +414,7 @@ namespace llvm {
     bool isFixedLengthVector() const {
       return (SimpleTy >= MVT::FIRST_FIXEDLEN_VECTOR_VALUETYPE &&
               SimpleTy <= MVT::LAST_FIXEDLEN_VECTOR_VALUETYPE) ||
-             SimpleTy == MVT::v1iFATPTR128;
+             SimpleTy == MVT::v1c128;
     }
 
     /// Return true if this is a 16-bit vector type.
@@ -442,7 +447,7 @@ namespace llvm {
               SimpleTy == MVT::v2i64  || SimpleTy == MVT::v1i128 ||
               SimpleTy == MVT::v8f16  || SimpleTy == MVT::v8bf16 ||
               SimpleTy == MVT::v4f32 || SimpleTy == MVT::v2f64 ||
-              SimpleTy == MVT::v1iFATPTR128);
+              SimpleTy == MVT::v1c128);
     }
 
     /// Return true if this is a 256-bit vector type.
@@ -485,7 +490,7 @@ namespace llvm {
     bool isOverloaded() const {
       return (SimpleTy == MVT::Any || SimpleTy == MVT::iAny ||
               SimpleTy == MVT::fAny || SimpleTy == MVT::vAny ||
-              SimpleTy == MVT::iPTRAny || SimpleTy == MVT::iFATPTRAny);
+              SimpleTy == MVT::iPTRAny);
     }
 
     /// Return a vector with the same number of elements as this vector, but
@@ -715,7 +720,7 @@ namespace llvm {
       case nxv2f64:
       case nxv4f64:
       case nxv8f64: return f64;
-      case v1iFATPTR128: return iFATPTR128;
+      case v1c128: return c128;
       }
       // clang-format on
     }
@@ -885,7 +890,7 @@ namespace llvm {
       case nxv1bf16:
       case nxv1f32:
       case nxv1f64:
-      case v1iFATPTR128: return 1;
+      case v1c128: return 1;
       }
     }
 
@@ -914,13 +919,8 @@ namespace llvm {
       case Other:
         llvm_unreachable("Value type is non-standard value, Other.");
       case iPTR:
+      case cPTR:
         llvm_unreachable("Value type size is target-dependent. Ask TLI.");
-      case iFATPTR64: return TypeSize::Fixed(64);
-      case v1iFATPTR128:
-      case iFATPTR128: return TypeSize::Fixed(128);
-      case iFATPTR256: return TypeSize::Fixed(256);
-      case iFATPTR512: return TypeSize::Fixed(512);
-      case iFATPTRAny:
       case iPTRAny:
       case iAny:
       case fAny:
@@ -980,6 +980,7 @@ namespace llvm {
       case x86mmx:
       case f64 :
       case i64 :
+      case c64:
       case v64i1:
       case v8i8:
       case v4i16:
@@ -1004,6 +1005,8 @@ namespace llvm {
       case f128:
       case ppcf128:
       case i128:
+      case c128:
+      case v1c128:
       case v128i1:
       case v16i8:
       case v8i16:
@@ -1030,6 +1033,7 @@ namespace llvm {
       case v3f64: return TypeSize::Fixed(192);
       case v7i32:
       case v7f32: return TypeSize::Fixed(224);
+      case c256:
       case v256i1:
       case v128i2:
       case v64i4:
@@ -1246,18 +1250,16 @@ namespace llvm {
       }
     }
 
-    static MVT getFatPointerVT(unsigned BitWidth) {
+    static MVT getCapabilityVT(unsigned BitWidth) {
       switch (BitWidth) {
       default:
         return (MVT::SimpleValueType)(MVT::INVALID_SIMPLE_VALUE_TYPE);
       case 64:
-        return MVT::iFATPTR64;
+        return MVT::c64;
       case 128:
-        return MVT::iFATPTR128;
+        return MVT::c128;
       case 256:
-        return MVT::iFATPTR256;
-      case 512:
-        return MVT::iFATPTR512;
+        return MVT::c256;
       }
     }
 
@@ -1397,8 +1399,8 @@ namespace llvm {
         if (NumElements == 128) return MVT::v128f64;
         if (NumElements == 256) return MVT::v256f64;
         break;
-      case MVT::v1iFATPTR128:
-        if (NumElements == 1)  return MVT::v1iFATPTR128;
+      case MVT::v1c128:
+        if (NumElements == 1)  return MVT::v1c128;
         break;
       }
       return (MVT::SimpleValueType)(MVT::INVALID_SIMPLE_VALUE_TYPE);
@@ -1512,6 +1514,12 @@ namespace llvm {
     static auto integer_valuetypes() {
       return enum_seq_inclusive(MVT::FIRST_INTEGER_VALUETYPE,
                                 MVT::LAST_INTEGER_VALUETYPE,
+                                force_iteration_on_noniterable_enum);
+    }
+
+    static auto capability_valuetypes() {
+      return enum_seq_inclusive(MVT::FIRST_CAPABILITY_VALUETYPE,
+                                MVT::LAST_CAPABILITY_VALUETYPE,
                                 force_iteration_on_noniterable_enum);
     }
 

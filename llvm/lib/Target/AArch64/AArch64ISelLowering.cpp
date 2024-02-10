@@ -291,7 +291,7 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
                                              const AArch64Subtarget &STI)
     : TargetLowering(TM), Subtarget(&STI) {
   if (STI.hasMorello()) {
-    CapType = MVT::iFATPTR128;
+    CapType = MVT::c128;
 
      // We want stack allocations to be fast, so tolerate a little extra
      // padding in the quirky Morello edge cases for RRLEN/RRMASK. Note that we
@@ -357,11 +357,11 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
   }
 
   if (Subtarget->hasMorello())
-    addRegisterClass(MVT::iFATPTR128, &AArch64::CapallRegClass);
+    addRegisterClass(MVT::c128, &AArch64::CapallRegClass);
 
   if (Subtarget->hasMorello()) {
     for (MVT Ty : { MVT::i8, MVT::i16, MVT::i32, MVT::i64, MVT::i128,
-                    MVT::iFATPTR128 }) {
+                    MVT::c128 }) {
       setOperationAction(ISD::ATOMIC_SWAP, Ty, Custom);
       setOperationAction(ISD::ATOMIC_LOAD_ADD, Ty, Custom);
       setOperationAction(ISD::ATOMIC_LOAD_SUB, Ty, Custom);
@@ -420,15 +420,15 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
 
   // Provide all sorts of operation actions
   setOperationAction(ISD::GlobalAddress, MVT::i64, Custom);
-  setOperationAction(ISD::GlobalAddress, MVT::iFATPTR128, Custom);
+  setOperationAction(ISD::GlobalAddress, MVT::c128, Custom);
   setOperationAction(ISD::GlobalTLSAddress, MVT::i64, Custom);
-  setOperationAction(ISD::GlobalTLSAddress, MVT::iFATPTR128, Custom);
+  setOperationAction(ISD::GlobalTLSAddress, MVT::c128, Custom);
   setOperationAction(ISD::SETCC, MVT::i32, Custom);
   setOperationAction(ISD::SETCC, MVT::i64, Custom);
   setOperationAction(ISD::SETCC, MVT::f16, Custom);
   setOperationAction(ISD::SETCC, MVT::f32, Custom);
   setOperationAction(ISD::SETCC, MVT::f64, Custom);
-  setOperationAction(ISD::SETCC, MVT::iFATPTR128, Custom);
+  setOperationAction(ISD::SETCC, MVT::c128, Custom);
   setOperationAction(ISD::STRICT_FSETCC, MVT::f16, Custom);
   setOperationAction(ISD::STRICT_FSETCC, MVT::f32, Custom);
   setOperationAction(ISD::STRICT_FSETCC, MVT::f64, Custom);
@@ -443,22 +443,22 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::BR_CC, MVT::f16, Custom);
   setOperationAction(ISD::BR_CC, MVT::f32, Custom);
   setOperationAction(ISD::BR_CC, MVT::f64, Custom);
-  setOperationAction(ISD::BR_CC, MVT::iFATPTR128, Custom);
+  setOperationAction(ISD::BR_CC, MVT::c128, Custom);
   setOperationAction(ISD::SELECT, MVT::i32, Custom);
   setOperationAction(ISD::SELECT, MVT::i64, Custom);
   setOperationAction(ISD::SELECT, MVT::f16, Custom);
   setOperationAction(ISD::SELECT, MVT::f32, Custom);
   setOperationAction(ISD::SELECT, MVT::f64, Custom);
-  setOperationAction(ISD::SELECT, MVT::iFATPTR128, Custom);
+  setOperationAction(ISD::SELECT, MVT::c128, Custom);
   setOperationAction(ISD::SELECT_CC, MVT::i32, Custom);
   setOperationAction(ISD::SELECT_CC, MVT::i64, Custom);
   setOperationAction(ISD::SELECT_CC, MVT::f16, Custom);
   setOperationAction(ISD::SELECT_CC, MVT::f32, Custom);
   setOperationAction(ISD::SELECT_CC, MVT::f64, Custom);
-  setOperationAction(ISD::SELECT_CC, MVT::iFATPTR128, Custom);
+  setOperationAction(ISD::SELECT_CC, MVT::c128, Custom);
   setOperationAction(ISD::BR_JT, MVT::Other, Custom);
   setOperationAction(ISD::JumpTable, MVT::i64, Custom);
-  setOperationAction(ISD::JumpTable, MVT::iFATPTR128, Custom);
+  setOperationAction(ISD::JumpTable, MVT::c128, Custom);
 
   setOperationAction(ISD::SHL_PARTS, MVT::i64, Custom);
   setOperationAction(ISD::SRA_PARTS, MVT::i64, Custom);
@@ -556,15 +556,15 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
   else
     setOperationAction(ISD::DYNAMIC_STACKALLOC, MVT::i64, Expand);
 
-  setOperationAction(ISD::DYNAMIC_STACKALLOC, MVT::iFATPTR128, Expand);
+  setOperationAction(ISD::DYNAMIC_STACKALLOC, MVT::c128, Expand);
 
   // Constant pool entries
   setOperationAction(ISD::ConstantPool, MVT::i64, Custom);
-  setOperationAction(ISD::ConstantPool, MVT::iFATPTR128, Custom);
+  setOperationAction(ISD::ConstantPool, MVT::c128, Custom);
 
   // BlockAddress
   setOperationAction(ISD::BlockAddress, MVT::i64, Custom);
-  setOperationAction(ISD::BlockAddress, MVT::iFATPTR128, Custom);
+  setOperationAction(ISD::BlockAddress, MVT::c128, Custom);
 
   // AArch64 lacks both left-rotate and popcount instructions.
   setOperationAction(ISD::ROTL, MVT::i32, Expand);
@@ -905,7 +905,7 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
     setIndexedLoadAction(im, MVT::f32, Legal);
     setIndexedLoadAction(im, MVT::f16, Legal);
     setIndexedLoadAction(im, MVT::bf16, Legal);
-    setIndexedLoadAction(im, MVT::iFATPTR128, Legal);
+    setIndexedLoadAction(im, MVT::c128, Legal);
     setIndexedStoreAction(im, MVT::i8, Legal);
     setIndexedStoreAction(im, MVT::i16, Legal);
     setIndexedStoreAction(im, MVT::i32, Legal);
@@ -915,7 +915,7 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
     setIndexedStoreAction(im, MVT::f32, Legal);
     setIndexedStoreAction(im, MVT::f16, Legal);
     setIndexedStoreAction(im, MVT::bf16, Legal);
-    setIndexedStoreAction(im, MVT::iFATPTR128, Legal);
+    setIndexedStoreAction(im, MVT::c128, Legal);
   }
 
   // Trap.
@@ -1508,7 +1508,7 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
   }
 
   if (Subtarget->hasMorello()) {
-    setOperationAction(ISD::ADDRSPACECAST, MVT::iFATPTR128, Custom);
+    setOperationAction(ISD::ADDRSPACECAST, MVT::c128, Custom);
     setOperationAction(ISD::ADDRSPACECAST, MVT::i64, Custom);
     // We need to legalize the load result from ldct.
     setOperationAction(ISD::INTRINSIC_W_CHAIN, MVT::i1, Custom);
@@ -1801,7 +1801,7 @@ bool AArch64TargetLowering::isSafeMemOpType(MVT VT) const {
   // Use legal types for mem op lowering.
   if (VT == MVT::f80)
     return false;
-  if (VT.isFatPointer() && VT != MVT::iFATPTR128)
+  if (VT.isFatPointer() && VT != MVT::c128)
     return false;
 
   return true;
@@ -4601,8 +4601,8 @@ static SDValue getGOTAccess(SDLoc &DL, EVT PtrVT, SDValue Callee,
                             const AArch64Subtarget *Subtarget,
                             SelectionDAG &DAG) {
   if (Subtarget->hasC64() || Subtarget->hasCapGOT()) {
-    SDValue Val = DAG.getNode(AArch64ISD::LOADCgot, DL, MVT::iFATPTR128, Callee);
-    if (PtrVT != MVT::iFATPTR128) {
+    SDValue Val = DAG.getNode(AArch64ISD::LOADCgot, DL, MVT::c128, Callee);
+    if (PtrVT != MVT::c128) {
       // C64 needs to access the GOT with the following sequence:
       //
       //   adrp x0, :got:sym
@@ -4749,14 +4749,14 @@ SDValue AArch64TargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
   case Intrinsic::morello_subset_test_unseal: {
     if (Subtarget->hasMorello()) {
       SDValue NonNullCap = DAG.getNode(AArch64ISD::CapCheckSubsetUnseal, dl,
-                                       DAG.getVTList(MVT::iFATPTR128, MVT::i32),
+                                       DAG.getVTList(MVT::c128, MVT::i32),
                                        Op.getOperand(1), Op.getOperand(2));
       SDValue CCVal = DAG.getConstant(AArch64CC::MI, dl, MVT::i32);
       SDValue TVal = DAG.getConstant(1, dl, MVT::i32);
       SDValue FVal = DAG.getConstant(0, dl, MVT::i32);
       SDValue Csel = DAG.getNode(AArch64ISD::CSEL, dl, MVT::i32, TVal, FVal,
                                  CCVal, NonNullCap.getValue(1));
-      SDVTList VTs = DAG.getVTList(MVT::iFATPTR128, MVT::i32);
+      SDVTList VTs = DAG.getVTList(MVT::c128, MVT::i32);
       return DAG.getNode(ISD::MERGE_VALUES, dl, VTs, NonNullCap.getValue(0),
                          Csel);
     }
@@ -4765,7 +4765,7 @@ SDValue AArch64TargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
   case Intrinsic::cheri_cap_seal_entry: {
     if (!Subtarget->hasMorello())
       return SDValue();
-    return DAG.getNode(AArch64ISD::CapSealImm, dl, MVT::iFATPTR128,
+    return DAG.getNode(AArch64ISD::CapSealImm, dl, MVT::c128,
                        Op.getOperand(1), DAG.getConstant(1, dl, MVT::i32));
   }
   case Intrinsic::cheri_cap_flags_get:
@@ -4870,7 +4870,7 @@ SDValue AArch64TargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
     SDValue Neg = DAG.getNode(ISD::XOR, dl, MVT::i64,
                               DAG.getConstant(-1ULL, dl, MVT::i64),
                               Op.getOperand(2));
-    return DAG.getNode(AArch64ISD::ClearPerms, dl, MVT::iFATPTR128,
+    return DAG.getNode(AArch64ISD::ClearPerms, dl, MVT::c128,
                        Op.getOperand(1), Neg);
   }
 
@@ -5181,10 +5181,10 @@ SDValue AArch64TargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
 static SDValue getAddrFromDDC(SDValue Node, SelectionDAG &DAG) {
   SDLoc DL(Node.getNode());
   SDValue GCap = SDValue(DAG.getMachineNode(AArch64::GetDDC, DL,
-                                            MVT::iFATPTR128),
+                                            MVT::c128),
                          0);
   return DAG.getNode(
-      ISD::INTRINSIC_WO_CHAIN, DL, MVT::iFATPTR128,
+      ISD::INTRINSIC_WO_CHAIN, DL, MVT::c128,
       DAG.getConstant(Intrinsic::cheri_cap_from_pointer, DL,
                       MVT::i32),
       GCap, Node);
@@ -5271,7 +5271,7 @@ SDValue AArch64TargetLowering::LowerADDRSPACECAST(SDValue Op,
 
       SDValue Chain = DAG.getEntryNode();
       return DAG.getLoad(
-        MVT::iFATPTR128, DL, Chain, PoolAddr,
+        MVT::c128, DL, Chain, PoolAddr,
         MachinePointerInfo::getConstantPool(DAG.getMachineFunction()),
         /*Alignment=*/16,
         MachineMemOperand::MONonTemporal | MachineMemOperand::MOInvariant |
@@ -5681,7 +5681,7 @@ SDValue AArch64TargetLowering::LowerSTORE(SDValue Op,
     }
   } else if (MemVT == MVT::i128 && StoreNode->isVolatile() &&
              !Subtarget->hasC64() &&
-             StoreNode->getBasePtr().getValueType() != MVT::iFATPTR128) {
+             StoreNode->getBasePtr().getValueType() != MVT::c128) {
     return LowerStore128(Op, DAG);
   } else if (MemVT == MVT::i64x8) {
     SDValue Value = StoreNode->getValue();
@@ -6332,7 +6332,7 @@ SDValue AArch64TargetLowering::LowerFormalArguments(
   SDValue C9Args;
   if (UseC9) {
     unsigned VReg = MF.addLiveIn(AArch64::C9, &AArch64::CapRegClass);
-    C9Args = DAG.getCopyFromReg(Chain, DL, VReg, MVT::iFATPTR128);
+    C9Args = DAG.getCopyFromReg(Chain, DL, VReg, MVT::c128);
   }
 
   SmallVector<SDValue, 16> ArgValues;
@@ -6344,7 +6344,7 @@ SDValue AArch64TargetLowering::LowerFormalArguments(
       // Byval is used for HFAs in the PCS, but the system should work in a
       // non-compliant manner for larger structs.
       const bool HasPureCap = Subtarget->hasPureCap();
-      EVT PtrVT = HasPureCap ? MVT::iFATPTR128 : getPointerTy(DAG.getDataLayout());
+      EVT PtrVT = HasPureCap ? MVT::c128 : getPointerTy(DAG.getDataLayout());
       int Size = Ins[i].Flags.getByValSize();
       unsigned NumRegs = (Size + 7) / 8;
 
@@ -6377,7 +6377,7 @@ SDValue AArch64TargetLowering::LowerFormalArguments(
         RC = &AArch64::GPR32RegClass;
       else if (RegVT == MVT::i64)
         RC = &AArch64::GPR64RegClass;
-      else if (RegVT == MVT::iFATPTR128)
+      else if (RegVT == MVT::c128)
         RC = &AArch64::CapRegClass;
       else if (RegVT == MVT::f16 || RegVT == MVT::bf16)
         RC = &AArch64::FPR16RegClass;
@@ -6557,7 +6557,7 @@ SDValue AArch64TargetLowering::LowerFormalArguments(
       // Create a new FI and store it there. VASTART will load it from that
       // location.
       int FI = MFI.CreateStackObject(16, Align(16), false);
-      SDValue FIN = DAG.getFrameIndex(FI, MVT::iFATPTR128);
+      SDValue FIN = DAG.getFrameIndex(FI, MVT::c128);
       SDValue VarArgPtr = C9Args;
       // NB: Caller not callee, since we need to offset C9 if the caller has
       // included fixed arguments in it, regardless of whether we're using it
@@ -6653,7 +6653,7 @@ void AArch64TargetLowering::saveVarArgRegisters(CCState &CCInfo,
   const bool HasCap = Subtarget->hasMorello() &&
       !Subtarget->hasMorelloNewVarArg();
   const bool Use32CapRegs = !Subtarget->use16CapRegs();
-  auto PtrVT = HasPureCap ? MVT::iFATPTR128 : getPointerTy(DAG.getDataLayout());
+  auto PtrVT = HasPureCap ? MVT::c128 : getPointerTy(DAG.getDataLayout());
   bool IsWin64 = Subtarget->isCallingConvWin64(MF.getFunction().getCallingConv());
 
   SmallVector<SDValue, 8> MemOps;
@@ -6708,7 +6708,7 @@ void AArch64TargetLowering::saveVarArgRegisters(CCState &CCInfo,
       } else {
         VReg =
           MF.addLiveIn(CapArgRegs[i], &AArch64::CapRegClass);
-        Regs.push_back(DAG.getCopyFromReg(Chain, DL, VReg, MVT::iFATPTR128));
+        Regs.push_back(DAG.getCopyFromReg(Chain, DL, VReg, MVT::c128));
       }
     }
     // Store the GPRs.
@@ -7147,7 +7147,7 @@ AArch64TargetLowering::LowerCall(CallLoweringInfo &CLI,
   CallingConv::ID &CallConv = CLI.CallConv;
     bool ClearRegs = CallConv == CallingConv::CHERI_CCall;
   bool IsVarArg = CLI.IsVarArg;
-  bool IsCapabilityCall = Callee.getValueType() == MVT::iFATPTR128;
+  bool IsCapabilityCall = Callee.getValueType() == MVT::c128;
   MachineFunction &MF = DAG.getMachineFunction();
   MachineFunction::CallSiteInfo CSInfo;
   bool IsThisReturn = false;
@@ -7558,7 +7558,7 @@ AArch64TargetLowering::LowerCall(CallLoweringInfo &CLI,
       // only the store and execute permissions should result in the immediate
       // form of clrperm.
       uint64_t PermMask = -1UL & ~((1UL << 16) | (1UL << 15));
-      VarArgs = DAG.getNode(ISD::INTRINSIC_WO_CHAIN, DL, MVT::iFATPTR128,
+      VarArgs = DAG.getNode(ISD::INTRINSIC_WO_CHAIN, DL, MVT::c128,
           DAG.getConstant(Intrinsic::cheri_cap_perms_and, DL, MVT::i64),
           VarArgs, DAG.getIntPtrConstant(PermMask, DL));
       RegsToPass.push_back(std::make_pair(AArch64::C9, VarArgs));
@@ -8031,25 +8031,25 @@ SDValue AArch64TargetLowering::LowerGlobalAddress(SDValue Op,
   // This also catches the large code model case for Darwin, and tiny code
   // model with got relocations.
   if ((OpFlags & AArch64II::MO_GOT) != 0) {
-    return PtrVT == MVT::iFATPTR128 ? getFatGOT(GN, DAG, OpFlags) :
-                                   getGOT(GN, DAG, OpFlags);
+    return PtrVT == MVT::c128 ? getFatGOT(GN, DAG, OpFlags)
+                              : getGOT(GN, DAG, OpFlags);
   }
 
-  if (!IsLargeCM && Op.getSimpleValueType() == MVT::iFATPTR128) {
+  if (!IsLargeCM && Op.getSimpleValueType() == MVT::c128) {
     MachineFunction &MF = DAG.getMachineFunction();
     AArch64FunctionInfo *FuncInfo = MF.getInfo<AArch64FunctionInfo>();
     auto Entry = FuncInfo->getCapTableEntry(GV);
     if (Entry.first) {
       uint64_t Index = Entry.second;
       auto *AddrGV = cast<GlobalVariable>(Entry.first);
-      EVT Type = Subtarget->hasC64() ? MVT::iFATPTR128: MVT::i64;
+      EVT Type = Subtarget->hasC64() ? MVT::c128: MVT::i64;
       SDValue Addr =
           DAG.getGlobalAddress(AddrGV, DL, Type, Index * 16);
       GlobalAddressSDNode *LGN = cast<GlobalAddressSDNode>(Addr);
       SDValue GlobalAddr =
-          DAG.getNode(AArch64ISD::LOADCapTable, DL, MVT::iFATPTR128,
-                      getTargetNode(LGN, MVT::iFATPTR128, DAG,
-		                    AArch64II::MO_NO_FLAG));
+          DAG.getNode(AArch64ISD::LOADCapTable, DL, MVT::c128,
+                      getTargetNode(LGN, MVT::c128, DAG,
+                                    AArch64II::MO_NO_FLAG));
       if (GN->getOffset() != 0)
         GlobalAddr = DAG.getPointerAdd(DL, GlobalAddr, GN->getOffset());
       return GlobalAddr;
@@ -8062,20 +8062,20 @@ SDValue AArch64TargetLowering::LowerGlobalAddress(SDValue Op,
   bool IsDescABI =
      (MCTargetOptions::cheriCapabilityTableABI() ==
       CheriCapabilityTableABI::FunctionDescriptor);
-  if (Op.getSimpleValueType() == MVT::iFATPTR128 && dyn_cast<Function>(GV) &&
+  if (Op.getSimpleValueType() == MVT::c128 && dyn_cast<Function>(GV) &&
       !IsDescABI && !CheriEmitCodePtrRelocs)
-    return DAG.getNode(AArch64ISD::CapSealImm, DL, MVT::iFATPTR128,
+    return DAG.getNode(AArch64ISD::CapSealImm, DL, MVT::c128,
                        getFatAddr(GN, DAG, OpFlags),
                        DAG.getConstant(1, DL, MVT::i32));
 
-  if (Op.getSimpleValueType() == MVT::iFATPTR128 && !IsLargeCM) {
+  if (Op.getSimpleValueType() == MVT::c128 && !IsLargeCM) {
     SDNode *CPNode = DAG.getTargetConstantPool(GV, PtrVT, MaybeAlign(), 0).getNode();
     ConstantPoolSDNode *Pool = cast<ConstantPoolSDNode>(CPNode);
     SDValue PoolAddr = (Subtarget->hasC64() ? getFatAddr(Pool, DAG)
                                             : getAddr(Pool, DAG, OpFlags));
 
     SDValue GlobalAddr = DAG.getLoad(
-        MVT::iFATPTR128, DL, DAG.getEntryNode(), PoolAddr,
+        MVT::c128, DL, DAG.getEntryNode(), PoolAddr,
         MachinePointerInfo::getConstantPool(DAG.getMachineFunction()), 16,
         MachineMemOperand::MONonTemporal | MachineMemOperand::MOInvariant |
         MachineMemOperand::MODereferenceable);
@@ -8198,7 +8198,7 @@ SDValue AArch64TargetLowering::LowerC64ELFTLSLocalExec(const GlobalValue *GV,
     // add   c0, c0, :tprel_lo12:a
     SDValue Var = DAG.getTargetGlobalAddress(
         GV, DL, MVT::i64, 0, AArch64II::MO_TLS | AArch64II::MO_PAGEOFF);
-    Addr = SDValue(DAG.getMachineNode(AArch64::CapAddImm, DL, MVT::iFATPTR128,
+    Addr = SDValue(DAG.getMachineNode(AArch64::CapAddImm, DL, MVT::c128,
                        ThreadBase, Var,
                        DAG.getTargetConstant(0, DL, MVT::i32)),
                    0);
@@ -8214,11 +8214,11 @@ SDValue AArch64TargetLowering::LowerC64ELFTLSLocalExec(const GlobalValue *GV,
     SDValue LoVar = DAG.getTargetGlobalAddress(
         GV, DL, MVT::i64, 0,
         AArch64II::MO_TLS | AArch64II::MO_PAGEOFF | AArch64II::MO_NC);
-    Addr = SDValue(DAG.getMachineNode(AArch64::CapAddImm, DL, MVT::iFATPTR128,
+    Addr = SDValue(DAG.getMachineNode(AArch64::CapAddImm, DL, MVT::c128,
                        ThreadBase, HiVar,
                        DAG.getTargetConstant(0, DL, MVT::i32)),
                    0);
-    Addr = SDValue(DAG.getMachineNode(AArch64::CapAddImm, DL, MVT::iFATPTR128,
+    Addr = SDValue(DAG.getMachineNode(AArch64::CapAddImm, DL, MVT::c128,
                        Addr, LoVar,
                        DAG.getTargetConstant(0, DL, MVT::i32)),
                    0);
@@ -8483,7 +8483,7 @@ AArch64TargetLowering::LowerC64ELFTLSDescCallSeq(SDValue SymAddr,
                   {Chain, SymAddr});
   SDValue Glue = Chain.getValue(1);
 
-  SDValue Addr = DAG.getCopyFromReg(Chain, DL, AArch64::C0, MVT::iFATPTR128,
+  SDValue Addr = DAG.getCopyFromReg(Chain, DL, AArch64::C0, MVT::c128,
                                     Glue);
   return Addr;
 }
@@ -8533,11 +8533,11 @@ AArch64TargetLowering::LowerELFGlobalTLSAddress(SDValue Op,
     return TPWithOff;
   } else if (Model == TLSModel::InitialExec) {
     if (Subtarget->hasPureCap())
-      PtrVT = MVT::iFATPTR128;
+      PtrVT = MVT::c128;
     TPOff = DAG.getTargetGlobalAddress(GV, DL, PtrVT, 0, AArch64II::MO_TLS);
     if (Subtarget->hasPureCap()) {
       SDValue Val = DAG.getNode(AArch64ISD::CLoadTLSInfo, DL,
-                                {MVT::iFATPTR128, MVT::i64},
+                                {MVT::c128, MVT::i64},
                                 TPOff);
       SDValue SubReg = DAG.getTargetConstant(AArch64::sub_64, DL, MVT::i32);
       SDValue Offset =
@@ -8578,11 +8578,11 @@ AArch64TargetLowering::LowerELFGlobalTLSAddress(SDValue Op,
           GV, DL, MVT::i64, 0,
           AArch64II::MO_TLS | AArch64II::MO_PAGEOFF | AArch64II::MO_NC);
 
-      TPOff = SDValue(DAG.getMachineNode(AArch64::CapAddImm, DL, MVT::iFATPTR128,
+      TPOff = SDValue(DAG.getMachineNode(AArch64::CapAddImm, DL, MVT::c128,
                                          TPOff, HiVar,
                                          DAG.getTargetConstant(0, DL, MVT::i32)),
                       0);
-      TPOff = SDValue(DAG.getMachineNode(AArch64::CapAddImm, DL, MVT::iFATPTR128,
+      TPOff = SDValue(DAG.getMachineNode(AArch64::CapAddImm, DL, MVT::c128,
                                          TPOff, LoVar,
                                          DAG.getTargetConstant(0, DL, MVT::i32)),
                       0);
@@ -9202,7 +9202,7 @@ SDValue AArch64TargetLowering::LowerSETCC(SDValue Op, SelectionDAG &DAG) const {
   }
 
   if (LHS.getValueType().isFatPointer()) {
-    CC = ISD::getSetCCInverse(CC, MVT::iFATPTR128);
+    CC = ISD::getSetCCInverse(CC, MVT::c128);
     SDValue Cmp = emitComparison(LHS, RHS, CC, dl, DAG);
     AArch64CC::CondCode CC1 = changeIntCCToAArch64CC(CC);
     SDValue CCVal = DAG.getConstant(CC1, dl, MVT::i32);
@@ -9293,11 +9293,11 @@ SDValue AArch64TargetLowering::LowerSELECT_CC(ISD::CondCode CC, SDValue LHS,
       if (CTVal->isAllOnesValue()) {
         std::swap(TVal, FVal);
         std::swap(CTVal, CFVal);
-        CC = ISD::getSetCCInverse(CC, MVT::iFATPTR128);
+        CC = ISD::getSetCCInverse(CC, MVT::c128);
       } else if (CTVal->isOne()) {
         std::swap(TVal, FVal);
         std::swap(CTVal, CFVal);
-        CC = ISD::getSetCCInverse(CC, MVT::iFATPTR128);
+        CC = ISD::getSetCCInverse(CC, MVT::c128);
       }
     }
     SDValue Cmp = emitComparison(LHS, RHS, CC, dl, DAG);
@@ -9627,9 +9627,9 @@ SDValue AArch64TargetLowering::LowerBR_JT(SDValue Op,
   SDNode *Dest = nullptr;
   if (Subtarget->hasPureCap()) {
     Dest =
-        DAG.getMachineNode(AArch64::MCJumpTableDest32, DL, MVT::iFATPTR128,
+        DAG.getMachineNode(AArch64::MCJumpTableDest32, DL, MVT::c128,
             MVT::i64,
-            DAG.getJumpTable(JTI, MVT::iFATPTR128,
+            DAG.getJumpTable(JTI, MVT::c128,
                 JT->getOpcode() != ISD::JumpTable,
                 cast<JumpTableSDNode>(JT.getNode())->getTargetFlags()),
             Entry, DAG.getTargetJumpTable(JTI, MVT::i32));
@@ -9671,7 +9671,7 @@ SDValue AArch64TargetLowering::LowerConstantPool(SDValue Op,
   } else {
     EVT PtrVT = getPointerTy(DAG.getDataLayout());
     if (Subtarget->hasPureCap())
-      PtrVT = MVT::iFATPTR128;
+      PtrVT = MVT::c128;
 
     SDLoc DL(Op);
     SDNode *CPNode = DAG.getTargetConstantPool(CP->getConstVal(),
@@ -9689,7 +9689,7 @@ SDValue AArch64TargetLowering::LowerConstantPool(SDValue Op,
 SDValue AArch64TargetLowering::LowerBlockAddress(SDValue Op,
                                                  SelectionDAG &DAG) const {
   BlockAddressSDNode *BA = cast<BlockAddressSDNode>(Op);
-  if (Op.getSimpleValueType() == MVT::iFATPTR128) {
+  if (Op.getSimpleValueType() == MVT::c128) {
     // In ABIs with tightly bounded PCC we can only get block addresses for
     // the current function, and the LLVM IR verifier should have rejected
     // any cases where this is not true.
@@ -9709,7 +9709,7 @@ SDValue AArch64TargetLowering::LowerBlockAddress(SDValue Op,
     SDLoc DL(Op);
     // Create a sentry capability for block address to ensure that we don't
     // end up storing a mutable PCC-derived value in a global variable, etc.
-    return DAG.getNode(AArch64ISD::CapSealImm, DL, MVT::iFATPTR128,
+    return DAG.getNode(AArch64ISD::CapSealImm, DL, MVT::c128,
         BlockAddrUnsealed, DAG.getConstant(1, DL, MVT::i32));
   }
   if (getTargetMachine().getCodeModel() == CodeModel::Large &&
@@ -9757,12 +9757,12 @@ SDValue AArch64TargetLowering::LowerAAPCScap_VASTART(SDValue Op,
   SDLoc DL(Op);
   int Index = FuncInfo->getPureCapVarArgsIndex();
   SDValue FR = DAG.getFrameIndex(Index, getPointerTy(DAG.getDataLayout(), 200));
-  SDValue VarPtr = DAG.getLoad(MVT::iFATPTR128, DL, Op.getOperand(0), FR,
+  SDValue VarPtr = DAG.getLoad(MVT::c128, DL, Op.getOperand(0), FR,
       MachinePointerInfo::getStack(DAG.getMachineFunction(), 0), 16);
   SDValue Chain = VarPtr.getOperand(0);
   if (Subtarget->hasMorelloBoundedMemArgsCallee()) {
     uint64_t PermMask = -1UL & ~((1UL << 16) | (1UL << 15));
-    VarPtr = DAG.getNode(ISD::INTRINSIC_WO_CHAIN, DL, MVT::iFATPTR128,
+    VarPtr = DAG.getNode(ISD::INTRINSIC_WO_CHAIN, DL, MVT::c128,
         DAG.getConstant(Intrinsic::cheri_cap_perms_and, DL, MVT::i64),
         VarPtr, DAG.getIntPtrConstant(PermMask, DL));
   }
@@ -9976,7 +9976,7 @@ SDValue AArch64TargetLowering::LowerFRAMEADDR(SDValue Op,
       (MCTargetOptions::cheriCapabilityTableABI() ==
        CheriCapabilityTableABI::FunctionDescriptor);
   if (FP == (IsDescABI ? AArch64::C17 : AArch64::CFP)) {
-    assert(VT == MVT::iFATPTR128);
+    assert(VT == MVT::c128);
   }
   SDValue FrameAddr = DAG.getCopyFromReg(DAG.getEntryNode(), DL, FP, VT);
   while (Depth--) {
@@ -10045,7 +10045,7 @@ SDValue AArch64TargetLowering::LowerRETURNADDR(SDValue Op,
   MVT VT = Op.getSimpleValueType();
   unsigned LR = AArch64::LR;
   if (HasPureCap){
-    assert(VT == MVT::iFATPTR128);
+    assert(VT == MVT::c128);
     LR = AArch64::CLR;
   }
   SDLoc DL(Op);
@@ -10383,7 +10383,7 @@ AArch64TargetLowering::getRegForInlineAsmConstraint(
   if (Constraint.size() == 1) {
     switch (Constraint[0]) {
     case 'r':
-      if (Subtarget->hasMorello() && VT == MVT::iFATPTR128)
+      if (Subtarget->hasMorello() && VT == MVT::c128)
         return std::make_pair(0U, &AArch64::CapcommonRegClass);
       if (VT.isScalableVector())
         return std::make_pair(0U, nullptr);
@@ -10412,7 +10412,7 @@ AArch64TargetLowering::getRegForInlineAsmConstraint(
       break;
     }
     case 'C':
-      if (Subtarget->hasMorello() && VT == MVT::iFATPTR128)
+      if (Subtarget->hasMorello() && VT == MVT::c128)
         return std::make_pair(0U, &AArch64::CapRegClass);
       break;
     // The instructions that this constraint is designed for can
@@ -13794,7 +13794,7 @@ bool AArch64TargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
     Info.memVT = MVT::getVT(ValTy);
     if (Intrinsic == Intrinsic::aarch64_cldaxr ||
         Intrinsic == Intrinsic::aarch64_cldxr) {
-      assert(Info.memVT == MVT::iFATPTR128);
+      assert(Info.memVT == MVT::c128);
     }
     Info.ptrVal = I.getArgOperand(0);
     Info.offset = 0;
@@ -13811,7 +13811,7 @@ bool AArch64TargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
     Info.memVT = MVT::getVT(ValTy);
     if (Intrinsic == Intrinsic::aarch64_cstlxr ||
         Intrinsic == Intrinsic::aarch64_cstxr) {
-      assert(Info.memVT == MVT::iFATPTR128);
+      assert(Info.memVT == MVT::c128);
     }
     Info.ptrVal = I.getArgOperand(1);
     Info.offset = 0;
@@ -14773,7 +14773,7 @@ EVT AArch64TargetLowering::getOptimalMemOpType(
   if (Subtarget->hasMorello() && Op.size() >= 16 && !Op.isMemset() &&
       Op.PreserveTags != PreserveCheriTags::Unnecessary) {
     if (Op.isAligned(Align(16)))
-      return MVT::iFATPTR128;
+      return MVT::c128;
     return MVT::isVoid;
   }
 
@@ -17291,7 +17291,7 @@ static SDValue combineToAlignD(SDNode *N,
 
   SDValue AlignConst = DAG.getConstant(AlignFactor, SDLoc(N), MVT::i64);
   return DAG.getNode(AArch64ISD::CapAlignDown,
-                     SDLoc(N), MVT::iFATPTR128, CapBase, AlignConst);
+                     SDLoc(N), MVT::c128, CapBase, AlignConst);
 }
 
 // (ptradd (x,
@@ -17337,7 +17337,7 @@ static SDValue combineToAlignU(SDNode *N,
 
   SDValue AlignConst = DAG.getConstant(AlignFactor, SDLoc(N), MVT::i64);
   return DAG.getNode(AArch64ISD::CapAlignUp,
-                     SDLoc(N), MVT::iFATPTR128, CapBase, AlignConst);
+                     SDLoc(N), MVT::c128, CapBase, AlignConst);
 }
 
 static SDValue performPtrAddCombine(SDNode *N,
@@ -17852,7 +17852,7 @@ static SDValue performAddressSetCombine(SDNode *N, SelectionDAG &DAG,
 
   SDValue AlignConst = DAG.getConstant(AlignFactor, SDLoc(N), MVT::i64);
   return DAG.getNode(AlignUp ? AArch64ISD::CapAlignUp : AArch64ISD::CapAlignDown,
-                     SDLoc(N), MVT::iFATPTR128, AlignInput, AlignConst);
+                     SDLoc(N), MVT::c128, AlignInput, AlignConst);
 }
 
 static SDValue combineSVEReductionInt(SDNode *N, unsigned Opc,
@@ -19031,7 +19031,7 @@ static SDValue performPostLD1Combine(SDNode *N,
     Ops.push_back(Addr);
     Ops.push_back(Inc);
 
-    EVT Tys[3] = { VT, HasC64 ? MVT::iFATPTR128 : MVT::i64, MVT::Other };
+    EVT Tys[3] = { VT, HasC64 ? MVT::c128 : MVT::i64, MVT::Other };
     SDVTList SDTys = DAG.getVTList(Tys);
     unsigned NewOp = IsLaneOp ? AArch64ISD::LD1LANEpost : AArch64ISD::LD1DUPpost;
     SDValue UpdN = DAG.getMemIntrinsicNode(NewOp, SDLoc(N), SDTys, Ops,
@@ -21710,7 +21710,7 @@ static void ReplaceCMP_SWAP_128Results(SDNode *N,
          "AtomicCmpSwap on types less than 128 should be legal");
 
   bool FatPtrBase =
-      cast<MemSDNode>(N)->getBasePtr().getValueType() == MVT::iFATPTR128;
+      cast<MemSDNode>(N)->getBasePtr().getValueType() == MVT::c128;
 
   // Morello alternate base cmpxchg end up as library calls..
   if (Subtarget->hasMorello() && FatPtrBase != Subtarget->hasC64())
@@ -21878,7 +21878,7 @@ void AArch64TargetLowering::ReplaceNodeResults(
     if ((!LoadNode->isVolatile() && !LoadNode->isAtomic()) ||
         LoadNode->getMemoryVT() != MVT::i128 ||
         Subtarget->hasC64() ||
-        LoadNode->getBasePtr().getValueType() == MVT::iFATPTR128) {
+        LoadNode->getBasePtr().getValueType() == MVT::c128) {
       // Non-volatile or atomic loads are optimized later in AArch64's load/store
       // optimizer.
       return;
@@ -21997,7 +21997,7 @@ AArch64TargetLowering::getPreferredVectorAction(MVT VT) const {
       VT == MVT::v1f32)
     return TypeWidenVector;
 
-  if (VT == MVT::v1iFATPTR128)
+  if (VT == MVT::v1c128)
     return TypeScalarizeVector;
 
   return TargetLoweringBase::getPreferredVectorAction(VT);

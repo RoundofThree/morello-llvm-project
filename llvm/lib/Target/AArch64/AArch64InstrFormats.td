@@ -3294,11 +3294,11 @@ def am_indexed32 : ComplexPattern<iPTR, 2, "SelectAddrModeIndexed32", []>;
 def am_indexed64 : ComplexPattern<iPTR, 2, "SelectAddrModeIndexed64", []>;
 def am_indexed128 : ComplexPattern<iPTR, 2, "SelectAddrModeIndexed128", []>;
 
-def am_cindexed8 : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeIndexed8", []>;
-def am_cindexed16 : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeIndexed16", []>;
-def am_cindexed32 : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeIndexed32", []>;
-def am_cindexed64 : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeIndexed64", []>;
-def am_cindexed128 : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeIndexed128", []>;
+def am_cindexed8 : ComplexPattern<c128, 2, "SelectCAddrModeIndexed8", []>;
+def am_cindexed16 : ComplexPattern<c128, 2, "SelectCAddrModeIndexed16", []>;
+def am_cindexed32 : ComplexPattern<c128, 2, "SelectCAddrModeIndexed32", []>;
+def am_cindexed64 : ComplexPattern<c128, 2, "SelectCAddrModeIndexed64", []>;
+def am_cindexed128 : ComplexPattern<c128, 2, "SelectCAddrModeIndexed128", []>;
 
 // (unsigned immediate)
 // Indexed for 8-bit registers. offset is in range [0,63].
@@ -3490,17 +3490,17 @@ class PrefetchLiteral<bits<2> opc, bit V, string asm, list<dag> pat>
 // Load/store register offset
 //---
 
-def cro_Xindexed8 : ComplexPattern<iFATPTR128, 4, "SelectCAddrModeXRO<8>", []>;
-def cro_Xindexed16 : ComplexPattern<iFATPTR128, 4, "SelectCAddrModeXRO<16>", []>;
-def cro_Xindexed32 : ComplexPattern<iFATPTR128, 4, "SelectCAddrModeXRO<32>", []>;
-def cro_Xindexed64 : ComplexPattern<iFATPTR128, 4, "SelectCAddrModeXRO<64>", []>;
-def cro_Xindexed128 : ComplexPattern<iFATPTR128, 4, "SelectCAddrModeXRO<128>", []>;
+def cro_Xindexed8 : ComplexPattern<c128, 4, "SelectCAddrModeXRO<8>", []>;
+def cro_Xindexed16 : ComplexPattern<c128, 4, "SelectCAddrModeXRO<16>", []>;
+def cro_Xindexed32 : ComplexPattern<c128, 4, "SelectCAddrModeXRO<32>", []>;
+def cro_Xindexed64 : ComplexPattern<c128, 4, "SelectCAddrModeXRO<64>", []>;
+def cro_Xindexed128 : ComplexPattern<c128, 4, "SelectCAddrModeXRO<128>", []>;
 
-def cro_Windexed8 : ComplexPattern<iFATPTR128, 4, "SelectCAddrModeWRO<8>", []>;
-def cro_Windexed16 : ComplexPattern<iFATPTR128, 4, "SelectCAddrModeWRO<16>", []>;
-def cro_Windexed32 : ComplexPattern<iFATPTR128, 4, "SelectCAddrModeWRO<32>", []>;
-def cro_Windexed64 : ComplexPattern<iFATPTR128, 4, "SelectCAddrModeWRO<64>", []>;
-def cro_Windexed128 : ComplexPattern<iFATPTR128, 4, "SelectCAddrModeWRO<128>", []>;
+def cro_Windexed8 : ComplexPattern<c128, 4, "SelectCAddrModeWRO<8>", []>;
+def cro_Windexed16 : ComplexPattern<c128, 4, "SelectCAddrModeWRO<16>", []>;
+def cro_Windexed32 : ComplexPattern<c128, 4, "SelectCAddrModeWRO<32>", []>;
+def cro_Windexed64 : ComplexPattern<c128, 4, "SelectCAddrModeWRO<64>", []>;
+def cro_Windexed128 : ComplexPattern<c128, 4, "SelectCAddrModeWRO<128>", []>;
 
 def ro_Xindexed8 : ComplexPattern<iPTR, 4, "SelectAddrModeXRO<8>", []>;
 def ro_Xindexed16 : ComplexPattern<iPTR, 4, "SelectAddrModeXRO<16>", []>;
@@ -4116,21 +4116,21 @@ def am_unscaled32 : ComplexPattern<iPTR, 2, "SelectAddrModeUnscaled32", []>;
 def am_unscaled64 : ComplexPattern<iPTR, 2, "SelectAddrModeUnscaled64", []>;
 def am_unscaled128 :ComplexPattern<iPTR, 2, "SelectAddrModeUnscaled128", []>;
 
-def am_cunscaled8  : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeUnscaled<6>", []>;
-def am_cunscaled16 : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeUnscaled<6>", []>;
-def am_cunscaled32 : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeUnscaled<6>", []>;
-def am_cunscaled64 : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeUnscaled<6>", []>;
-def am_cunscaled128 : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeUnscaled<6>", []>;
-def am_cunscaled128_8 : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeUnscaled<8>", []>;
-def am_cunscaled : ComplexPattern<iFATPTR128, 2, "SelectCAddrModeUnscaled<9>", []>;
+def am_cunscaled8  : ComplexPattern<c128, 2, "SelectCAddrModeUnscaled<6>", []>;
+def am_cunscaled16 : ComplexPattern<c128, 2, "SelectCAddrModeUnscaled<6>", []>;
+def am_cunscaled32 : ComplexPattern<c128, 2, "SelectCAddrModeUnscaled<6>", []>;
+def am_cunscaled64 : ComplexPattern<c128, 2, "SelectCAddrModeUnscaled<6>", []>;
+def am_cunscaled128 : ComplexPattern<c128, 2, "SelectCAddrModeUnscaled<6>", []>;
+def am_cunscaled128_8 : ComplexPattern<c128, 2, "SelectCAddrModeUnscaled<8>", []>;
+def am_cunscaled : ComplexPattern<c128, 2, "SelectCAddrModeUnscaled<9>", []>;
 
 // FIXME: Are these really necessary? We may be able to merge them with
 // the am_cunscaled ones above.
-def am_pcunscaled8  : ComplexPattern<iFATPTR128, 2, "SelectPCAddrModeUnscaled<1>", []>;
-def am_pcunscaled16 : ComplexPattern<iFATPTR128, 2, "SelectPCAddrModeUnscaled<2>", []>;
-def am_pcunscaled32 : ComplexPattern<iFATPTR128, 2, "SelectPCAddrModeUnscaled<4>", []>;
-def am_pcunscaled64 : ComplexPattern<iFATPTR128, 2, "SelectPCAddrModeUnscaled<8>", []>;
-def am_pcunscaled128 : ComplexPattern<iFATPTR128, 2, "SelectPCAddrModeUnscaled<16>", []>;
+def am_pcunscaled8  : ComplexPattern<c128, 2, "SelectPCAddrModeUnscaled<1>", []>;
+def am_pcunscaled16 : ComplexPattern<c128, 2, "SelectPCAddrModeUnscaled<2>", []>;
+def am_pcunscaled32 : ComplexPattern<c128, 2, "SelectPCAddrModeUnscaled<4>", []>;
+def am_pcunscaled64 : ComplexPattern<c128, 2, "SelectPCAddrModeUnscaled<8>", []>;
+def am_pcunscaled128 : ComplexPattern<c128, 2, "SelectPCAddrModeUnscaled<16>", []>;
 
 def am_punscaled8  : ComplexPattern<iPTR, 2, "SelectPAddrModeUnscaled<6>", []>;
 def am_punscaled16 : ComplexPattern<iPTR, 2, "SelectPAddrModeUnscaled<6>", []>;

@@ -289,24 +289,24 @@ def SDT_AArch64FCmp   : SDTypeProfile<0, 2,
                                    [SDTCisFP<0>,
                                     SDTCisSameAs<0, 1>]>;
 def SDT_AArch64CapCmp : SDTypeProfile<1, 2,
-                                   [SDTCisFatPtrTy<1>,
+                                   [SDTCisCapPtrTy<1>,
                                     SDTCisSameAs<1, 2>,
                                     SDTCisVT<0, i32>]>;
 def SDT_AArch64CapCheckEquals : SDTypeProfile<1, 2,
                                              [SDTCisVT<0, i32>,
-                                              SDTCisFatPtrTy<1>,
-                                              SDTCisFatPtrTy<2>]>;
+                                              SDTCisCapPtrTy<1>,
+                                              SDTCisCapPtrTy<2>]>;
 def SDT_AArch64CapCheckSubset : SDTypeProfile<1, 2,
                                              [SDTCisVT<0, i32>,
-                                              SDTCisFatPtrTy<1>,
-                                              SDTCisFatPtrTy<2>]>;
+                                              SDTCisCapPtrTy<1>,
+                                              SDTCisCapPtrTy<2>]>;
 
 def SDT_AArch64CapCheckSubsetUnseal : SDTypeProfile<2, 2,
-                                      [SDTCisFatPtrTy<0>, SDTCisVT<1, i32>,
+                                      [SDTCisCapPtrTy<0>, SDTCisVT<1, i32>,
                                        SDTCisSameAs<0, 2>, SDTCisSameAs<0, 3>]>;
 
 def SDT_AArch64CapSealImm : SDTypeProfile<1, 2,
-                                          [SDTCisFatPtrTy<0>, SDTCisSameAs<0, 1>,
+                                          [SDTCisCapPtrTy<0>, SDTCisSameAs<0, 1>,
                                            SDTCisVT<2, i32>]>;
 
 def SDT_AArch64Dup   : SDTypeProfile<1, 1, [SDTCisVec<0>]>;
@@ -338,8 +338,8 @@ def SDT_AArch64binvec : SDTypeProfile<1, 2, [SDTCisVec<0>, SDTCisSameAs<0,1>,
 def SDT_AArch64trivec : SDTypeProfile<1, 3, [SDTCisVec<0>, SDTCisSameAs<0,1>,
                                            SDTCisSameAs<0,2>,
                                            SDTCisSameAs<0,3>]>;
-def SDT_AArch64TCRET : SDTypeProfile<0, 2, [SDTCisPtrTy<0>]>;
-def SDT_AArch64CTCRET : SDTypeProfile<0, 2, [SDTCisFatPtrTy<0>]>;
+def SDT_AArch64TCRET : SDTypeProfile<0, 2, [SDTCisIntPtrTy<0>]>;
+def SDT_AArch64CTCRET : SDTypeProfile<0, 2, [SDTCisCapPtrTy<0>]>;
 def SDT_AArch64PREFETCH : SDTypeProfile<0, 2, [SDTCisVT<0, i32>, SDTCisPtrTy<1>]>;
 
 def SDT_AArch64ITOF  : SDTypeProfile<1, 1, [SDTCisFP<0>, SDTCisSameAs<0,1>]>;
@@ -363,17 +363,17 @@ def SDT_AArch64stnp : SDTypeProfile<0, 3, [SDTCisVT<0, v4i32>, SDTCisSameAs<0, 1
 // (the TPIDR_EL0 offset is put directly in X0, hence no "result" here)
 // number of operands (the variable)
 def SDT_AArch64TLSDescCallSeq : SDTypeProfile<0,1,
-                                          [SDTCisPtrTy<0>]>;
+                                          [SDTCisIntPtrTy<0>]>;
 
 def SDT_AArch64WrapperLarge : SDTypeProfile<1, 4,
                                         [SDTCisVT<0, i64>, SDTCisVT<1, i32>,
                                          SDTCisSameAs<1, 2>, SDTCisSameAs<1, 3>,
                                          SDTCisSameAs<1, 4>]>;
-def SDTIntToFatPtrOp : SDTypeProfile<1, 1, [SDTCisFatPtrTy<0>, SDTCisInt<1>]>;
-def SDTIntToIntPairOp : SDTypeProfile<2, 1, [SDTCisFatPtrTy<0>, SDTCisInt<1>,
+def SDTIntToCapOp : SDTypeProfile<1, 1, [SDTCisCapPtrTy<0>, SDTCisInt<1>]>;
+def SDTIntToIntPairOp : SDTypeProfile<2, 1, [SDTCisCapPtrTy<0>, SDTCisInt<1>,
                                              SDTCisInt<2>]>;
 def SDT_CAddLow : SDTypeProfile<1, 2,
-                                [SDTCisFatPtrTy<0>, SDTCisSameAs<0, 1>,
+                                [SDTCisCapPtrTy<0>, SDTCisSameAs<0, 1>,
                                  SDTCisVT<2, i64>]>;
 
 def SDT_AArch64TBL : SDTypeProfile<1, 2, [
@@ -550,12 +550,12 @@ def AArch64adrp          : SDNode<"AArch64ISD::ADRP", SDTIntUnaryOp, []>;
 def AArch64adr           : SDNode<"AArch64ISD::ADR", SDTIntUnaryOp, []>;
 def AArch64addlow        : SDNode<"AArch64ISD::ADDlow", SDTIntBinOp, []>;
 def AArch64LOADgot       : SDNode<"AArch64ISD::LOADgot", SDTIntUnaryOp>;
-def AArch64LOADCgot       : SDNode<"AArch64ISD::LOADCgot", SDTIntToFatPtrOp>;
-def AArch64LOADCapTable  : SDNode<"AArch64ISD::LOADCapTable", SDTIntToFatPtrOp>;
+def AArch64LOADCgot      : SDNode<"AArch64ISD::LOADCgot", SDTIntToCapOp>;
+def AArch64LOADCapTable  : SDNode<"AArch64ISD::LOADCapTable", SDTIntToCapOp>;
 def AArch64CLoadTLSInfo  : SDNode<"AArch64ISD::CLoadTLSInfo", SDTIntToIntPairOp>;
 
-def AArch64cadrp          : SDNode<"AArch64ISD::ADRPC", SDTIntToFatPtrOp, []>;
-def AArch64caddlow        : SDNode<"AArch64ISD::ADDClow", SDT_CAddLow, []>;
+def AArch64cadrp         : SDNode<"AArch64ISD::ADRPC", SDTIntToCapOp, []>;
+def AArch64caddlow       : SDNode<"AArch64ISD::ADDClow", SDT_CAddLow, []>;
 
 def AArch64callseq_start : SDNode<"ISD::CALLSEQ_START",
                                 SDCallSeqStart<[ SDTCisVT<0, i32>,
@@ -566,19 +566,19 @@ def AArch64callseq_end   : SDNode<"ISD::CALLSEQ_END",
                                                SDTCisVT<1, i32> ]>,
                                 [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue]>;
 def AArch64call          : SDNode<"AArch64ISD::CALL",
-                                SDTypeProfile<0, -1, [SDTCisPtrTy<0>]>,
+                                SDTypeProfile<0, -1, [SDTCisIntPtrTy<0>]>,
                                 [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue,
                                  SDNPVariadic]>;
 def AArch64ccall         : SDNode<"AArch64ISD::CCALL",
-                                SDTypeProfile<0, -1, [SDTCisFatPtrTy<0>]>,
+                                SDTypeProfile<0, -1, [SDTCisCapPtrTy<0>]>,
                                 [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue,
                                  SDNPVariadic]>;
 def AArch64clearcall     : SDNode<"AArch64ISD::ClearCALL",
-                                SDTypeProfile<0, -1, [SDTCisPtrTy<0>]>,
+                                SDTypeProfile<0, -1, [SDTCisIntPtrTy<0>]>,
                                 [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue,
                                  SDNPVariadic]>;
 def AArch64clearccall    : SDNode<"AArch64ISD::ClearCCALL",
-                                SDTypeProfile<0, -1, [SDTCisFatPtrTy<0>]>,
+                                SDTypeProfile<0, -1, [SDTCisCapPtrTy<0>]>,
                                 [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue,
                                  SDNPVariadic]>;
 

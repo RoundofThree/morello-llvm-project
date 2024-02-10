@@ -777,22 +777,22 @@ def : Pat<(int_cheri_cap_from_pointer Capsp:$Cm, GPR64:$Rt),
           (CapConvert64toCapNullCheck Capsp:$Cm, GPR64:$Rt)>;
 def : Pat<(int_cheri_cap_from_pointer_nonnull_zero Capsp:$Cm, GPR64:$Rt),
           (CapConvert64toCap Capsp:$Cm, GPR64:$Rt)>;
-def : Pat<(int_cheri_cap_from_pointer (iFATPTR128 (int_cheri_ddc_get)),
+def : Pat<(int_cheri_cap_from_pointer (c128 (int_cheri_ddc_get)),
                                       GPR64:$Rt),
           (CapConvert64ToCapDDCNullCheck GPR64:$Rt)>;
-def : Pat<(int_cheri_cap_from_pointer (iFATPTR128 (int_cheri_pcc_get)),
+def : Pat<(int_cheri_cap_from_pointer (c128 (int_cheri_pcc_get)),
                                       GPR64:$Rt),
           (CapConvert64ToCapPCCNullCheck GPR64:$Rt)>;
 def : Pat<(int_cheri_cap_from_pointer_nonnull_zero
-              (iFATPTR128 (int_cheri_ddc_get)), GPR64:$Rt),
+              (c128 (int_cheri_ddc_get)), GPR64:$Rt),
           (CapConvert64ToCapDDC GPR64:$Rt)>;
 def : Pat<(int_cheri_cap_from_pointer_nonnull_zero
-              (iFATPTR128 (int_cheri_pcc_get)), GPR64:$Rt),
+              (c128 (int_cheri_pcc_get)), GPR64:$Rt),
           (CapConvert64ToCapPCC GPR64:$Rt)>;
-def : Pat<(int_cheri_cap_to_pointer (iFATPTR128 (int_cheri_ddc_get)),
+def : Pat<(int_cheri_cap_to_pointer (c128 (int_cheri_ddc_get)),
                                     Capsp:$Cm),
           (CapConvertCapTo64DDC Capsp:$Cm)>;
-def : Pat<(int_cheri_cap_to_pointer (iFATPTR128 (int_cheri_pcc_get)),
+def : Pat<(int_cheri_cap_to_pointer (c128 (int_cheri_pcc_get)),
                                     Capsp:$Cm),
           (CapConvertCapTo64PCC Capsp:$Cm)>;
 def : Pat<(i64 (int_cheri_cap_diff Cap:$Cn, Cap:$Cm)),
@@ -1213,8 +1213,8 @@ let Predicates = [HasMorello, HasNotC64] in {
 }
 
 def SDT_AArch64CapAlign : SDTypeProfile<1, 2,
-                                             [SDTCisFatPtrTy<0>,
-                                              SDTCisFatPtrTy<1>,
+                                             [SDTCisCapPtrTy<0>,
+                                              SDTCisCapPtrTy<1>,
                                               SDTCisVT<2, i64>]>;
 
 def AArch64aligndown : SDNode<"AArch64ISD::CapAlignDown", SDT_AArch64CapAlign>;

@@ -1,11 +1,11 @@
 ; DO NOT EDIT -- This file was generated from test/CodeGen/CHERI-Generic/Inputs/atomic-rmw-cap-ptr-arg.ll
 ; Reported as https://git.morello-project.org/morello/llvm-project/-/issues/35
 ; UNSUPPORTED: true
-; LLVM ERROR: Cannot select: t5: iFATPTR128,ch = AtomicSwap<(load store monotonic 16 on %ir.ptr, addrspace 200)> t0, t2, t4
-;   t2: iFATPTR128,ch = CopyFromReg t0, Register:iFATPTR128 %0
-;     t1: iFATPTR128 = Register %0
-;   t4: iFATPTR128,ch = CopyFromReg t0, Register:iFATPTR128 %1
-;     t3: iFATPTR128 = Register %1
+; LLVM ERROR: Cannot select: t5: c128,ch = AtomicSwap<(load store monotonic 16 on %ir.ptr, addrspace 200)> t0, t2, t4
+;   t2: c128,ch = CopyFromReg t0, Register:c128 %0
+;     t1: c128 = Register %0
+;   t4: c128,ch = CopyFromReg t0, Register:c128 %1
+;     t3: c128 = Register %1
 ; In function: atomic_cap_ptr_xchg_relaxed
 
 ; Check that we can generate sensible code for atomic operations using capability pointers on capabilities

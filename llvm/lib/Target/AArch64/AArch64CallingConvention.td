@@ -107,8 +107,8 @@ def CC_AArch64_AAPCS : CallingConv<[
            CCAssignToReg<[D0, D1, D2, D3, D4, D5, D6, D7]>>,
   CCIfType<[f128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16, v8bf16],
            CCAssignToReg<[Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7]>>,
-  CCIfType<[iFATPTR128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5, C6, C7],
-                                              [X0, X1, X2, X3, X4, X5, X6, X7]>>,
+  CCIfType<[c128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5, C6, C7],
+                                           [X0, X1, X2, X3, X4, X5, X6, X7]>>,
 
   // If more than will fit in registers, pass them on the stack instead.
   CCIfType<[i1, i8, i16, f16], CCAssignToStack<8, 8>>,
@@ -117,7 +117,7 @@ def CC_AArch64_AAPCS : CallingConv<[
            CCAssignToStack<8, 8>>,
   CCIfType<[f128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16],
            CCAssignToStack<16, 16>>,
-  CCIfType<[iFATPTR128], CCAssignToStack<16, 16>>
+  CCIfType<[c128], CCAssignToStack<16, 16>>
 ]>;
 
 // A variant to cope with alignmenent restrictions with capabilities.
@@ -134,7 +134,7 @@ def CC_AArch64_AAPCS_Pure_16Cap_Regs : CallingConv<[
                          CCBitConvertToType<f128>>>,
 
   // An SRet is passed in C24.
-  CCIfSRet<CCIfType<[iFATPTR128], CCAssignToRegWithShadow<[C24], [X24]>>>,
+  CCIfSRet<CCIfType<[c128], CCAssignToRegWithShadow<[C24], [X24]>>>,
 
   // Put ByVal arguments directly on the stack. Minimum size and alignment of a
   // slot is 64-bit.
@@ -186,8 +186,8 @@ def CC_AArch64_AAPCS_Pure_16Cap_Regs : CallingConv<[
                                    [Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7]>>,
   CCIfType<[f128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16, v8bf16],
            CCAssignToReg<[Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7]>>,
-  CCIfType<[iFATPTR128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5],
-                                              [X0, X1, X2, X3, X4, X5]>>,
+  CCIfType<[c128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5],
+                                           [X0, X1, X2, X3, X4, X5]>>,
 
   // If more than will fit in registers, pass them on the stack instead.
   CCIfType<[i1, i8, i16, f16, bf16], CCAssignToStack<8, 8>>,
@@ -196,7 +196,7 @@ def CC_AArch64_AAPCS_Pure_16Cap_Regs : CallingConv<[
            CCAssignToStack<8, 8>>,
   CCIfType<[f128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16, v8bf16],
            CCAssignToStack<16, 16>>,
-  CCIfType<[iFATPTR128], CCAssignToStack<16, 16>>
+  CCIfType<[c128], CCAssignToStack<16, 16>>
 ]>;
 
 let Entry = 1 in
@@ -212,7 +212,7 @@ def CC_AArch64_AAPCS_Pure_32Cap_Regs : CallingConv<[
                          CCBitConvertToType<f128>>>,
 
   // An SRet is passed in C8.
-  CCIfSRet<CCIfType<[iFATPTR128], CCAssignToRegWithShadow<[C8], [X8]>>>,
+  CCIfSRet<CCIfType<[c128], CCAssignToRegWithShadow<[C8], [X8]>>>,
 
   // Put ByVal arguments directly on the stack. Minimum size and alignment of a
   // slot is 64-bit.
@@ -264,8 +264,8 @@ def CC_AArch64_AAPCS_Pure_32Cap_Regs : CallingConv<[
                                    [Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7]>>,
   CCIfType<[f128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16, v8bf16],
            CCAssignToReg<[Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7]>>,
-  CCIfType<[iFATPTR128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5, C6, C7],
-                                                 [X0, X1, X2, X3, X4, X5, X6, X7]>>,
+  CCIfType<[c128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5, C6, C7],
+                                           [X0, X1, X2, X3, X4, X5, X6, X7]>>,
 
   // If more than will fit in registers, pass them on the stack instead.
   CCIfType<[i1, i8, i16, f16, bf16], CCAssignToStack<8, 8>>,
@@ -274,7 +274,7 @@ def CC_AArch64_AAPCS_Pure_32Cap_Regs : CallingConv<[
            CCAssignToStack<8, 8>>,
   CCIfType<[f128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16, v8bf16],
            CCAssignToStack<16, 16>>,
-  CCIfType<[iFATPTR128], CCAssignToStack<16, 16>>
+  CCIfType<[c128], CCAssignToStack<16, 16>>
 ]>;
 
 let Entry = 1 in
@@ -298,7 +298,7 @@ def CC_AArch64_AAPCS_Pure_VarArg : CallingConv<[
   // Everything is on the stack and aligned to 16 bytes.
   CCIfType<[f64, v1i64, v2i32, v4i16, v8i8, v1f64, v2f32, v4f16, v4bf16],
            CCAssignToStack<8, 16>>,
-  CCIfType<[iFATPTR128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16, v8bf16],
+  CCIfType<[c128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16, v8bf16],
            CCAssignToStack<16, 16>>
 ]>;
 
@@ -320,7 +320,7 @@ def CC_AArch64_AAPCS_CCall : CallingConv<[
   // will have just one argument.
   // A SRet is passed in C8.
   CCIfSRet<CCIfType<[i64], CCAssignToRegWithShadow<[X8], [W8]>>>,
-  CCIfSRet<CCIfType<[iFATPTR128], CCAssignToRegWithShadow<[C8], [X8]>>>,
+  CCIfSRet<CCIfType<[c128], CCAssignToRegWithShadow<[C8], [X8]>>>,
 
   // Put ByVal arguments directly on the stack. Minimum size and alignment of a
   // slot is 64-bit.
@@ -358,8 +358,8 @@ def CC_AArch64_AAPCS_CCall : CallingConv<[
                                    [Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7]>>,
   CCIfType<[f128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16],
            CCAssignToReg<[Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7]>>,
-  CCIfType<[iFATPTR128], CCAssignToRegWithShadow<[C9, C10, C0, C1, C2, C3, C4, C5],
-                                                 [X9, X10, X0, X1, X2, X3, X4, X5]>>,
+  CCIfType<[c128], CCAssignToRegWithShadow<[C9, C10, C0, C1, C2, C3, C4, C5],
+                                           [X9, X10, X0, X1, X2, X3, X4, X5]>>,
 
   // If more than will fit in registers, pass them on the stack instead.
   CCIfType<[i1, i8, i16, f16], CCAssignToStack<8, 16>>,
@@ -368,7 +368,7 @@ def CC_AArch64_AAPCS_CCall : CallingConv<[
            CCAssignToStack<8, 16>>,
   CCIfType<[f128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16],
            CCAssignToStack<16, 16>>,
-  CCIfType<[iFATPTR128], CCAssignToStack<16, 16>>
+  CCIfType<[c128], CCAssignToStack<16, 16>>
 ]>;
 
 
@@ -407,8 +407,8 @@ def RetCC_AArch64_AAPCS : CallingConv<[
   CCIfType<[nxv1i1, nxv2i1, nxv4i1, nxv8i1, nxv16i1],
            CCAssignToReg<[P0, P1, P2, P3]>>,
 
-  CCIfType<[iFATPTR128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5, C6, C7],
-                                              [X0, X1, X2, X3, X4, X5, X6, X7]>>
+  CCIfType<[c128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5, C6, C7],
+                                           [X0, X1, X2, X3, X4, X5, X6, X7]>>
 ]>;
 
 let Entry = 1 in
@@ -442,8 +442,8 @@ def RetCC_AArch64_AAPCS_Pure_16Cap_Regs : CallingConv<[
                               [Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7]>>,
   CCIfType<[f128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16],
       CCAssignToReg<[Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7]>>,
-  CCIfType<[iFATPTR128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5],
-                                              [X0, X1, X2, X3, X4, X5]>>
+  CCIfType<[c128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5],
+                                           [X0, X1, X2, X3, X4, X5]>>
 ]>;
 
 let Entry = 1 in
@@ -477,8 +477,8 @@ def RetCC_AArch64_AAPCS_Pure_32Cap_Regs : CallingConv<[
                               [Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7]>>,
   CCIfType<[f128, v2i64, v4i32, v8i16, v16i8, v4f32, v2f64, v8f16],
       CCAssignToReg<[Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7]>>,
-  CCIfType<[iFATPTR128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5, C6, C7],
-                                                 [X0, X1, X2, X3, X4, X5, X6, X7]>>
+  CCIfType<[c128], CCAssignToRegWithShadow<[C0, C1, C2, C3, C4, C5, C6, C7],
+                                           [X0, X1, X2, X3, X4, X5, X6, X7]>>
 ]>;
 
 // Vararg functions on windows pass floats in integer registers
