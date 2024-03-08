@@ -6175,7 +6175,11 @@ SDValue AArch64TargetLowering::LowerFormalArguments(
       int FI = MFI.CreateStackObject(16, Align(16), false);
       SDValue FIN = DAG.getFrameIndex(FI, MVT::iFATPTR128);
       SDValue VarArgPtr = C9Args;
-      if (Subtarget->hasMorelloBoundedMemArgsCallee())
+      // NB: Caller not callee, since we need to offset C9 if the caller has
+      // included fixed arguments in it, regardless of whether we're using it
+      // ourselves. Makes unbounded to caller-only an ABI break in this edge
+      // case, but rare in practice.
+      if (Subtarget->hasMorelloBoundedMemArgsCaller())
         VarArgPtr = DAG.getPointerAdd(DL, C9Args, StackOffset);
       Chain = DAG.getStore(C9Args.getValue(1), DL, VarArgPtr, FIN,
                MachinePointerInfo::getStack(DAG.getMachineFunction(), 0));

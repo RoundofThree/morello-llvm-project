@@ -89,12 +89,13 @@ define i32 @bb([4 x float] %f1.coerce, [4 x float] %f2.coerce, [4 x float] %f3.c
 ; CHECK-LABEL: bb:
 ; CHECK:       .Lfunc_begin3:
 ; CHECK-NEXT:  // %bb.0: // %entry
-; CHECK-NEXT:    str c9, [csp, #-32]!
+; CHECK-NEXT:    add c0, c9, #16
+; CHECK-NEXT:    str c0, [csp, #-32]!
 ; CHECK-NEXT:    ldp s2, s1, [csp, #32]
-; CHECK-NEXT:    add c0, csp, #16
-; CHECK-NEXT:    scbnds c0, c0, #16 // =16
+; CHECK-NEXT:    add c1, csp, #16
+; CHECK-NEXT:    scbnds c1, c1, #16 // =16
 ; CHECK-NEXT:    ldr s0, [csp, #44]
-; CHECK-NEXT:    str c9, [c0, #0]
+; CHECK-NEXT:    str c0, [c1, #0]
 ; CHECK-NEXT:    ldr c0, [csp, #16]
 ; CHECK-NEXT:    fadd s1, s2, s1
 ; CHECK-NEXT:    add c1, c0, #16
