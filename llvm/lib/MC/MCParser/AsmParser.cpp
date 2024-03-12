@@ -4205,9 +4205,10 @@ bool AsmParser::parseDirectiveCFISections() {
 }
 
 /// parseDirectiveCFIStartProc
-/// ::= .cfi_startproc [simple|purecap]
+/// ::= .cfi_startproc [simple]
 bool AsmParser::parseDirectiveCFIStartProc() {
-  MCCFIProcType Type = MCCFIProcType::Normal;
+  StringRef Simple;
+  SMLoc TokenLoc = getLexer().getLoc();
   if (!parseOptionalToken(AsmToken::EndOfStatement)) {
     StringRef TypeString;
     if (check(parseIdentifier(TypeString) ||
@@ -4216,9 +4217,9 @@ bool AsmParser::parseDirectiveCFIStartProc() {
         parseEOL())
       return true;
     if (TypeString == "purecap")
-      Type = MCCFIProcType::PureCap;
+      Warning(TokenLoc, "explicit purecap type is deprecated and ignored");
     else
-      Type = MCCFIProcType::Simple;
+      Simple = TypeString;
   }
 
   // TODO(kristina): Deal with a corner case of incorrect diagnostic context
@@ -4226,7 +4227,7 @@ bool AsmParser::parseDirectiveCFIStartProc() {
   // expansion which can *ONLY* happen if Clang's cc1as is the API consumer.
   // Tools like llvm-mc on the other hand are not affected by it, and report
   // correct context information.
-  getStreamer().emitCFIStartProc(Type, Lexer.getLoc());
+  getStreamer().emitCFIStartProc(!Simple.empty(), Lexer.getLoc());
   return false;
 }
 

@@ -84,11 +84,8 @@ MCAsmInfo::MCAsmInfo() {
 
 MCAsmInfo::~MCAsmInfo() = default;
 
-void MCAsmInfo::addInitialFrameState(MCCFIProcType Type,
-                                     const MCCFIInstruction &Inst) {
-  assert(Type != MCCFIProcType::Simple &&
-         "Simple CFI procedure type must not define initial frame state.");
-  InitialFrameState[Type].push_back(Inst);
+void MCAsmInfo::addInitialFrameState(const MCCFIInstruction &Inst) {
+  InitialFrameState.push_back(Inst);
 }
 
 bool MCAsmInfo::isSectionAtomizableBySymbols(const MCSection &Section) const {

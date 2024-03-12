@@ -14,7 +14,7 @@ target triple = "aarch64-unknown-linux-android"
 define hidden float @zot(%struct.widget addrspace(200)* nocapture readonly %arg, %struct.spam addrspace(200)* nocapture %arg1) unnamed_addr addrspace(200) align 2 {
 ; CHECK-LABEL: zot:
 ; CHECK:       .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %bb
 ; CHECK-NEXT:    ldr s0, [c0, #32]
 ; CHECK-NEXT:    ret c30

@@ -1587,8 +1587,8 @@ const MCSymbol &FrameEmitterImpl::EmitCIE(const MCDwarfFrameInfo &Frame) {
   uint8_t CIEVersion = getCIEVersion(IsEH, context.getDwarfVersion());
   Streamer.emitInt8(CIEVersion);
 
-  SmallString<8> Augmentation;
   if (IsEH) {
+    SmallString<8> Augmentation;
     Augmentation += "z";
     if (Frame.Personality)
       Augmentation += "P";
@@ -1599,10 +1599,8 @@ const MCSymbol &FrameEmitterImpl::EmitCIE(const MCDwarfFrameInfo &Frame) {
       Augmentation += "S";
     if (Frame.IsBKeyFrame)
       Augmentation += "B";
+    Streamer.emitBytes(Augmentation);
   }
-  if (Frame.Type == MCCFIProcType::PureCap)
-    Augmentation += 'C';
-  Streamer.emitBytes(Augmentation);
   Streamer.emitInt8(0);
 
   if (CIEVersion >= 4) {
@@ -1667,9 +1665,11 @@ const MCSymbol &FrameEmitterImpl::EmitCIE(const MCDwarfFrameInfo &Frame) {
   // Initial Instructions
 
   const MCAsmInfo *MAI = context.getAsmInfo();
-  const std::vector<MCCFIInstruction> &Instructions =
-      MAI->getInitialFrameState(Frame.Type);
-  emitCFIInstructions(Instructions, nullptr);
+  if (!Frame.IsSimple) {
+    const std::vector<MCCFIInstruction> &Instructions =
+        MAI->getInitialFrameState();
+    emitCFIInstructions(Instructions, nullptr);
+  }
 
   InitialCFAOffset = CFAOffset;
 
@@ -1761,27 +1761,27 @@ namespace {
 
 struct CIEKey {
   static const CIEKey getEmptyKey() {
-    return CIEKey(nullptr, 0, -1, false, MCCFIProcType::Normal,
-                  static_cast<unsigned>(INT_MAX), false);
+    return CIEKey(nullptr, 0, -1, false, false, static_cast<unsigned>(INT_MAX),
+                  false);
   }
 
   static const CIEKey getTombstoneKey() {
-    return CIEKey(nullptr, -1, 0, false, MCCFIProcType::Normal,
-                  static_cast<unsigned>(INT_MAX), false);
+    return CIEKey(nullptr, -1, 0, false, false, static_cast<unsigned>(INT_MAX),
+                  false);
   }
 
   CIEKey(const MCSymbol *Personality, unsigned PersonalityEncoding,
-         unsigned LSDAEncoding, bool IsSignalFrame, MCCFIProcType Type,
+         unsigned LSDAEncoding, bool IsSignalFrame, bool IsSimple,
          unsigned RAReg, bool IsBKeyFrame)
       : Personality(Personality), PersonalityEncoding(PersonalityEncoding),
         LsdaEncoding(LSDAEncoding), IsSignalFrame(IsSignalFrame),
-        Type(Type), RAReg(RAReg), IsBKeyFrame(IsBKeyFrame){}
+        IsSimple(IsSimple), RAReg(RAReg), IsBKeyFrame(IsBKeyFrame) {}
 
   explicit CIEKey(const MCDwarfFrameInfo &Frame)
       : Personality(Frame.Personality),
         PersonalityEncoding(Frame.PersonalityEncoding),
         LsdaEncoding(Frame.LsdaEncoding), IsSignalFrame(Frame.IsSignalFrame),
-        Type(Frame.Type), RAReg(Frame.RAReg),
+        IsSimple(Frame.IsSimple), RAReg(Frame.RAReg),
         IsBKeyFrame(Frame.IsBKeyFrame) {}
 
   StringRef PersonalityName() const {
@@ -1792,17 +1792,17 @@ struct CIEKey {
 
   bool operator<(const CIEKey &Other) const {
     return std::make_tuple(PersonalityName(), PersonalityEncoding, LsdaEncoding,
-                           IsSignalFrame, Type, RAReg) <
+                           IsSignalFrame, IsSimple, RAReg) <
            std::make_tuple(Other.PersonalityName(), Other.PersonalityEncoding,
                            Other.LsdaEncoding, Other.IsSignalFrame,
-                           Other.Type, Other.RAReg);
+                           Other.IsSimple, Other.RAReg);
   }
 
   const MCSymbol *Personality;
   unsigned PersonalityEncoding;
   unsigned LsdaEncoding;
   bool IsSignalFrame;
-  MCCFIProcType Type;
+  bool IsSimple;
   unsigned RAReg;
   bool IsBKeyFrame;
 };
@@ -1818,7 +1818,7 @@ template <> struct DenseMapInfo<CIEKey> {
   static unsigned getHashValue(const CIEKey &Key) {
     return static_cast<unsigned>(hash_combine(
         Key.Personality, Key.PersonalityEncoding, Key.LsdaEncoding,
-        Key.IsSignalFrame, Key.Type, Key.RAReg, Key.IsBKeyFrame));
+        Key.IsSignalFrame, Key.IsSimple, Key.RAReg, Key.IsBKeyFrame));
   }
 
   static bool isEqual(const CIEKey &LHS, const CIEKey &RHS) {
@@ -1826,8 +1826,7 @@ template <> struct DenseMapInfo<CIEKey> {
            LHS.PersonalityEncoding == RHS.PersonalityEncoding &&
            LHS.LsdaEncoding == RHS.LsdaEncoding &&
            LHS.IsSignalFrame == RHS.IsSignalFrame &&
-           LHS.Type == RHS.Type &&
-           LHS.RAReg == RHS.RAReg &&
+           LHS.IsSimple == RHS.IsSimple && LHS.RAReg == RHS.RAReg &&
            LHS.IsBKeyFrame == RHS.IsBKeyFrame;
   }
 };

@@ -30,7 +30,7 @@ target triple = "aarch64-none-unknown-elf"
 define i32 @getvals(i8 addrspace(200)* addrspace(200)* nocapture %a) local_unnamed_addr addrspace(200)  {
 ; CHECK-LABEL: getvals:
 ; CHECK:       .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c1, .L__cap_merged_table
 ; CHECK-NEXT:    ldr c1, [c1, :lo12:.L__cap_merged_table]
@@ -86,7 +86,7 @@ define i32 @getvals(i8 addrspace(200)* addrspace(200)* nocapture %a) local_unnam
 ;
 ; MERGE-LABEL: getvals:
 ; MERGE:       .Lfunc_begin0:
-; MERGE-NEXT:    .cfi_startproc purecap
+; MERGE-NEXT:    .cfi_startproc
 ; MERGE-NEXT:  // %bb.0: // %entry
 ; MERGE-NEXT:    adrp c1, .L__cap_merged_table
 ; MERGE-NEXT:    ldr c1, [c1, :lo12:.L__cap_merged_table]
@@ -142,7 +142,7 @@ define i32 @getvals(i8 addrspace(200)* addrspace(200)* nocapture %a) local_unnam
 ;
 ; MERGEOPT-LABEL: getvals:
 ; MERGEOPT:       .Lfunc_begin0:
-; MERGEOPT-NEXT:    .cfi_startproc purecap
+; MERGEOPT-NEXT:    .cfi_startproc
 ; MERGEOPT-NEXT:  // %bb.0: // %entry
 ; MERGEOPT-NEXT:    adrp c1, .L__cap_merged_table+16
 ; MERGEOPT-NEXT:    ldr c1, [c1, :lo12:.L__cap_merged_table+16]
@@ -241,7 +241,7 @@ entry:
 define i32 @bazz() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: bazz:
 ; CHECK:       .Lfunc_begin1:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c0, .L__cap_merged_table+16
 ; CHECK-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+16]
@@ -254,7 +254,7 @@ define i32 @bazz() local_unnamed_addr addrspace(200) {
 ;
 ; MERGE-LABEL: bazz:
 ; MERGE:       .Lfunc_begin1:
-; MERGE-NEXT:    .cfi_startproc purecap
+; MERGE-NEXT:    .cfi_startproc
 ; MERGE-NEXT:  // %bb.0: // %entry
 ; MERGE-NEXT:    adrp c0, .L__cap_merged_table+16
 ; MERGE-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+16]
@@ -267,7 +267,7 @@ define i32 @bazz() local_unnamed_addr addrspace(200) {
 ;
 ; MERGEOPT-LABEL: bazz:
 ; MERGEOPT:       .Lfunc_begin1:
-; MERGEOPT-NEXT:    .cfi_startproc purecap
+; MERGEOPT-NEXT:    .cfi_startproc
 ; MERGEOPT-NEXT:  // %bb.0: // %entry
 ; MERGEOPT-NEXT:    adrp c0, .L__cap_merged_table
 ; MERGEOPT-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table]
@@ -285,7 +285,7 @@ entry:
 define nonnull i32 addrspace(200)* @getx0() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: getx0:
 ; CHECK:       .Lfunc_begin2:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c0, .L__cap_merged_table
 ; CHECK-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table]
@@ -293,7 +293,7 @@ define nonnull i32 addrspace(200)* @getx0() local_unnamed_addr addrspace(200) {
 ;
 ; MERGE-LABEL: getx0:
 ; MERGE:       .Lfunc_begin2:
-; MERGE-NEXT:    .cfi_startproc purecap
+; MERGE-NEXT:    .cfi_startproc
 ; MERGE-NEXT:  // %bb.0: // %entry
 ; MERGE-NEXT:    adrp c0, .L__cap_merged_table
 ; MERGE-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table]
@@ -301,7 +301,7 @@ define nonnull i32 addrspace(200)* @getx0() local_unnamed_addr addrspace(200) {
 ;
 ; MERGEOPT-LABEL: getx0:
 ; MERGEOPT:       .Lfunc_begin2:
-; MERGEOPT-NEXT:    .cfi_startproc purecap
+; MERGEOPT-NEXT:    .cfi_startproc
 ; MERGEOPT-NEXT:  // %bb.0: // %entry
 ; MERGEOPT-NEXT:    adrp c0, .L__cap_merged_table+16
 ; MERGEOPT-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+16]
@@ -313,7 +313,7 @@ entry:
 define nonnull i32 addrspace(200)* @getx1() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: getx1:
 ; CHECK:       .Lfunc_begin3:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c0, .L__cap_merged_table+16
 ; CHECK-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+16]
@@ -321,7 +321,7 @@ define nonnull i32 addrspace(200)* @getx1() local_unnamed_addr addrspace(200) {
 ;
 ; MERGE-LABEL: getx1:
 ; MERGE:       .Lfunc_begin3:
-; MERGE-NEXT:    .cfi_startproc purecap
+; MERGE-NEXT:    .cfi_startproc
 ; MERGE-NEXT:  // %bb.0: // %entry
 ; MERGE-NEXT:    adrp c0, .L__cap_merged_table+16
 ; MERGE-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+16]
@@ -329,7 +329,7 @@ define nonnull i32 addrspace(200)* @getx1() local_unnamed_addr addrspace(200) {
 ;
 ; MERGEOPT-LABEL: getx1:
 ; MERGEOPT:       .Lfunc_begin3:
-; MERGEOPT-NEXT:    .cfi_startproc purecap
+; MERGEOPT-NEXT:    .cfi_startproc
 ; MERGEOPT-NEXT:  // %bb.0: // %entry
 ; MERGEOPT-NEXT:    adrp c0, .L__cap_merged_table+32
 ; MERGEOPT-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+32]
@@ -341,7 +341,7 @@ entry:
 define i32 @foo() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: foo:
 ; CHECK:       .Lfunc_begin4:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c0, .L__cap_merged_table+304
 ; CHECK-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+304]
@@ -354,7 +354,7 @@ define i32 @foo() local_unnamed_addr addrspace(200) {
 ;
 ; MERGE-LABEL: foo:
 ; MERGE:       .Lfunc_begin4:
-; MERGE-NEXT:    .cfi_startproc purecap
+; MERGE-NEXT:    .cfi_startproc
 ; MERGE-NEXT:  // %bb.0: // %entry
 ; MERGE-NEXT:    adrp c0, .L__cap_merged_table+304
 ; MERGE-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+304]
@@ -367,7 +367,7 @@ define i32 @foo() local_unnamed_addr addrspace(200) {
 ;
 ; MERGEOPT-LABEL: foo:
 ; MERGEOPT:       .Lfunc_begin4:
-; MERGEOPT-NEXT:    .cfi_startproc purecap
+; MERGEOPT-NEXT:    .cfi_startproc
 ; MERGEOPT-NEXT:  // %bb.0: // %entry
 ; MERGEOPT-NEXT:    adrp c0, .L__cap_merged_table
 ; MERGEOPT-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table]
@@ -385,7 +385,7 @@ entry:
 define i32 @foo1() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: foo1:
 ; CHECK:       .Lfunc_begin5:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c0, .L__cap_merged_table
 ; CHECK-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table]
@@ -398,7 +398,7 @@ define i32 @foo1() local_unnamed_addr addrspace(200) {
 ;
 ; MERGE-LABEL: foo1:
 ; MERGE:       .Lfunc_begin5:
-; MERGE-NEXT:    .cfi_startproc purecap
+; MERGE-NEXT:    .cfi_startproc
 ; MERGE-NEXT:  // %bb.0: // %entry
 ; MERGE-NEXT:    adrp c0, .L__cap_merged_table
 ; MERGE-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table]
@@ -411,7 +411,7 @@ define i32 @foo1() local_unnamed_addr addrspace(200) {
 ;
 ; MERGEOPT-LABEL: foo1:
 ; MERGEOPT:       .Lfunc_begin5:
-; MERGEOPT-NEXT:    .cfi_startproc purecap
+; MERGEOPT-NEXT:    .cfi_startproc
 ; MERGEOPT-NEXT:  // %bb.0: // %entry
 ; MERGEOPT-NEXT:    adrp c0, .L__cap_merged_table
 ; MERGEOPT-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table]
@@ -429,7 +429,7 @@ entry:
 define i32 @bat() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: bat:
 ; CHECK:       .Lfunc_begin6:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c0, .L__cap_merged_table
 ; CHECK-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table]
@@ -446,7 +446,7 @@ define i32 @bat() local_unnamed_addr addrspace(200) {
 ;
 ; MERGE-LABEL: bat:
 ; MERGE:       .Lfunc_begin6:
-; MERGE-NEXT:    .cfi_startproc purecap
+; MERGE-NEXT:    .cfi_startproc
 ; MERGE-NEXT:  // %bb.0: // %entry
 ; MERGE-NEXT:    adrp c0, .L__cap_merged_table
 ; MERGE-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table]
@@ -463,7 +463,7 @@ define i32 @bat() local_unnamed_addr addrspace(200) {
 ;
 ; MERGEOPT-LABEL: bat:
 ; MERGEOPT:       .Lfunc_begin6:
-; MERGEOPT-NEXT:    .cfi_startproc purecap
+; MERGEOPT-NEXT:    .cfi_startproc
 ; MERGEOPT-NEXT:  // %bb.0: // %entry
 ; MERGEOPT-NEXT:    adrp c0, .L__cap_merged_table
 ; MERGEOPT-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table]
@@ -485,7 +485,7 @@ entry:
 define i32 @bif() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: bif:
 ; CHECK:       .Lfunc_begin7:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c0, .L__cap_merged_table+304
 ; CHECK-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+304]
@@ -502,7 +502,7 @@ define i32 @bif() local_unnamed_addr addrspace(200) {
 ;
 ; MERGE-LABEL: bif:
 ; MERGE:       .Lfunc_begin7:
-; MERGE-NEXT:    .cfi_startproc purecap
+; MERGE-NEXT:    .cfi_startproc
 ; MERGE-NEXT:  // %bb.0: // %entry
 ; MERGE-NEXT:    adrp c0, .L__cap_merged_table+304
 ; MERGE-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+304]
@@ -519,7 +519,7 @@ define i32 @bif() local_unnamed_addr addrspace(200) {
 ;
 ; MERGEOPT-LABEL: bif:
 ; MERGEOPT:       .Lfunc_begin7:
-; MERGEOPT-NEXT:    .cfi_startproc purecap
+; MERGEOPT-NEXT:    .cfi_startproc
 ; MERGEOPT-NEXT:  // %bb.0: // %entry
 ; MERGEOPT-NEXT:    adrp c0, .L__cap_merged_table
 ; MERGEOPT-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table]

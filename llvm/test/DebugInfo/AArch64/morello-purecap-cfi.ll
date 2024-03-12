@@ -37,7 +37,7 @@ entry:
   ret i32 %4
 
 ; CHECK-LABEL: foo:
-; CHECK: .cfi_startproc purecap
+; CHECK: .cfi_startproc
 ; CHECK: .cfi_def_cfa c29, {{[0-9]+}}
 }
 
@@ -46,7 +46,7 @@ entry:
   ret i32 0
 
 ; CHECK-LABEL: bar:
-; CHECK: .cfi_startproc purecap
+; CHECK: .cfi_startproc
 ; CHECK: .cfi_def_cfa c29
 }
 

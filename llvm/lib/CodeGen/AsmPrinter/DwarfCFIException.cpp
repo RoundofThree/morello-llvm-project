@@ -147,9 +147,7 @@ void DwarfCFIException::beginFragment(const MachineBasicBlock *MBB,
     hasEmittedCFISections = true;
   }
 
-  const TargetRegisterInfo *TRI =
-      MBB->getParent()->getSubtarget().getRegisterInfo();
-  Asm->OutStreamer->emitCFIStartProc(TRI->getCFIProcType(*MBB->getParent()));
+  Asm->OutStreamer->emitCFIStartProc(/*IsSimple=*/false);
 
   // Indicate personality routine, if any.
   if (!shouldEmitPersonality)

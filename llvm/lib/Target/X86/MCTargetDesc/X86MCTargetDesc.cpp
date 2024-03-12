@@ -362,13 +362,13 @@ static MCAsmInfo *createX86MCAsmInfo(const MCRegisterInfo &MRI,
   unsigned StackPtr = is64Bit ? X86::RSP : X86::ESP;
   MCCFIInstruction Inst = MCCFIInstruction::cfiDefCfa(
       nullptr, MRI.getDwarfRegNum(StackPtr, true), -stackGrowth);
-  MAI->addInitialFrameState(MCCFIProcType::Normal, Inst);
+  MAI->addInitialFrameState(Inst);
 
   // Add return address to move list
   unsigned InstPtr = is64Bit ? X86::RIP : X86::EIP;
   MCCFIInstruction Inst2 = MCCFIInstruction::createOffset(
       nullptr, MRI.getDwarfRegNum(InstPtr, true), stackGrowth);
-  MAI->addInitialFrameState(MCCFIProcType::Normal, Inst2);
+  MAI->addInitialFrameState(Inst2);
 
   return MAI;
 }

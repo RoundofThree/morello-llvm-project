@@ -490,8 +490,7 @@ protected:
 
   //===--- Prologue State ----------------------------------------------===//
 
-  std::map<MCCFIProcType, std::vector<MCCFIInstruction>> InitialFrameState;
-  std::map<MCCFIProcType, unsigned> InitialRARegister;
+  std::vector<MCCFIInstruction> InitialFrameState;
 
   //===--- Integrated Assembler Information ----------------------------===//
 
@@ -812,29 +811,10 @@ public:
     return DwarfSectionSizeRequired;
   }
 
-  void addInitialFrameState(MCCFIProcType Type, const MCCFIInstruction &Inst);
+  void addInitialFrameState(const MCCFIInstruction &Inst);
 
-  const std::vector<MCCFIInstruction> &
-  getInitialFrameState(MCCFIProcType Type) const {
-    auto I = InitialFrameState.find(Type);
-    if (I != InitialFrameState.end())
-      return I->second;
-
-    static std::vector<MCCFIInstruction> Empty;
-    return Empty;
-  }
-
-  void addInitialRARegister(MCCFIProcType Type,
-                            unsigned ReturnAddressRegister) {
-    InitialRARegister[Type] = ReturnAddressRegister;
-  }
-
-  unsigned getInitialRARegister(MCCFIProcType Type) const {
-    auto I = InitialRARegister.find(Type);
-    if (I != InitialRARegister.end())
-      return I->second;
-
-    return static_cast<unsigned>(INT_MAX);
+  const std::vector<MCCFIInstruction> &getInitialFrameState() const {
+    return InitialFrameState;
   }
 
   void setBinutilsVersion(std::pair<int, int> Value) {

@@ -6,7 +6,7 @@
 define zeroext i16 @trunc_load_zext(i32 addrspace(200)* %p) {
 ; PURECAP-LABEL: trunc_load_zext:
 ; PURECAP:       .Lfunc_begin0:
-; PURECAP-NEXT:    .cfi_startproc purecap
+; PURECAP-NEXT:    .cfi_startproc
 ; PURECAP-NEXT:  // %bb.0:
 ; PURECAP-NEXT:    ldrh w0, [c0]
 ; PURECAP-NEXT:    ret c30
@@ -23,7 +23,7 @@ define zeroext i16 @trunc_load_zext(i32 addrspace(200)* %p) {
 define signext i16 @trunc_load_sext(i32 addrspace(200)* %p) {
 ; PURECAP-LABEL: trunc_load_sext:
 ; PURECAP:       .Lfunc_begin1:
-; PURECAP-NEXT:    .cfi_startproc purecap
+; PURECAP-NEXT:    .cfi_startproc
 ; PURECAP-NEXT:  // %bb.0:
 ; PURECAP-NEXT:    ldrsh w0, [c0]
 ; PURECAP-NEXT:    ret c30
@@ -40,7 +40,7 @@ define signext i16 @trunc_load_sext(i32 addrspace(200)* %p) {
 define zeroext i16 @trunc_load_gep_zext(i32 addrspace(200)* %p) {
 ; PURECAP-LABEL: trunc_load_gep_zext:
 ; PURECAP:       .Lfunc_begin2:
-; PURECAP-NEXT:    .cfi_startproc purecap
+; PURECAP-NEXT:    .cfi_startproc
 ; PURECAP-NEXT:  // %bb.0:
 ; PURECAP-NEXT:    ldrh w0, [c0, #4]
 ; PURECAP-NEXT:    ret c30
@@ -58,7 +58,7 @@ define zeroext i16 @trunc_load_gep_zext(i32 addrspace(200)* %p) {
 define signext i16 @trunc_load_gep_sext(i32 addrspace(200)* %p) {
 ; PURECAP-LABEL: trunc_load_gep_sext:
 ; PURECAP:       .Lfunc_begin3:
-; PURECAP-NEXT:    .cfi_startproc purecap
+; PURECAP-NEXT:    .cfi_startproc
 ; PURECAP-NEXT:  // %bb.0:
 ; PURECAP-NEXT:    ldrsh w0, [c0, #4]
 ; PURECAP-NEXT:    ret c30
@@ -76,7 +76,7 @@ define signext i16 @trunc_load_gep_sext(i32 addrspace(200)* %p) {
 define zeroext i16 @trunc_lshr_load_zext(i32 addrspace(200)* %p) {
 ; PURECAP-LABEL: trunc_lshr_load_zext:
 ; PURECAP:       .Lfunc_begin4:
-; PURECAP-NEXT:    .cfi_startproc purecap
+; PURECAP-NEXT:    .cfi_startproc
 ; PURECAP-NEXT:  // %bb.0:
 ; PURECAP-NEXT:    ldrh w0, [c0, #2]
 ; PURECAP-NEXT:    ret c30
@@ -94,7 +94,7 @@ define zeroext i16 @trunc_lshr_load_zext(i32 addrspace(200)* %p) {
 define signext i16 @trunc_lshr_load_sext(i32 addrspace(200)* %p) {
 ; PURECAP-LABEL: trunc_lshr_load_sext:
 ; PURECAP:       .Lfunc_begin5:
-; PURECAP-NEXT:    .cfi_startproc purecap
+; PURECAP-NEXT:    .cfi_startproc
 ; PURECAP-NEXT:  // %bb.0:
 ; PURECAP-NEXT:    ldrsh w0, [c0, #2]
 ; PURECAP-NEXT:    ret c30

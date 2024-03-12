@@ -6,7 +6,7 @@
 define i32 @test_initial_exec() addrspace(200) {
 ; CHECK-LABEL: test_initial_exec:
 ; CHECK:       .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:    adrp c0, :gottprel:initial_exec_var
 ; CHECK-NEXT:    add c0, c0, :gottprel_lo12:initial_exec_var
@@ -23,7 +23,7 @@ define i32 @test_initial_exec() addrspace(200) {
 define i32 addrspace(200)* @test_initial_exec_addr() addrspace(200) {
 ; CHECK-LABEL: test_initial_exec_addr:
 ; CHECK:       .Lfunc_begin1:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:    adrp c0, :gottprel:initial_exec_var
 ; CHECK-NEXT:    add c0, c0, :gottprel_lo12:initial_exec_var

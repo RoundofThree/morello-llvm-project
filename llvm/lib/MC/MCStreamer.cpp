@@ -487,25 +487,24 @@ void MCStreamer::emitConditionalAssignment(MCSymbol *Symbol,
 
 void MCStreamer::emitCFISections(bool EH, bool Debug) {}
 
-void MCStreamer::emitCFIStartProc(MCCFIProcType Type, SMLoc Loc) {
+void MCStreamer::emitCFIStartProc(bool IsSimple, SMLoc Loc) {
   if (hasUnfinishedDwarfFrameInfo())
     return getContext().reportError(
         Loc, "starting new .cfi frame before finishing the previous one");
 
   MCDwarfFrameInfo Frame;
-  Frame.Type = Type;
+  Frame.IsSimple = IsSimple;
   emitCFIStartProcImpl(Frame);
 
   const MCAsmInfo* MAI = Context.getAsmInfo();
   if (MAI) {
-    for (const MCCFIInstruction& Inst : MAI->getInitialFrameState(Frame.Type)) {
+    for (const MCCFIInstruction& Inst : MAI->getInitialFrameState()) {
       if (Inst.getOperation() == MCCFIInstruction::OpDefCfa ||
           Inst.getOperation() == MCCFIInstruction::OpDefCfaRegister ||
           Inst.getOperation() == MCCFIInstruction::OpLLVMDefAspaceCfa) {
         Frame.CurrentCfaRegister = Inst.getRegister();
       }
     }
-    Frame.RAReg = MAI->getInitialRARegister(Type);
   }
 
   DwarfFrameInfos.push_back(Frame);

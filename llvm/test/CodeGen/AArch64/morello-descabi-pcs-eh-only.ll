@@ -13,7 +13,7 @@ define noundef i32 @_Z3barv() local_unnamed_addr addrspace(200) personality i8 a
 ; CHECK-LABEL: _Z3barv:
 ; CHECK:       .L_Z3barv$eh_alias:
 ; CHECK-NEXT:  .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:    .cfi_personality 0, __gxx_personality_v0
 ; CHECK-NEXT:    .cfi_lsda 0, .Lexception0
 ; CHECK-NEXT:  // %bb.0: // %entry
@@ -69,7 +69,7 @@ eh.resume:
 define internal fastcc void @_ZL3foov() unnamed_addr addrspace(200) {
 ; CHECK-LABEL: _ZL3foov:
 ; CHECK:       .Lfunc_begin1:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    mov c28, c29
 ; CHECK-NEXT:    stp c30, c19, [csp, #-32]! // 32-byte Folded Spill

@@ -28,7 +28,7 @@ define dso_local i32 @_Z8do_catchv() local_unnamed_addr addrspace(200) uwtable p
 ; CHECK-NEXT:    .type .L_Z8do_catchv$local,@function
 ; CHECK-NEXT:  .L_Z8do_catchv$eh_alias:
 ; CHECK-NEXT:  .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:    .cfi_personality 156, DW.ref.__gxx_personality_v0
 ; CHECK-NEXT:    .cfi_lsda 28, .Lexception0
 ; CHECK-NEXT:  // %bb.0: // %entry

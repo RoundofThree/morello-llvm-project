@@ -11,7 +11,7 @@ target triple = "aarch64-none-unknown-elf"
 define i32 @getvals(i8 addrspace(200)* addrspace(200)* nocapture %a) local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: getvals:
 ; CHECK:       .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c1, .L__cap_merged_table+16
 ; CHECK-NEXT:    ldr c1, [c1, :lo12:.L__cap_merged_table+16]
@@ -35,7 +35,7 @@ entry:
 define void @foo(i32 %a) local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: foo:
 ; CHECK:       .Lfunc_begin1:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    stp c30, c21, [csp, #-64]! // 32-byte Folded Spill
 ; CHECK-NEXT:    stp c20, c19, [csp, #32] // 32-byte Folded Spill
@@ -94,7 +94,7 @@ for.end:
 define void @bar(i32 addrspace(200)* %end) local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: bar:
 ; CHECK:       .Lfunc_begin2:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    stp c30, c19, [csp, #-32]! // 32-byte Folded Spill
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
@@ -145,7 +145,7 @@ for.end:
 define i32 addrspace(200)* @baz() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: baz:
 ; CHECK:       .Lfunc_begin3:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:    adrp c0, .L__cap_merged_table+32
 ; CHECK-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+32]
@@ -157,7 +157,7 @@ define i32 addrspace(200)* @baz() local_unnamed_addr addrspace(200) {
 define void @bif() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: bif:
 ; CHECK:       .Lfunc_begin4:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:    adrp c0, .L__cap_merged_table+32
 ; CHECK-NEXT:    ldr c0, [c0, :lo12:.L__cap_merged_table+32]
@@ -171,7 +171,7 @@ define void @bif() local_unnamed_addr addrspace(200) {
 define void @goo() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: goo:
 ; CHECK:       .Lfunc_begin5:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c0, .L__cap_merged_table+32
 ; CHECK-NEXT:    mov w8, #3
@@ -191,7 +191,7 @@ entry:
 define void @bat() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: bat:
 ; CHECK:       .Lfunc_begin6:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c0, .L__cap_merged_table+32
 ; CHECK-NEXT:    mov w8, #3

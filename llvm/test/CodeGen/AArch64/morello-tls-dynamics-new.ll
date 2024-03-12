@@ -12,7 +12,7 @@ target datalayout = "e-m:e-i64:64-i128:128-n32:64-S128-pf200:128:128:128:64-A200
 define i32 @test_generaldynamic() {
 ; PIC-LABEL: test_generaldynamic:
 ; PIC:       .Lfunc_begin0:
-; PIC-NEXT:    .cfi_startproc purecap
+; PIC-NEXT:    .cfi_startproc
 ; PIC-NEXT:  // %bb.0:
 ; PIC-NEXT:    str c30, [csp, #-16]! // 16-byte Folded Spill
 ; PIC-NEXT:    .cfi_def_cfa_offset 16
@@ -30,7 +30,7 @@ define i32 @test_generaldynamic() {
 ;
 ; NOPIC-LABEL: test_generaldynamic:
 ; NOPIC:       .Lfunc_begin0:
-; NOPIC-NEXT:    .cfi_startproc purecap
+; NOPIC-NEXT:    .cfi_startproc
 ; NOPIC-NEXT:  // %bb.0:
 ; NOPIC-NEXT:    adrp c0, :gottprel:general_dynamic_var
 ; NOPIC-NEXT:    add c0, c0, :gottprel_lo12:general_dynamic_var
@@ -47,7 +47,7 @@ define i32 @test_generaldynamic() {
 define i32 addrspace(200)* @test_generaldynamic_addr() {
 ; PIC-LABEL: test_generaldynamic_addr:
 ; PIC:       .Lfunc_begin1:
-; PIC-NEXT:    .cfi_startproc purecap
+; PIC-NEXT:    .cfi_startproc
 ; PIC-NEXT:  // %bb.0:
 ; PIC-NEXT:    str c30, [csp, #-16]! // 16-byte Folded Spill
 ; PIC-NEXT:    .cfi_def_cfa_offset 16
@@ -64,7 +64,7 @@ define i32 addrspace(200)* @test_generaldynamic_addr() {
 ;
 ; NOPIC-LABEL: test_generaldynamic_addr:
 ; NOPIC:       .Lfunc_begin1:
-; NOPIC-NEXT:    .cfi_startproc purecap
+; NOPIC-NEXT:    .cfi_startproc
 ; NOPIC-NEXT:  // %bb.0:
 ; NOPIC-NEXT:    adrp c0, :gottprel:general_dynamic_var
 ; NOPIC-NEXT:    add c0, c0, :gottprel_lo12:general_dynamic_var
@@ -83,7 +83,7 @@ define i32 addrspace(200)* @test_generaldynamic_addr() {
 define i32 @test_localdynamic() {
 ; PIC-LABEL: test_localdynamic:
 ; PIC:       .Lfunc_begin2:
-; PIC-NEXT:    .cfi_startproc purecap
+; PIC-NEXT:    .cfi_startproc
 ; PIC-NEXT:  // %bb.0:
 ; PIC-NEXT:    str c30, [csp, #-16]! // 16-byte Folded Spill
 ; PIC-NEXT:    .cfi_def_cfa_offset 16
@@ -106,7 +106,7 @@ define i32 @test_localdynamic() {
 ;
 ; NOPIC-LABEL: test_localdynamic:
 ; NOPIC:       .Lfunc_begin2:
-; NOPIC-NEXT:    .cfi_startproc purecap
+; NOPIC-NEXT:    .cfi_startproc
 ; NOPIC-NEXT:  // %bb.0:
 ; NOPIC-NEXT:    adrp c0, :gottprel:local_dynamic_var
 ; NOPIC-NEXT:    add c0, c0, :gottprel_lo12:local_dynamic_var
@@ -123,7 +123,7 @@ define i32 @test_localdynamic() {
 define i32 addrspace(200)* @test_localdynamic_addr() {
 ; PIC-LABEL: test_localdynamic_addr:
 ; PIC:       .Lfunc_begin3:
-; PIC-NEXT:    .cfi_startproc purecap
+; PIC-NEXT:    .cfi_startproc
 ; PIC-NEXT:  // %bb.0:
 ; PIC-NEXT:    str c30, [csp, #-16]! // 16-byte Folded Spill
 ; PIC-NEXT:    .cfi_def_cfa_offset 16
@@ -145,7 +145,7 @@ define i32 addrspace(200)* @test_localdynamic_addr() {
 ;
 ; NOPIC-LABEL: test_localdynamic_addr:
 ; NOPIC:       .Lfunc_begin3:
-; NOPIC-NEXT:    .cfi_startproc purecap
+; NOPIC-NEXT:    .cfi_startproc
 ; NOPIC-NEXT:  // %bb.0:
 ; NOPIC-NEXT:    adrp c0, :gottprel:local_dynamic_var
 ; NOPIC-NEXT:    add c0, c0, :gottprel_lo12:local_dynamic_var
@@ -162,7 +162,7 @@ define i32 addrspace(200)* @test_localdynamic_addr() {
 define i32 @test_localdynamic_deduplicate() {
 ; PIC-LABEL: test_localdynamic_deduplicate:
 ; PIC:       .Lfunc_begin4:
-; PIC-NEXT:    .cfi_startproc purecap
+; PIC-NEXT:    .cfi_startproc
 ; PIC-NEXT:  // %bb.0:
 ; PIC-NEXT:    str c30, [csp, #-16]! // 16-byte Folded Spill
 ; PIC-NEXT:    .cfi_def_cfa_offset 16
@@ -192,7 +192,7 @@ define i32 @test_localdynamic_deduplicate() {
 ;
 ; NOPIC-LABEL: test_localdynamic_deduplicate:
 ; NOPIC:       .Lfunc_begin4:
-; NOPIC-NEXT:    .cfi_startproc purecap
+; NOPIC-NEXT:    .cfi_startproc
 ; NOPIC-NEXT:  // %bb.0:
 ; NOPIC-NEXT:    adrp c0, :gottprel:local_dynamic_var
 ; NOPIC-NEXT:    add c0, c0, :gottprel_lo12:local_dynamic_var

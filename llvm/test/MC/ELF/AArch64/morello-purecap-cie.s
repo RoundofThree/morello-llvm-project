@@ -1,14 +1,13 @@
-// RUN: llvm-mc -filetype=obj -triple aarch64-linux-gnu %s -o - \
+// RUN: llvm-mc -filetype=obj -triple aarch64-linux-gnu -target-abi purecap %s -o - \
 // RUN:   | llvm-objdump --dwarf=frames - | FileCheck %s
 
-// Check that directive '.cfi_startproc purecap' has the following effects:
-// * Augmentation string includes character 'C'.
+// Check that directive '.cfi_startproc' for purecap has the following effects:
 // * Return address column is set to CLR (158).
 // * Initial CFA is defined as CSP+0 (reg229+0).
 
 	.cfi_sections .eh_frame, .debug_frame
 
-	.cfi_startproc purecap
+	.cfi_startproc
 purecap_func:
 	ret
 	.cfi_endproc
@@ -18,7 +17,7 @@ purecap_func:
 // CHECK: 00000000 00000014 ffffffff CIE
 // CHECK-NEXT:   Format:                DWARF32
 // CHECK-NEXT:   Version:               4
-// CHECK-NEXT:   Augmentation:          "C"
+// CHECK-NEXT:   Augmentation:          ""
 // CHECK-NEXT:   Address size:          8
 // CHECK-NEXT:   Segment desc size:     0
 // CHECK-NEXT:   Code alignment factor: 1
@@ -33,7 +32,7 @@ purecap_func:
 // CHECK: 00000000 00000014 00000000 CIE
 // CHECK-NEXT:   Format:                DWARF32
 // CHECK-NEXT:   Version:               1
-// CHECK-NEXT:   Augmentation:          "zRC"
+// CHECK-NEXT:   Augmentation:          "zR"
 // CHECK-NEXT:   Code alignment factor: 1
 // CHECK-NEXT:   Data alignment factor: -4
 // CHECK-NEXT:   Return address column: 228

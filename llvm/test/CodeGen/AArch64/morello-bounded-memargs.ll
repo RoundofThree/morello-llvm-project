@@ -7,7 +7,7 @@ target triple = "aarch64-none-unknown-elf"
 define i32 @foo(i32 %x, i32 %y, i32 %z, i32 %u, i32 %v, i32 %w, i32 %t1, i32 %t2, i32 %t3, i32 addrspace(200)* %t4) addrspace(200) {
 ; CHECK-LABEL: foo:
 ; CHECK:       .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    str c30, [csp, #-48]! // 16-byte Folded Spill
 ; CHECK-NEXT:    stp c20, c19, [csp, #16] // 32-byte Folded Spill
@@ -39,7 +39,7 @@ declare i32 @baz(i32 addrspace(200)*) addrspace(200)
 define i32 @baf(i32 %x, i32 %y, i32 %z, i32 %u, i32 %v, i32 %w, i32 %t1, i32 %t2, i32 %t3, i32 addrspace(200)* %t4, ...) addrspace(200) {
 ; CHECK-LABEL: baf:
 ; CHECK:       .Lfunc_begin1:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    sub csp, csp, #80
 ; CHECK-NEXT:    str c30, [csp, #32] // 16-byte Folded Spill
@@ -93,7 +93,7 @@ declare void @llvm.lifetime.end.p200i8(i64 immarg, i8 addrspace(200)* nocapture)
 define i32 @bb([4 x float] %f1.coerce, [4 x float] %f2.coerce, [4 x float] %f3.coerce, ...) addrspace(200) {
 ; CHECK-LABEL: bb:
 ; CHECK:       .Lfunc_begin2:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    add c0, c9, #16
@@ -143,7 +143,7 @@ entry:
 define i32 @biz() local_unnamed_addr addrspace(200) {
 ; CHECK-LABEL: biz:
 ; CHECK:       .Lfunc_begin3:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    sub csp, csp, #112
 ; CHECK-NEXT:    str c30, [csp, #64] // 16-byte Folded Spill
@@ -198,7 +198,7 @@ declare i32 @fiz(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32 addrspace(200)
 define i32 @f(i32 %0, i32 %1, i32 %2, i32 %3, i32 %4, i32 %5, i32 %6, i32 %7, i32 %8, ...) local_unnamed_addr addrspace(200) #0 {
 ; CHECK-LABEL: f:
 ; CHECK:       .Lfunc_begin4:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ldr w8, [c9], #16

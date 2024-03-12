@@ -7,7 +7,7 @@
 define i32 @f() addrspace(200) #0 {
 ; CHECK-LABEL: f:
 ; CHECK:       .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    adrp c0, :got:a
 ; CHECK-NEXT:    ldr c0, [c0, :got_lo12:a]

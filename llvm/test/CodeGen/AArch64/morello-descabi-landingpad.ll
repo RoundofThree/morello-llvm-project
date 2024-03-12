@@ -10,7 +10,7 @@ define noundef i32 @foo() addrspace(200) #0 personality i8 addrspace(200)* bitca
 ; CHECK-LABEL: foo:
 ; CHECK:       .Lfoo$eh_alias:
 ; CHECK-NEXT:  .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:    .cfi_personality 0, __gxx_personality_v0
 ; CHECK-NEXT:    .cfi_lsda 0, .Lexception0
 ; CHECK-NEXT:  // %bb.0: // %entry

@@ -126,8 +126,6 @@ public:
   // Debug information queries.
   Register getFrameRegister(const MachineFunction &MF) const override;
 
-  MCCFIProcType getCFIProcType(const MachineFunction &MF) const override;
-
   unsigned getRegPressureLimit(const TargetRegisterClass *RC,
                                MachineFunction &MF) const override;
 

@@ -1075,13 +1075,6 @@ public:
   /// for values allocated in the current stack frame.
   virtual Register getFrameRegister(const MachineFunction &MF) const = 0;
 
-  /// Return CFI type for the procedure. The type determines which register is
-  /// the return address register and which set of initial CFI instructions is
-  /// used by the function.
-  virtual MCCFIProcType getCFIProcType(const MachineFunction &MF) const {
-    return MCCFIProcType::Normal;
-  }
-
   /// Mark a register and all its aliases as reserved in the given set.
   void markSuperRegs(BitVector &RegisterSet, MCRegister Reg) const;
 

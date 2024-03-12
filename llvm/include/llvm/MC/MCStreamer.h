@@ -1033,7 +1033,7 @@ public:
 
   virtual MCSymbol *getDwarfLineTableSymbol(unsigned CUID);
   virtual void emitCFISections(bool EH, bool Debug);
-  void emitCFIStartProc(MCCFIProcType Type, SMLoc Loc = SMLoc());
+  void emitCFIStartProc(bool IsSimple, SMLoc Loc = SMLoc());
   void emitCFIEndProc();
   virtual void emitCFIDefCfa(int64_t Register, int64_t Offset);
   virtual void emitCFIDefCfaOffset(int64_t Offset);

@@ -1862,16 +1862,8 @@ void MCAsmStreamer::emitCFISections(bool EH, bool Debug) {
 
 void MCAsmStreamer::emitCFIStartProcImpl(MCDwarfFrameInfo &Frame) {
   OS << "\t.cfi_startproc";
-  switch (Frame.Type) {
-  case MCCFIProcType::Normal:
-    break;
-  case MCCFIProcType::Simple:
+  if (Frame.IsSimple)
     OS << " simple";
-    break;
-  case MCCFIProcType::PureCap:
-    OS << " purecap";
-    break;
-  }
   EmitEOL();
 }
 

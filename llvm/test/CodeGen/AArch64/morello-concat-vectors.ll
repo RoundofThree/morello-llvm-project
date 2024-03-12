@@ -9,7 +9,7 @@ target triple = "aarch64-none-unknown-elf"
 define void @foo() local_unnamed_addr addrspace(200) align 2 {
 ; CHECK-LABEL: foo:
 ; CHECK:       .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    sub csp, csp, #16
 ; CHECK-NEXT:    .cfi_def_cfa_offset 16

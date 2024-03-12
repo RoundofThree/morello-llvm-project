@@ -525,13 +525,6 @@ AArch64RegisterInfo::getFrameRegister(const MachineFunction &MF) const {
     return TFI->hasFP(MF) ? AArch64::FP : AArch64::SP;
 }
 
-MCCFIProcType
-AArch64RegisterInfo::getCFIProcType(const MachineFunction &MF) const {
-  if (MF.getSubtarget<AArch64Subtarget>().hasPureCap())
-    return MCCFIProcType::PureCap;
-  return MCCFIProcType::Normal;
-}
-
 bool AArch64RegisterInfo::requiresRegisterScavenging(
     const MachineFunction &MF) const {
   return true;

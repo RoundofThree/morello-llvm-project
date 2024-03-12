@@ -37,7 +37,7 @@ target datalayout = "e-m:e-pf200:128:128:128:64-i8:8:32-i16:16:32-i64:64-i128:12
 define void @use_inline(i32 addrspace(200)* nocapture %arg) local_unnamed_addr addrspace(200) {
 ; ASM-LABEL: use_inline:
 ; ASM:       .Lfunc_begin0:
-; ASM-NEXT:    .cfi_startproc purecap
+; ASM-NEXT:    .cfi_startproc
 ; ASM-NEXT:  // %bb.0:
 ; ASM-NEXT:    mov w8, #2
 ; ASM-NEXT:    str w8, [c0]

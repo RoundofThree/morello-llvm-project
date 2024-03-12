@@ -6,7 +6,7 @@
 define i128 @val_compare_and_swap(i128 addrspace(200)* %p, i128 %oldval, i128 %newval) {
 ; CHECK-LABEL: val_compare_and_swap:
 ; CHECK:       .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB0_1: // =>This Inner Loop Header: Depth=1
 ; CHECK-NEXT:    ldaxp x8, x1, [c0]
@@ -33,7 +33,7 @@ define i128 @val_compare_and_swap(i128 addrspace(200)* %p, i128 %oldval, i128 %n
 define void @fetch_and_nand(i128 addrspace(200) * %p, i128 %bits) {
 ; CHECK-LABEL: fetch_and_nand:
 ; CHECK:       .Lfunc_begin1:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB1_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1
@@ -58,7 +58,7 @@ define void @fetch_and_nand(i128 addrspace(200) * %p, i128 %bits) {
 define void @fetch_and_or(i128 addrspace(200) * %p, i128 %bits) {
 ; CHECK-LABEL: fetch_and_or:
 ; CHECK:       .Lfunc_begin2:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB2_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1
@@ -81,7 +81,7 @@ define void @fetch_and_or(i128 addrspace(200) * %p, i128 %bits) {
 define void @fetch_and_add(i128 addrspace(200) * %p, i128 %bits) {
 ; CHECK-LABEL: fetch_and_add:
 ; CHECK:       .Lfunc_begin3:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB3_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1
@@ -104,7 +104,7 @@ define void @fetch_and_add(i128 addrspace(200) * %p, i128 %bits) {
 define void @fetch_and_sub(i128 addrspace(200) * %p, i128 %bits) {
 ; CHECK-LABEL: fetch_and_sub:
 ; CHECK:       .Lfunc_begin4:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB4_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1
@@ -127,7 +127,7 @@ define void @fetch_and_sub(i128 addrspace(200) * %p, i128 %bits) {
 define void @fetch_and_min(i128 addrspace(200) * %p, i128 %bits) {
 ; CHECK-LABEL: fetch_and_min:
 ; CHECK:       .Lfunc_begin5:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB5_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1
@@ -156,7 +156,7 @@ define void @fetch_and_min(i128 addrspace(200) * %p, i128 %bits) {
 define void @fetch_and_max(i128 addrspace(200) * %p, i128 %bits) {
 ; CHECK-LABEL: fetch_and_max:
 ; CHECK:       .Lfunc_begin6:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB6_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1
@@ -185,7 +185,7 @@ define void @fetch_and_max(i128 addrspace(200) * %p, i128 %bits) {
 define void @fetch_and_umin(i128 addrspace(200) * %p, i128 %bits) {
 ; CHECK-LABEL: fetch_and_umin:
 ; CHECK:       .Lfunc_begin7:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB7_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1
@@ -214,7 +214,7 @@ define void @fetch_and_umin(i128 addrspace(200) * %p, i128 %bits) {
 define void @fetch_and_umax(i128 addrspace(200) * %p, i128 %bits) {
 ; CHECK-LABEL: fetch_and_umax:
 ; CHECK:       .Lfunc_begin8:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB8_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1
@@ -243,7 +243,7 @@ define void @fetch_and_umax(i128 addrspace(200) * %p, i128 %bits) {
 define i128 @atomic_load_seq_cst(i128 addrspace(200) * %p) {
 ; CHECK-LABEL: atomic_load_seq_cst:
 ; CHECK:       .Lfunc_begin9:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:    mov c2, c0
 ; CHECK-NEXT:  .LBB9_1: // %atomicrmw.start
@@ -260,7 +260,7 @@ define i128 @atomic_load_seq_cst(i128 addrspace(200) * %p) {
 define i128 @atomic_load_relaxed(i64, i64, i128 addrspace(200) * %p) {
 ; CHECK-LABEL: atomic_load_relaxed:
 ; CHECK:       .Lfunc_begin10:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB10_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1
@@ -276,7 +276,7 @@ define i128 @atomic_load_relaxed(i64, i64, i128 addrspace(200) * %p) {
 define void @atomic_store_seq_cst(i128 %in, i128 addrspace(200) * %p) {
 ; CHECK-LABEL: atomic_store_seq_cst:
 ; CHECK:       .Lfunc_begin11:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB11_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1
@@ -292,7 +292,7 @@ define void @atomic_store_seq_cst(i128 %in, i128 addrspace(200) * %p) {
 define void @atomic_store_release(i128 %in, i128 addrspace(200) * %p) {
 ; CHECK-LABEL: atomic_store_release:
 ; CHECK:       .Lfunc_begin12:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB12_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1
@@ -308,7 +308,7 @@ define void @atomic_store_release(i128 %in, i128 addrspace(200) * %p) {
 define void @atomic_store_relaxed(i128 %in, i128 addrspace(200) * %p) {
 ; CHECK-LABEL: atomic_store_relaxed:
 ; CHECK:       .Lfunc_begin13:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0:
 ; CHECK-NEXT:  .LBB13_1: // %atomicrmw.start
 ; CHECK-NEXT:    // =>This Inner Loop Header: Depth=1

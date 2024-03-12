@@ -6,7 +6,7 @@
 define dso_local i32 @foo(i64 %a, i64 %b) local_unnamed_addr {
 ; CHECK-LABEL: foo:
 ; CHECK:       .Lfunc_begin0:
-; CHECK-NEXT:    .cfi_startproc purecap
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
 ; CHECK-NEXT:    sub csp, csp, #32
 ; CHECK-NEXT:    str c30, [csp, #16] // 16-byte Folded Spill
