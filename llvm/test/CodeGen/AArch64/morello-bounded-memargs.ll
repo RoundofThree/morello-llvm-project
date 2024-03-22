@@ -230,3 +230,25 @@ define i32 @f(i32 %0, i32 %1, i32 %2, i32 %3, i32 %4, i32 %5, i32 %6, i32 %7, i3
 }
 
 declare void @llvm.va_end.p200i8(i8 addrspace(200)*) addrspace(200)
+
+declare void @tail_callee(i32 %0, i32 %1, i32 %2, i32 %3, i32 %4, i32 %5, i32 %6, i32 %7, i32 %8)
+
+;; Check that we don't try to store directly to the caller's stack in order to
+;; perform a tail call to a compatible function with in-memory arguments.
+;; TODO: Broken
+define void @tail_call(i32 %0, i32 %1, i32 %2, i32 %3, i32 %4, i32 %5, i32 %6, i32 %7, i32 %8) {
+; CHECK-LABEL: tail_call:
+; CHECK:       .Lfunc_begin5:
+; CHECK-NEXT:    .cfi_startproc
+; CHECK-NEXT:  // %bb.0: // %entry
+; CHECK-NEXT:    ldr w8, [c9]
+; CHECK-NEXT:    add w8, w8, #1
+; CHECK-NEXT:    str w8, [csp]
+; CHECK-NEXT:    mov c8, csp
+; CHECK-NEXT:    scbnds c9, c8, #4 // =4
+; CHECK-NEXT:    b tail_callee
+entry:
+  %9 = add nsw i32 %8, 1
+  tail call void @tail_callee(i32 %0, i32 %1, i32 %2, i32 %3, i32 %4, i32 %5, i32 %6, i32 %7, i32 %9)
+  ret void
+}
