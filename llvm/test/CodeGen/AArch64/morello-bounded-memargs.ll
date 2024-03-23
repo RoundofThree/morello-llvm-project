@@ -235,18 +235,24 @@ declare void @tail_callee(i32 %0, i32 %1, i32 %2, i32 %3, i32 %4, i32 %5, i32 %6
 
 ;; Check that we don't try to store directly to the caller's stack in order to
 ;; perform a tail call to a compatible function with in-memory arguments.
-;; TODO: Broken
+;; TODO: We should still be able to optimise this by storing via C9
 define void @tail_call(i32 %0, i32 %1, i32 %2, i32 %3, i32 %4, i32 %5, i32 %6, i32 %7, i32 %8) {
 ; CHECK-LABEL: tail_call:
 ; CHECK:       .Lfunc_begin5:
 ; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  // %bb.0: // %entry
+; CHECK-NEXT:    sub csp, csp, #32
+; CHECK-NEXT:    str c30, [csp, #16] // 16-byte Folded Spill
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
+; CHECK-NEXT:    .cfi_offset c30, -16
 ; CHECK-NEXT:    ldr w8, [c9]
+; CHECK-NEXT:    scbnds c9, csp, #4 // =4
 ; CHECK-NEXT:    add w8, w8, #1
 ; CHECK-NEXT:    str w8, [csp]
-; CHECK-NEXT:    mov c8, csp
-; CHECK-NEXT:    scbnds c9, c8, #4 // =4
-; CHECK-NEXT:    b tail_callee
+; CHECK-NEXT:    bl tail_callee
+; CHECK-NEXT:    ldr c30, [csp, #16] // 16-byte Folded Reload
+; CHECK-NEXT:    add csp, csp, #32
+; CHECK-NEXT:    ret c30
 entry:
   %9 = add nsw i32 %8, 1
   tail call void @tail_callee(i32 %0, i32 %1, i32 %2, i32 %3, i32 %4, i32 %5, i32 %6, i32 %7, i32 %9)

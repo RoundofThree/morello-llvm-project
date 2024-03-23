@@ -6628,7 +6628,10 @@ bool AArch64TargetLowering::isEligibleForTailCallOptimization(
 
   // If the stack arguments for this call do not fit into our own save area then
   // the call cannot be made tail.
-  if (CCInfo.getNextStackOffset() > FuncInfo->getBytesInStackArgArea())
+  // TODO: Support using the caller's stack save area via C9 for bounded memargs.
+  if ((Subtarget->hasMorelloBoundedMemArgsCallee() &&
+       CCInfo.getNextStackOffset() > 0) ||
+      CCInfo.getNextStackOffset() > FuncInfo->getBytesInStackArgArea())
     return false;
 
   if (Subtarget->hasMorelloBoundedMemArgsCaller()) {
