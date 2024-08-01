@@ -349,7 +349,12 @@ public:
   std::vector<std::pair<uint64_t, uint64_t>>
   findPltEntries(uint64_t PltSectionVA, ArrayRef<uint8_t> PltContents,
                  uint64_t GotPltSectionVA,
-                 const Triple &TargetTriple) const override {
+                 const Triple &TargetTriple,
+                 const std::vector<std::string> &Features) const override {
+    const auto ItDisableC64 = std::find(Features.rbegin(), Features.rend(), "-c64");
+    const auto ItEnableC64 = std::find(Features.rbegin(), Features.rend(), "+c64");
+    bool IsC64 = ItEnableC64 < ItDisableC64;
+
     // Do a lightweight parsing of PLT entries.
     std::vector<std::pair<uint64_t, uint64_t>> Result;
     for (uint64_t Byte = 0, End = PltContents.size(); Byte + 7 < End;
@@ -362,18 +367,33 @@ public:
          Insn = support::endian::read32le(PltContents.data() + Byte + Off);
       }
       // Check for adrp.
-      if ((Insn & 0x9f000000) != 0x90000000)
-        continue;
+      if (IsC64) {
+        if ((Insn & 0x9f800000) != 0x90800000)
+          continue;
+      } else {
+        if ((Insn & 0x9f000000) != 0x90000000)
+          continue;
+      }
       Off += 4;
+      uint32_t ImmHiMask = IsC64 ? 0x1ffff : 0x3ffff;
       uint64_t Imm = (((PltSectionVA + Byte) >> 12) << 12) +
-            (((Insn >> 29) & 3) << 12) + (((Insn >> 5) & 0x3ffff) << 14);
+            (((Insn >> 29) & 3) << 12) + (((Insn >> 5) & ImmHiMask) << 14);
       uint32_t Insn2 =
           support::endian::read32le(PltContents.data() + Byte + Off);
-      // Check for: ldr Xt, [Xn, #pimm].
-      if (Insn2 >> 22 == 0x3e5) {
-        Imm += ((Insn2 >> 10) & 0xfff) << 3;
-        Result.push_back(std::make_pair(PltSectionVA + Byte, Imm));
-        Byte += 4;
+      if (IsC64) {
+        // Check for: add Cd, Cn, #pimm.
+        if (Insn2 >> 22 == 0x8) {
+          Imm += (Insn2 >> 10) & 0xfff;
+          Result.push_back(std::make_pair(PltSectionVA + Byte, Imm));
+          Byte += 4;
+        }
+      } else {
+        // Check for: ldr Xt, [Xn, #pimm].
+        if (Insn2 >> 22 == 0x3e5) {
+          Imm += ((Insn2 >> 10) & 0xfff) << 3;
+          Result.push_back(std::make_pair(PltSectionVA + Byte, Imm));
+          Byte += 4;
+        }
       }
     }
     return Result;

@@ -664,7 +664,8 @@ ELFObjectFileBase::getPltAddresses() const {
   }
   auto PltEntries = MIA->findPltEntries(Plt->getAddress(),
                                         arrayRefFromStringRef(*PltContents),
-                                        GotPlt->getAddress(), Triple);
+                                        GotPlt->getAddress(), Triple,
+                                        getFeatures().getFeatures());
   // Build a map from GOT entry virtual address to PLT entry virtual address.
   DenseMap<uint64_t, uint64_t> GotToPlt;
   for (const auto &Entry : PltEntries)

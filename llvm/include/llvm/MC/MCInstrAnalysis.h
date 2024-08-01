@@ -17,6 +17,7 @@
 #include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCInstrDesc.h"
 #include "llvm/MC/MCInstrInfo.h"
+#include "llvm/MC/SubtargetFeature.h"
 #include <cstdint>
 
 namespace llvm {
@@ -170,7 +171,8 @@ public:
   /// Returns (PLT virtual address, GOT virtual address) pairs for PLT entries.
   virtual std::vector<std::pair<uint64_t, uint64_t>>
   findPltEntries(uint64_t PltSectionVA, ArrayRef<uint8_t> PltContents,
-                 uint64_t GotPltSectionVA, const Triple &TargetTriple) const {
+                 uint64_t GotPltSectionVA, const Triple &TargetTriple,
+                 const std::vector<std::string> &Features) const {
     return {};
   }
 };
