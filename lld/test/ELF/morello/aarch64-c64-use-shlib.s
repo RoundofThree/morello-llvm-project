@@ -166,7 +166,8 @@ appdata: .xword 8
 // CHECK-NEXT:         nop
 
 /// Check that the next PLT entry (.plt[3]) points to .got.plt[3] (230710)
-// CHECK-NEXT:         adrp c16, 0x230000
+// CHECK-LABEL: <func@plt>:
+// CHECK-NEXT: 210500: adrp c16, 0x230000
 // CHECK-NEXT:         add  c16, c16, #0x710
 // CHECK-NEXT:         ldr  c17, [c16, #0x0]
 // CHECK-NEXT:         br   c17
@@ -202,7 +203,8 @@ appdata: .xword 8
 // CHECK-PIE-NEXT:           nop
 
 /// Check that the next PLT entry (.plt[3]) points to .got.plt[3] (30710)
-// CHECK-PIE-NEXT:           adrp  c16, 0x30000
+// CHECK-PIE-LABEL: <func@plt>:
+// CHECK-PIE-NEXT:    10500: adrp  c16, 0x30000
 // CHECK-PIE-NEXT:           add  c16, c16, #0x720
 // CHECK-PIE-NEXT:           ldr  c17, [c16, #0x0]
 // CHECK-PIE-NEXT:           br  c17

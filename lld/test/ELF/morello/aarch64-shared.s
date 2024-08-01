@@ -213,11 +213,15 @@ caller:
 // CHECK-NEXT:        nop
 // CHECK-NEXT:        nop
 // CHECK-NEXT:        nop
-// CHECK-NEXT:        adrp  c16, 0x30000
+
+// CHECK-LABEL: <globalfunc@plt>:
+// CHECK-NEXT: 10690: adrp  c16, 0x30000
 // CHECK-NEXT:        add  c16, c16, #0x960
 // CHECK-NEXT:        ldr  c17, [c16, #0x0]
 // CHECK-NEXT:        br   c17
-// CHECK-NEXT:        adrp c16, 0x30000
+
+// CHECK-LABEL: <importfunc@plt>:
+// CHECK-NEXT: 106a0: adrp c16, 0x30000
 // CHECK-NEXT:        add  c16, c16, #0x970
 // CHECK-NEXT:        ldr  c17, [c16, #0x0]
 // CHECK-NEXT:        br   c17

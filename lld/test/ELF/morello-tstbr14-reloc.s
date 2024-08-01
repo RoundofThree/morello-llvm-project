@@ -73,10 +73,12 @@
 #DSO-NEXT:         nop
 #DSO-NEXT:         nop
 #DSO-NEXT:         nop
+#DSO-LABEL: <_foo@plt>:
 #DSO-NEXT:  103c0: adrp c16, 0x30000
 #DSO-NEXT:         add  c16, c16, #0x4c0
 #DSO-NEXT:         ldr  c17, [c16, #0x0]
 #DSO-NEXT:         br   c17
+#DSO-LABEL: <_bar@plt>:
 #DSO-NEXT:  103d0: adrp c16, 0x30000
 #DSO-NEXT:         add  c16, c16, #0x4d0
 #DSO-NEXT:         ldr  c17, [c16, #0x0]

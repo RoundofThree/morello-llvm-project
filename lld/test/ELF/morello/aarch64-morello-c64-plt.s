@@ -63,7 +63,9 @@ hidden:  .xword 3
 // DIS-NEXT:        nop
 // DIS-NEXT:        nop
 // DIS-NEXT:        nop
-// DIS-NEXT:        adrp c16, 0x30000
+
+// DIS-LABEL: <imported@plt>:
+// DIS-NEXT: 10450: adrp c16, 0x30000
 // DIS-NEXT:        add  c16, c16, #1504
 // DIS-NEXT:        ldr  c17, [c16, #0]
 // DIS-NEXT:        br   c17

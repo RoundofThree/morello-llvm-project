@@ -620,6 +620,7 @@ ELFObjectFileBase::getPltAddresses() const {
   if (!T)
     return {};
   uint64_t JumpSlotReloc = 0;
+  unsigned PlatformFlags = getPlatformFlags();
   switch (Triple.getArch()) {
     case Triple::x86:
       JumpSlotReloc = ELF::R_386_JUMP_SLOT;
@@ -629,7 +630,10 @@ ELFObjectFileBase::getPltAddresses() const {
       break;
     case Triple::aarch64:
     case Triple::aarch64_be:
-      JumpSlotReloc = ELF::R_AARCH64_JUMP_SLOT;
+      if (PlatformFlags & ELF::EF_AARCH64_CHERI_PURECAP)
+        JumpSlotReloc = ELF::R_MORELLO_JUMP_SLOT;
+      else
+        JumpSlotReloc = ELF::R_AARCH64_JUMP_SLOT;
       break;
     default:
       return {};

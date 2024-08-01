@@ -20,6 +20,8 @@
 // DISAS-NEXT:         nop
 // DISAS-NEXT:         nop
 // DISAS-NEXT:         nop
+
+// DISAS:      <foo@plt>:
 // DISAS-NEXT: 210320: adrp c16, 0x230000
 // DISAS-NEXT:         add  c16, c16, #1072
 // DISAS-NEXT:         ldr  c17, [c16, #0]
