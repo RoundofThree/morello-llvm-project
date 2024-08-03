@@ -61,7 +61,7 @@ int sub1(int a, __intcap_t b, __intcap_t *c) {
 // CHECK: @llvm.ssub.with.overflow.i64
 // CHECK: extractvalue { i64, i1 } {{.*}}, 1
 // CHECK: extractvalue { i64, i1 } {{.*}}, 0
-// CHECK: call ptr addrspace(200) @llvm.cheri.cap.address.set.i64(ptr addrspace(200) {{.*}}, i64 {{.*}})
+// CHECK: getelementptr i8, ptr addrspace(200) null, i64 {{.*}}
   return __builtin_sub_overflow(a,b, c);
 }
 
