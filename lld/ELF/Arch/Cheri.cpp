@@ -674,16 +674,13 @@ struct Permissions {
 };
 static uint64_t getPermissions(const Symbol &sym, Permissions::Type type) {
   uint64_t permissions = Permissions::rwdata(type);
-  if (sym.isFunc())
+  if (sym.isFunc() || sym.isGnuIFunc())
     permissions = Permissions::func(type);
   else if (auto os = sym.getOutputSection()) {
     assert(!sym.isTls());
     assert((os->flags & SHF_TLS) == 0);
     if (((os->flags & SHF_WRITE) == 0) || isRelroSection(os)) {
-      if (os->flags & SHF_EXECINSTR)
-        permissions = Permissions::func(type);
-      else
-        permissions = Permissions::rodata(type);
+      permissions = Permissions::rodata(type);
     } else if (os->flags & SHF_EXECINSTR) {
       warn("Non-function __cap_reloc against symbol in section with "
            "SHF_EXECINSTR (" +
