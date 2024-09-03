@@ -398,7 +398,7 @@ inline usize MostSignificantSetBitIndex(usize x) {
 }
 #ifdef __CHERI_PURE_CAPABILITY__
 usize MostSignificantSetBitIndex(uptr x) = delete;
-INLINE usize MostSignificantSetBitIndex(u64 x) {
+inline usize MostSignificantSetBitIndex(u64 x) {
   return MostSignificantSetBitIndex((usize)x);
 }
 #endif
@@ -421,7 +421,7 @@ inline usize LeastSignificantSetBitIndex(usize x) {
 }
 #ifdef __CHERI_PURE_CAPABILITY__
 usize LeastSignificantSetBitIndex(uptr x) = delete;
-INLINE usize LeastSignificantSetBitIndex(u64 x) {
+inline usize LeastSignificantSetBitIndex(u64 x) {
   return LeastSignificantSetBitIndex((usize)x);
 }
 #endif
@@ -445,7 +445,7 @@ inline u64 RoundUpToPowerOfTwo(u64 size) {
 }
 #ifdef __CHERI_PURE_CAPABILITY__
 uptr RoundUpToPowerOfTwo(uptr size) = delete;
-INLINE usize RoundUpToPowerOfTwo(usize x) {
+inline usize RoundUpToPowerOfTwo(usize x) {
   return (usize)RoundUpToPowerOfTwo((u64)x);
 }
 #endif
