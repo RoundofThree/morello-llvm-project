@@ -241,7 +241,7 @@ class SizeClassAllocator64 {
     if (kUsingConstantSpaceBeg)
       return RoundDownTo(reinterpret_cast<uptr>(p), kRegionSize);
     uptr space_beg = SpaceBeg();
-    return RoundDownTo(reinterpret_cast<uptr>(p) - space_beg, kRegionSize) +
+    return RoundDownTo(reinterpret_cast<uptr>(p) - (vaddr)space_beg, kRegionSize) +
         space_beg;
   }
 
@@ -252,7 +252,7 @@ class SizeClassAllocator64 {
   usize GetSizeClass(const void *p) {
     if (kUsingConstantSpaceBeg && (kSpaceBeg % kSpaceSize) == 0)
       return ((vaddr)(reinterpret_cast<uptr>(p)) / kRegionSize) % kNumClassesRounded;
-    return ((vaddr)(reinterpret_cast<uptr>(p) - SpaceBeg()) / kRegionSize) %
+    return ((vaddr)(reinterpret_cast<uptr>(p) - (vaddr)SpaceBeg()) / kRegionSize) %
            kNumClassesRounded;
   }
 

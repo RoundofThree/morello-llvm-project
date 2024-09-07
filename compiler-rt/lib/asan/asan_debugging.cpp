@@ -24,16 +24,16 @@
 namespace {
 using namespace __asan;
 
-static void FindInfoForStackVar(uptr addr, const char *frame_descr, uptr offset,
-                                char *name, uptr name_size,
-                                uptr *region_address, uptr *region_size) {
+static void FindInfoForStackVar(uptr addr, const char *frame_descr, vaddr offset,
+                                char *name, usize name_size,
+                                uptr *region_address, usize *region_size) {
   InternalMmapVector<StackVarDescr> vars;
   vars.reserve(16);
   if (!ParseFrameDescription(frame_descr, &vars)) {
     return;
   }
 
-  for (uptr i = 0; i < vars.size(); i++) {
+  for (usize i = 0; i < vars.size(); i++) {
     if (offset <= vars[i].beg + vars[i].size) {
       // We use name_len + 1 because strlcpy will guarantee a \0 at the end, so
       // if we're limiting the copy due to name_len, we add 1 to ensure we copy

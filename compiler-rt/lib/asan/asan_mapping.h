@@ -262,7 +262,7 @@ extern vaddr kHighMemEnd, kMidMemBeg, kMidMemEnd;  // Initialized in __asan_init
 #    include "asan_mapping_sparc64.h"
 #  else
 #    define MEM_TO_SHADOW(mem) \
-      ((ASAN_SHADOW_OFFSET) + ((mem) >> ASAN_SHADOW_SCALE))
+      ((uptr)(ASAN_SHADOW_OFFSET) + ((mem) >> ASAN_SHADOW_SCALE))
 
 #    define kLowMemBeg 0
 #    define kLowMemEnd (ASAN_SHADOW_OFFSET ? ASAN_SHADOW_OFFSET - 1 : 0)

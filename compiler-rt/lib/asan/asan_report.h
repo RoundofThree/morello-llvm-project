@@ -22,9 +22,9 @@ namespace __asan {
 
 struct StackVarDescr {
   uptr beg;
-  uptr size;
+  usize size;
   const char *name_pos;
-  uptr name_len;
+  usize name_len;
   uptr line;
 };
 

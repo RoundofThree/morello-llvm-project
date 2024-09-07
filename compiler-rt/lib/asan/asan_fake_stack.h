@@ -118,7 +118,7 @@ class FakeStack {
   }
 
   // Allocate the fake frame.
-  FakeFrame *Allocate(usize stack_size_log, usize class_id, usize real_stack);
+  FakeFrame *Allocate(usize stack_size_log, usize class_id, uptr real_stack);
 
   // Deallocate the fake frame: read the saved flag address and write 0 there.
   static void Deallocate(usize x, usize class_id) {
@@ -136,8 +136,8 @@ class FakeStack {
   }
 
   // Number of bytes in a fake frame of this size class.
-  static uptr BytesInSizeClass(uptr class_id) {
-    return ((uptr)1) << (class_id + kMinStackFrameSizeLog);
+  static usize BytesInSizeClass(usize class_id) {
+    return ((usize)1) << (class_id + kMinStackFrameSizeLog);
   }
 
   // The fake frame is guaranteed to have a right redzone.

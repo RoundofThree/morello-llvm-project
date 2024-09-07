@@ -387,15 +387,15 @@ DEFINE_REAL(char*, index, const char *string, int c)
     return REAL(strcat)(to, from);
   }
 
-INTERCEPTOR(char*, strncat, char *to, const char *from, uptr size) {
+INTERCEPTOR(char*, strncat, char *to, const char *from, usize size) {
   void *ctx;
   ASAN_INTERCEPTOR_ENTER(ctx, strncat);
   ENSURE_ASAN_INITED();
   if (flags()->replace_str) {
-    uptr from_length = MaybeRealStrnlen(from, size);
-    uptr copy_length = Min(size, from_length + 1);
+    usize from_length = MaybeRealStrnlen(from, size);
+    usize copy_length = Min(size, from_length + 1);
     ASAN_READ_RANGE(ctx, from, copy_length);
-    uptr to_length = internal_strlen(to);
+    usize to_length = internal_strlen(to);
     ASAN_READ_STRING_OF_LEN(ctx, to, to_length, to_length);
     ASAN_WRITE_RANGE(ctx, to + to_length, from_length + 1);
     if (from_length > 0) {

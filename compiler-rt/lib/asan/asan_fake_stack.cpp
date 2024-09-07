@@ -41,14 +41,14 @@ ALWAYS_INLINE void SetShadow(uptr ptr, uptr size, uptr class_id, u64 magic) {
   }
 }
 
-FakeStack *FakeStack::Create(uptr stack_size_log) {
-  static uptr kMinStackSizeLog = 16;
-  static uptr kMaxStackSizeLog = FIRST_32_SECOND_64(24, 28);
+FakeStack *FakeStack::Create(usize stack_size_log) {
+  static usize kMinStackSizeLog = 16;
+  static usize kMaxStackSizeLog = FIRST_32_SECOND_64(24, 28);
   if (stack_size_log < kMinStackSizeLog)
     stack_size_log = kMinStackSizeLog;
   if (stack_size_log > kMaxStackSizeLog)
     stack_size_log = kMaxStackSizeLog;
-  uptr size = RequiredSize(stack_size_log);
+  usize size = RequiredSize(stack_size_log);
   FakeStack *res = reinterpret_cast<FakeStack *>(
       flags()->uar_noreserve ? MmapNoReserveOrDie(size, "FakeStack")
                              : MmapOrDie(size, "FakeStack"));
@@ -85,7 +85,7 @@ void FakeStack::PoisonAll(u8 magic) {
 #if !defined(_MSC_VER) || defined(__clang__)
 ALWAYS_INLINE USED
 #endif
-FakeFrame *FakeStack::Allocate(uptr stack_size_log, uptr class_id,
+FakeFrame *FakeStack::Allocate(usize stack_size_log, usize class_id,
                                uptr real_stack) {
   CHECK_LT(class_id, kNumberOfSizeClasses);
   if (needs_gc_)
@@ -290,7 +290,7 @@ void *__asan_addr_is_in_fake_stack(void *fake_stack, void *addr, void **beg,
 }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-void __asan_alloca_poison(uptr addr, uptr size) {
+void __asan_alloca_poison(vaddr addr, usize size) {
   uptr LeftRedzoneAddr = addr - kAllocaRedzoneSize;
   uptr PartialRzAddr = addr + size;
   uptr RightRzAddr = (PartialRzAddr + kAllocaRedzoneMask) & ~kAllocaRedzoneMask;
@@ -303,7 +303,7 @@ void __asan_alloca_poison(uptr addr, uptr size) {
 }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-void __asan_allocas_unpoison(uptr top, uptr bottom) {
+void __asan_allocas_unpoison(vaddr top, vaddr bottom) {
   if ((!top) || (top > bottom)) return;
   REAL(memset)
   (reinterpret_cast<void *>(MemToShadow(top)), 0,

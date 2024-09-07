@@ -208,14 +208,14 @@ INTERCEPTOR(char *, strcat, char *to, const char *from) {
   return REAL(strcat)(to, from);
 }
 
-INTERCEPTOR(char *, strncat, char *to, const char *from, uptr size) {
+INTERCEPTOR(char *, strncat, char *to, const char *from, usize size) {
   void *ctx;
   MEMPROF_INTERCEPTOR_ENTER(ctx, strncat);
   ENSURE_MEMPROF_INITED();
-  uptr from_length = MaybeRealStrnlen(from, size);
-  uptr copy_length = Min(size, from_length + 1);
+  usize from_length = MaybeRealStrnlen(from, size);
+  usize copy_length = Min(size, from_length + 1);
   MEMPROF_READ_RANGE(from, copy_length);
-  uptr to_length = internal_strlen(to);
+  usize to_length = internal_strlen(to);
   MEMPROF_READ_STRING(to, to_length);
   MEMPROF_WRITE_RANGE(to + to_length, from_length + 1);
   return REAL(strncat)(to, from, size);

@@ -22,6 +22,8 @@
 #include "asan_init_version.h"
 
 using __sanitizer::uptr;
+using __sanitizer::usize;
+using __sanitizer::vaddr;
 using __sanitizer::u64;
 using __sanitizer::u32;
 
