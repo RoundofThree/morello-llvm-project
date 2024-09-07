@@ -39,7 +39,7 @@ class StackTraceTextPrinter {
       return false;
 
     for (SymbolizedStack *cur = frames; cur; cur = cur->next) {
-      uptr prev_len = output_->length();
+      usize prev_len = output_->length();
       RenderFrame(output_, stack_trace_fmt_, frame_num_++, cur->info.address,
                   symbolize_ ? &cur->info : nullptr,
                   common_flags()->symbolize_vs_style,
@@ -71,19 +71,19 @@ class StackTraceTextPrinter {
   const char *stack_trace_fmt_;
   const char frame_delimiter_;
   int dedup_frames_ = common_flags()->dedup_token_length;
-  uptr frame_num_ = 0;
+  usize frame_num_ = 0;
   InternalScopedString *output_;
   InternalScopedString *dedup_token_;
   const bool symbolize_ = false;
 };
 
 static void CopyStringToBuffer(const InternalScopedString &str, char *out_buf,
-                               uptr out_buf_size) {
+                               usize out_buf_size) {
   if (!out_buf_size)
     return;
 
   CHECK_GT(out_buf_size, 0);
-  uptr copy_size = Min(str.length(), out_buf_size - 1);
+  usize copy_size = Min(str.length(), out_buf_size - 1);
   internal_memcpy(out_buf, str.data(), copy_size);
   out_buf[copy_size] = '\0';
 }
@@ -102,7 +102,7 @@ void StackTrace::PrintTo(InternalScopedString *output) const {
     return;
   }
 
-  for (uptr i = 0; i < size && trace[i]; i++) {
+  for (usize i = 0; i < size && trace[i]; i++) {
     // PCs in stack traces are actually the return addresses, that is,
     // addresses of the next instructions after the call.
     uptr pc = GetPreviousInstructionPc(trace[i]);
@@ -117,7 +117,7 @@ void StackTrace::PrintTo(InternalScopedString *output) const {
     output->append("DEDUP_TOKEN: %s\n", dedup_token.data());
 }
 
-uptr StackTrace::PrintTo(char *out_buf, uptr out_buf_size) const {
+usize StackTrace::PrintTo(char *out_buf, usize out_buf_size) const {
   CHECK(out_buf);
 
   InternalScopedString output;
@@ -134,7 +134,7 @@ void StackTrace::Print() const {
 }
 
 void BufferedStackTrace::Unwind(u32 max_depth, uptr pc, uptr bp, void *context,
-                                uptr stack_top, uptr stack_bottom,
+                                vaddr stack_top, vaddr stack_bottom,
                                 bool request_fast_unwind) {
   // Ensures all call sites get what they requested.
   CHECK_EQ(request_fast_unwind, WillUseFastUnwind(request_fast_unwind));
@@ -166,11 +166,11 @@ void BufferedStackTrace::Unwind(u32 max_depth, uptr pc, uptr bp, void *context,
   UnwindFast(pc, bp, stack_top, stack_bottom, max_depth);
 }
 
-static int GetModuleAndOffsetForPc(uptr pc, char *module_name,
+static int GetModuleAndOffsetForPc(vaddr pc, char *module_name,
                                    usize module_name_len, usize *pc_offset) {
   const char *found_module_name = nullptr;
   bool ok = Symbolizer::GetOrInit()->GetModuleNameAndOffsetForPC(
-      (vaddr)(void*)pc, &found_module_name, pc_offset);
+    pc, &found_module_name, pc_offset);
 
   if (!ok) return false;
 
@@ -186,7 +186,7 @@ using namespace __sanitizer;
 
 extern "C" {
 SANITIZER_INTERFACE_ATTRIBUTE
-void __sanitizer_symbolize_pc(uptr pc, const char *fmt, char *out_buf,
+void __sanitizer_symbolize_pc(vaddr pc, const char *fmt, char *out_buf,
                               usize out_buf_size) {
   if (!out_buf_size)
     return;
@@ -203,8 +203,8 @@ void __sanitizer_symbolize_pc(uptr pc, const char *fmt, char *out_buf,
 }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-void __sanitizer_symbolize_global(uptr data_addr, const char *fmt,
-                                  char *out_buf, uptr out_buf_size) {
+void __sanitizer_symbolize_global(vaddr data_addr, const char *fmt,
+                                  char *out_buf, usize out_buf_size) {
   if (!out_buf_size) return;
   out_buf[0] = 0;
   DataInfo DI;
@@ -215,7 +215,7 @@ void __sanitizer_symbolize_global(uptr data_addr, const char *fmt,
   out_buf[out_buf_size - 1] = 0;
 }
 
-int __sanitizer_get_module_and_offset_for_pc(uptr pc, char *module_name,
+int __sanitizer_get_module_and_offset_for_pc(vaddr pc, char *module_name,
                                              usize module_name_len,
                                              usize *pc_offset) {
   return __sanitizer::GetModuleAndOffsetForPc(pc, module_name, module_name_len,

@@ -290,10 +290,10 @@ extern const uptr sa_siginfo;
 
 extern int af_inet;
 extern int af_inet6;
-uptr __sanitizer_in_addr_sz(int af);
+usize __sanitizer_in_addr_sz(int af);
 
 struct __sanitizer_dl_phdr_info {
-  uptr dlpi_addr;
+  vaddr dlpi_addr;
   const char *dlpi_name;
   const void *dlpi_phdr;
   short dlpi_phnum;

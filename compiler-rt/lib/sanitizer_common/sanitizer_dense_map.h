@@ -325,7 +325,7 @@ class DenseMapBase {
       internal_memcpy(reinterpret_cast<void *>(getBuckets()),
                       other.getBuckets(), getNumBuckets() * sizeof(BucketT));
     else
-      for (uptr i = 0; i < getNumBuckets(); ++i) {
+      for (usize i = 0; i < getNumBuckets(); ++i) {
         ::new (&getBuckets()[i].getFirst())
             KeyT(other.getBuckets()[i].getFirst());
         if (!KeyInfoT::isEqual(getBuckets()[i].getFirst(), getEmptyKey()) &&
@@ -517,7 +517,7 @@ class DenseMapBase {
   /// This is just the raw memory used by DenseMap.
   /// If entries are pointers to objects, the size of the referenced objects
   /// are not included.
-  uptr getMemorySize() const {
+  usize getMemorySize() const {
     return RoundUpTo(getNumBuckets() * sizeof(BucketT), GetPageSizeCached());
   }
 };
@@ -678,7 +678,7 @@ class DenseMap : public DenseMapBase<DenseMap<KeyT, ValueT, KeyInfoT, BucketT>,
       return false;
     }
 
-    uptr Size = sizeof(BucketT) * NumBuckets;
+    usize Size = sizeof(BucketT) * NumBuckets;
     if (Size * 2 <= GetPageSizeCached()) {
       // We always allocate at least a page, so use entire space.
       unsigned Log2 = MostSignificantSetBitIndex(GetPageSizeCached() / Size);
@@ -691,11 +691,11 @@ class DenseMap : public DenseMapBase<DenseMap<KeyT, ValueT, KeyInfoT, BucketT>,
     return true;
   }
 
-  static void *allocate_buffer(uptr Size) {
+  static void *allocate_buffer(usize Size) {
     return MmapOrDie(RoundUpTo(Size, GetPageSizeCached()), "DenseMap");
   }
 
-  static void deallocate_buffer(void *Ptr, uptr Size) {
+  static void deallocate_buffer(void *Ptr, usize Size) {
     UnmapOrDie(Ptr, RoundUpTo(Size, GetPageSizeCached()));
   }
 };

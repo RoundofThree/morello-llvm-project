@@ -75,7 +75,7 @@ extern "C" {
 
   SANITIZER_INTERFACE_ATTRIBUTE
   int __sanitizer_get_module_and_offset_for_pc(
-      __sanitizer::uptr pc, char *module_path,
+      __sanitizer::vaddr pc, char *module_path,
       __sanitizer::usize module_path_len, __sanitizer::usize *pc_offset);
 
   SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE
@@ -116,8 +116,8 @@ extern "C" {
   SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE void
   __sanitizer_cov_bool_flag_init();
   SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE void
-  __sanitizer_cov_pcs_init(const __sanitizer::uptr *,
-                           const __sanitizer::uptr *);
+  __sanitizer_cov_pcs_init(const __sanitizer::vaddr *,
+                           const __sanitizer::vaddr *);
 } // extern "C"
 
 #endif  // SANITIZER_INTERFACE_INTERNAL_H

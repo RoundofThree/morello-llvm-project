@@ -214,8 +214,8 @@ void *MapWritableFileToMemory(void *addr, usize size, fd_t fd, OFF_T offset) {
   return (void *)p;
 }
 
-static inline bool IntervalsAreSeparate(uptr start1, uptr end1,
-                                        uptr start2, uptr end2) {
+static inline bool IntervalsAreSeparate(vaddr start1, vaddr end1,
+                                        vaddr start2, vaddr end2) {
   CHECK(start1 <= end1);
   CHECK(start2 <= end2);
   return (end1 < start2) || (end2 < start1);
@@ -225,7 +225,7 @@ static inline bool IntervalsAreSeparate(uptr start1, uptr end1,
 // When the shadow is mapped only a single thread usually exists (plus maybe
 // several worker threads on Mac, which aren't expected to map big chunks of
 // memory).
-bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
+bool MemoryRangeIsAvailable(vaddr range_start, vaddr range_end) {
   MemoryMappingLayout proc_maps(/*cache_enabled*/true);
   if (proc_maps.Error())
     return true; // and hope for the best
@@ -289,9 +289,9 @@ bool GetCodeRangeForFile(const char *module, uptr *start, uptr *end) {
   return false;
 }
 
-uptr SignalContext::GetAddress() const {
+vaddr SignalContext::GetAddress() const {
   auto si = static_cast<const siginfo_t *>(siginfo);
-  return (uptr)si->si_addr;
+  return (vaddr)si->si_addr;
 }
 
 bool SignalContext::IsMemoryAccess() const {

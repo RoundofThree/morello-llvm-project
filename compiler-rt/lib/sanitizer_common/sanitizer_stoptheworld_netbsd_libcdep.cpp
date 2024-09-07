@@ -52,12 +52,12 @@ class SuspendedThreadsListNetBSD final : public SuspendedThreadsList {
  public:
   SuspendedThreadsListNetBSD() { thread_ids_.reserve(1024); }
 
-  tid_t GetThreadID(uptr index) const;
-  uptr ThreadCount() const;
+  tid_t GetThreadID(usize index) const;
+  usize ThreadCount() const;
   bool ContainsTid(tid_t thread_id) const;
   void Append(tid_t tid);
 
-  PtraceRegistersStatus GetRegistersAndSP(uptr index,
+  PtraceRegistersStatus GetRegistersAndSP(usize index,
                                           InternalMmapVector<uptr> *buffer,
                                           uptr *sp) const;
 
@@ -70,7 +70,7 @@ struct TracerThreadArgument {
   void *callback_argument;
   Mutex mutex;
   atomic_uintptr_t done;
-  uptr parent_pid;
+  usize parent_pid;
 };
 
 class ThreadSuspender {
@@ -115,7 +115,7 @@ bool ThreadSuspender::SuspendAllThreads() {
   }
 
   int status;
-  uptr waitpid_status;
+  usize waitpid_status;
   HANDLE_EINTR(waitpid_status, internal_waitpid(pid_, &status, 0));
 
   VReport(2, "Attached to process %d.\n", pid_);
@@ -205,7 +205,7 @@ static int TracerThread(void *argument) {
 
   // Install our handler for synchronous signals. Other signals should be
   // blocked by the mask we inherited from the parent thread.
-  for (uptr i = 0; i < ARRAY_SIZE(kSyncSignals); i++) {
+  for (usize i = 0; i < ARRAY_SIZE(kSyncSignals); i++) {
     __sanitizer_sigaction act;
     internal_memset(&act, 0, sizeof(act));
     act.sigaction = TracerThreadSignalHandler;
@@ -231,7 +231,7 @@ static int TracerThread(void *argument) {
 
 class ScopedStackSpaceWithGuard {
  public:
-  explicit ScopedStackSpaceWithGuard(uptr stack_size) {
+  explicit ScopedStackSpaceWithGuard(usize stack_size) {
     stack_size_ = stack_size;
     guard_size_ = GetPageSizeCached();
     // FIXME: Omitting MAP_STACK here works in current kernels but might break
@@ -248,8 +248,8 @@ class ScopedStackSpaceWithGuard {
   }
 
  private:
-  uptr stack_size_;
-  uptr guard_size_;
+  usize stack_size_;
+  usize guard_size_;
   uptr guard_start_;
 };
 
@@ -257,7 +257,7 @@ static __sanitizer_sigset_t blocked_sigset;
 static __sanitizer_sigset_t old_sigset;
 
 struct ScopedSetTracerPID {
-  explicit ScopedSetTracerPID(uptr tracer_pid) {
+  explicit ScopedSetTracerPID(usize tracer_pid) {
     stoptheworld_tracer_pid = tracer_pid;
     stoptheworld_tracer_ppid = internal_getpid();
   }
@@ -274,17 +274,17 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
   tracer_thread_argument.callback_argument = argument;
   tracer_thread_argument.parent_pid = internal_getpid();
   atomic_store(&tracer_thread_argument.done, 0, memory_order_relaxed);
-  const uptr kTracerStackSize = 2 * 1024 * 1024;
+  const usize kTracerStackSize = 2 * 1024 * 1024;
   ScopedStackSpaceWithGuard tracer_stack(kTracerStackSize);
 
   tracer_thread_argument.mutex.Lock();
 
   internal_sigfillset(&blocked_sigset);
-  for (uptr i = 0; i < ARRAY_SIZE(kSyncSignals); i++)
+  for (usize i = 0; i < ARRAY_SIZE(kSyncSignals); i++)
     internal_sigdelset(&blocked_sigset, kSyncSignals[i]);
   int rv = internal_sigprocmask(SIG_BLOCK, &blocked_sigset, &old_sigset);
   CHECK_EQ(rv, 0);
-  uptr tracer_pid = internal_clone(TracerThread, tracer_stack.Bottom(),
+  usize tracer_pid = internal_clone(TracerThread, tracer_stack.Bottom(),
                                    CLONE_VM | CLONE_FS | CLONE_FILES,
                                    &tracer_thread_argument);
   internal_sigprocmask(SIG_SETMASK, &old_sigset, 0);
@@ -301,7 +301,7 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
       sched_yield();
 
     for (;;) {
-      uptr waitpid_status = internal_waitpid(tracer_pid, nullptr, __WALL);
+      usize waitpid_status = internal_waitpid(tracer_pid, nullptr, __WALL);
       if (!internal_iserror(waitpid_status, &local_errno))
         break;
       if (local_errno == EINTR)
@@ -313,17 +313,17 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
   }
 }
 
-tid_t SuspendedThreadsListNetBSD::GetThreadID(uptr index) const {
+tid_t SuspendedThreadsListNetBSD::GetThreadID(usize index) const {
   CHECK_LT(index, thread_ids_.size());
   return thread_ids_[index];
 }
 
-uptr SuspendedThreadsListNetBSD::ThreadCount() const {
+usize SuspendedThreadsListNetBSD::ThreadCount() const {
   return thread_ids_.size();
 }
 
 bool SuspendedThreadsListNetBSD::ContainsTid(tid_t thread_id) const {
-  for (uptr i = 0; i < thread_ids_.size(); i++) {
+  for (usize i = 0; i < thread_ids_.size(); i++) {
     if (thread_ids_[i] == thread_id)
       return true;
   }
@@ -335,7 +335,7 @@ void SuspendedThreadsListNetBSD::Append(tid_t tid) {
 }
 
 PtraceRegistersStatus SuspendedThreadsListNetBSD::GetRegistersAndSP(
-    uptr index, InternalMmapVector<uptr> *buffer, uptr *sp) const {
+    usize index, InternalMmapVector<uptr> *buffer, uptr *sp) const {
   lwpid_t tid = GetThreadID(index);
   pid_t ppid = internal_getppid();
   struct reg regs;

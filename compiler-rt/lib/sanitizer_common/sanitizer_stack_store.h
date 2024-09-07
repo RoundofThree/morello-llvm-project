@@ -18,9 +18,9 @@
 namespace __sanitizer {
 
 class StackStore {
-  static constexpr uptr kBlockSizeFrames = 0x100000;
-  static constexpr uptr kBlockCount = 0x1000;
-  static constexpr uptr kBlockSizeBytes = kBlockSizeFrames * sizeof(uptr);
+  static constexpr usize kBlockSizeFrames = 0x100000;
+  static constexpr usize kBlockCount = 0x1000;
+  static constexpr usize kBlockSizeBytes = kBlockSizeFrames * sizeof(uptr);
 
  public:
   enum class Compression : u8 {
@@ -36,15 +36,15 @@ class StackStore {
                 "");
 
   Id Store(const StackTrace &trace,
-           uptr *pack /* number of blocks completed by this call */);
+           usize *pack /* number of blocks completed by this call */);
   StackTrace Load(Id id);
-  uptr Allocated() const;
+  usize Allocated() const;
 
   // Packs all blocks which don't expect any more writes. A block is going to be
   // packed once. As soon trace from that block was requested, it will unpack
   // and stay unpacked after that.
   // Returns the number of released bytes.
-  uptr Pack(Compression type);
+  usize Pack(Compression type);
 
   void LockAll();
   void UnlockAll();
@@ -53,36 +53,36 @@ class StackStore {
 
  private:
   friend class StackStoreTest;
-  static constexpr uptr GetBlockIdx(uptr frame_idx) {
+  static constexpr usize GetBlockIdx(usize frame_idx) {
     return frame_idx / kBlockSizeFrames;
   }
 
-  static constexpr uptr GetInBlockIdx(uptr frame_idx) {
+  static constexpr usize GetInBlockIdx(usize frame_idx) {
     return frame_idx % kBlockSizeFrames;
   }
 
-  static constexpr uptr IdToOffset(Id id) {
+  static constexpr usize IdToOffset(Id id) {
     CHECK_NE(id, 0);
     return id - 1;  // Avoid zero as id.
   }
 
-  static constexpr uptr OffsetToId(Id id) {
+  static constexpr usize OffsetToId(Id id) {
     // This makes UINT32_MAX to 0 and it will be retrived as and empty stack.
     // But this is not a problem as we will not be able to store anything after
     // that anyway.
     return id + 1;  // Avoid zero as id.
   }
 
-  uptr *Alloc(uptr count, uptr *idx, uptr *pack);
+  uptr *Alloc(usize count, usize *idx, usize *pack);
 
-  void *Map(uptr size, const char *mem_type);
-  void Unmap(void *addr, uptr size);
+  void *Map(usize size, const char *mem_type);
+  void Unmap(void *addr, usize size);
 
   // Total number of allocated frames.
   atomic_size_t total_frames_ = {};
 
   // Tracks total allocated memory in bytes.
-  atomic_uintptr_t allocated_ = {};
+  atomic_size_t allocated_ = {};
 
   // Each block will hold pointer to exactly kBlockSizeFrames.
   class BlockInfo {
@@ -105,9 +105,9 @@ class StackStore {
     uptr *Get() const;
     uptr *GetOrCreate(StackStore *store);
     uptr *GetOrUnpack(StackStore *store);
-    uptr Pack(Compression type, StackStore *store);
+    usize Pack(Compression type, StackStore *store);
     void TestOnlyUnmap(StackStore *store);
-    bool Stored(uptr n);
+    bool Stored(usize n);
     bool IsPacked() const;
     void Lock() SANITIZER_NO_THREAD_SAFETY_ANALYSIS { mtx_.Lock(); }
     void Unlock() SANITIZER_NO_THREAD_SAFETY_ANALYSIS { mtx_.Unlock(); }

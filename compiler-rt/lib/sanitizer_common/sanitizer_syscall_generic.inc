@@ -28,12 +28,11 @@
 
 #endif
 
-bool internal_iserror(uptr retval, int *rverrno) {
-  if (retval == (uptr)-1) {
+bool internal_iserror(int retval, int *rverrno) {
+  if (retval == -1) {
     if (rverrno)
       *rverrno = errno;
     return true;
-  } else {
-    return false;
   }
+  return false;
 }

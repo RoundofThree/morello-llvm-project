@@ -33,8 +33,8 @@ struct linux_dirent;
 
 struct ProcSelfMapsBuff {
   char *data;
-  uptr mmaped_size;
-  uptr len;
+  usize mmaped_size;
+  usize len;
 };
 
 struct MemoryMappingLayoutData {
@@ -63,7 +63,7 @@ struct ScopedBlockSignals {
 };
 
 #  if SANITIZER_GLIBC
-uptr internal_clock_gettime(__sanitizer_clockid_t clk_id, void *tp);
+int internal_clock_gettime(__sanitizer_clockid_t clk_id, void *tp);
 #endif
 
 // Linux-only syscalls.
@@ -109,8 +109,8 @@ class ThreadLister {
 };
 
 // Exposed for testing.
-uptr ThreadDescriptorSize();
-uptr ThreadSelf();
+usize ThreadDescriptorSize();
+vaddr ThreadSelf();
 
 // Matches a library's file name against a base name (stripping path and version
 // information).

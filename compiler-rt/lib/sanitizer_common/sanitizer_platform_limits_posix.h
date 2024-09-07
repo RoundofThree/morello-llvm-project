@@ -179,14 +179,14 @@ struct __sanitizer_sem_t {
 #elif SANITIZER_ANDROID && !defined(_LP64)
   int data;
 #elif SANITIZER_LINUX
-  uptr data[4];
+  usize data[4];
 #endif
 };
 #endif // SANITIZER_LINUX
 
 #if SANITIZER_ANDROID
 struct __sanitizer_struct_mallinfo {
-  uptr v[10];
+  usize v[10];
 };
 #endif
 
@@ -245,7 +245,7 @@ struct __sanitizer_shmid_ds {
   u32 __pad3;
 #endif
   long shm_ctime;
-  uptr shm_segsz;
+  usize shm_segsz;
   int shm_cpid;
   int shm_lpid;
   unsigned long shm_nattch;
@@ -700,7 +700,7 @@ usize __sanitizer_in_addr_sz(int af);
 
 #if SANITIZER_LINUX
 struct __sanitizer_dl_phdr_info {
-  uptr dlpi_addr;
+  vaddr dlpi_addr;
   const char *dlpi_name;
   const void *dlpi_phdr;
   short dlpi_phnum;

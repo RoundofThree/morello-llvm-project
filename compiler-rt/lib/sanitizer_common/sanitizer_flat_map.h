@@ -23,8 +23,8 @@ namespace __sanitizer {
 
 // Call these callbacks on mmap/munmap.
 struct NoOpMapUnmapCallback {
-  void OnMap(uptr p, uptr size) const {}
-  void OnUnmap(uptr p, uptr size) const {}
+  void OnMap(uptr p, usize size) const {}
+  void OnUnmap(uptr p, usize size) const {}
 };
 
 // Maps integers in rage [0, kSize) to values.
@@ -35,19 +35,19 @@ class FlatMap {
   using AddressSpaceView = AddressSpaceViewTy;
   void Init() { internal_memset(map_, 0, sizeof(map_)); }
 
-  constexpr uptr size() const { return kSize; }
+  constexpr usize size() const { return kSize; }
 
-  bool contains(uptr idx) const {
+  bool contains(usize idx) const {
     CHECK_LT(idx, kSize);
     return true;
   }
 
-  T &operator[](uptr idx) {
+  T &operator[](usize idx) {
     DCHECK_LT(idx, kSize);
     return map_[idx];
   }
 
-  const T &operator[](uptr idx) const {
+  const T &operator[](usize idx) const {
     DCHECK_LT(idx, kSize);
     return map_[idx];
   }
@@ -75,7 +75,7 @@ class TwoLevelMap {
   }
 
   void TestOnlyUnmap() {
-    for (uptr i = 0; i < kSize1; i++) {
+    for (usize i = 0; i < kSize1; i++) {
       T *p = Get(i);
       if (!p)
         continue;
@@ -85,9 +85,9 @@ class TwoLevelMap {
     Init();
   }
 
-  uptr MemoryUsage() const {
-    uptr res = 0;
-    for (uptr i = 0; i < kSize1; i++) {
+  usize MemoryUsage() const {
+    usize res = 0;
+    for (usize i = 0; i < kSize1; i++) {
       T *p = Get(i);
       if (!p)
         continue;
@@ -96,39 +96,39 @@ class TwoLevelMap {
     return res;
   }
 
-  constexpr uptr size() const { return kSize1 * kSize2; }
-  constexpr uptr size1() const { return kSize1; }
-  constexpr uptr size2() const { return kSize2; }
+  constexpr usize size() const { return kSize1 * kSize2; }
+  constexpr usize size1() const { return kSize1; }
+  constexpr usize size2() const { return kSize2; }
 
-  bool contains(uptr idx) const {
+  bool contains(usize idx) const {
     CHECK_LT(idx, kSize1 * kSize2);
     return Get(idx / kSize2);
   }
 
-  const T &operator[](uptr idx) const {
+  const T &operator[](usize idx) const {
     DCHECK_LT(idx, kSize1 * kSize2);
     T *map2 = GetOrCreate(idx / kSize2);
     return *AddressSpaceView::Load(&map2[idx % kSize2]);
   }
 
-  T &operator[](uptr idx) {
+  T &operator[](usize idx) {
     DCHECK_LT(idx, kSize1 * kSize2);
     T *map2 = GetOrCreate(idx / kSize2);
     return *AddressSpaceView::LoadWritable(&map2[idx % kSize2]);
   }
 
  private:
-  constexpr uptr MmapSize() const {
-    return RoundUpTo(kSize2 * sizeof(T), GetPageSizeCached());
+  constexpr usize MmapSize() const {
+    return (usize)RoundUpTo(kSize2 * sizeof(T), GetPageSizeCached());
   }
 
-  T *Get(uptr idx) const {
+  T *Get(usize idx) const {
     DCHECK_LT(idx, kSize1);
     return reinterpret_cast<T *>(
         atomic_load(&map1_[idx], memory_order_acquire));
   }
 
-  T *GetOrCreate(uptr idx) const {
+  T *GetOrCreate(usize idx) const {
     DCHECK_LT(idx, kSize1);
     // This code needs to use memory_order_acquire/consume, but we use
     // memory_order_relaxed for performance reasons (matters for arm64). We
@@ -144,7 +144,7 @@ class TwoLevelMap {
     return Create(idx);
   }
 
-  NOINLINE T *Create(uptr idx) const {
+  NOINLINE T *Create(usize idx) const {
     SpinMutexLock l(&mu_);
     T *res = Get(idx);
     if (!res) {

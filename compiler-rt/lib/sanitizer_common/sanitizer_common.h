@@ -35,16 +35,16 @@ struct SignalContext;
 struct StackTrace;
 
 // Constants.
-const uptr kWordSize = SANITIZER_WORDSIZE / 8;
-const uptr kWordSizeInBits = 8 * kWordSize;
+const usize kWordSize = SANITIZER_WORDSIZE / 8;
+const usize kWordSizeInBits = 8 * kWordSize;
 
-const uptr kCacheLineSize = SANITIZER_CACHE_LINE_SIZE;
+const usize kCacheLineSize = SANITIZER_CACHE_LINE_SIZE;
 
-const uptr kMaxPathLength = 4096;
+const usize kMaxPathLength = 4096;
 
-const uptr kMaxThreadStackSize = 1 << 30;  // 1Gb
+const usize kMaxThreadStackSize = 1 << 30;  // 1Gb
 
-const uptr kErrorMessageBufferSize = 1 << 16;
+const usize kErrorMessageBufferSize = 1 << 16;
 
 // Denotes fake PC values that come from JIT/JAVA/etc.
 // For such PC values __tsan_symbolize_external_ex() will be called.
@@ -98,17 +98,17 @@ void UnmapOrDie(void *addr, usize size);
 // Behaves just like MmapOrDie, but tolerates out of memory condition, in that
 // case returns nullptr.
 void *MmapOrDieOnFatalError(usize size, const char *mem_type);
-bool MmapFixedNoReserve(uptr fixed_addr, usize size, const char *name = nullptr)
+bool MmapFixedNoReserve(vaddr fixed_addr, usize size, const char *name = nullptr)
      WARN_UNUSED_RESULT;
-bool MmapFixedSuperNoReserve(uptr fixed_addr, usize size,
+bool MmapFixedSuperNoReserve(vaddr fixed_addr, usize size,
                              const char *name = nullptr) WARN_UNUSED_RESULT;
 void *MmapNoReserveOrDie(usize size, const char *mem_type);
-void *MmapFixedOrDie(uptr fixed_addr, usize size, const char *name = nullptr);
+void *MmapFixedOrDie(vaddr fixed_addr, usize size, const char *name = nullptr);
 // Behaves just like MmapFixedOrDie, but tolerates out of memory condition, in
 // that case returns nullptr.
-void *MmapFixedOrDieOnFatalError(uptr fixed_addr, usize size,
+void *MmapFixedOrDieOnFatalError(vaddr fixed_addr, usize size,
                                  const char *name = nullptr);
-void *MmapFixedNoAccess(uptr fixed_addr, usize size, const char *name = nullptr);
+void *MmapFixedNoAccess(vaddr fixed_addr, usize size, const char *name = nullptr);
 void *MmapNoAccess(usize size);
 // Map aligned chunk of address space; size and alignment are powers of two.
 // Dies on all but out of memory errors, in the latter case returns nullptr.
@@ -132,8 +132,8 @@ void UnmapFromTo(uptr from, uptr to);
 // have max(2^min_shadow_base_alignment, mmap granularity) on the left, and
 // shadow_size_bytes bytes on the right, which on linux is mapped no access.
 // The high_mem_end may be updated if the original shadow size doesn't fit.
-uptr MapDynamicShadow(uptr shadow_size_bytes, uptr shadow_scale,
-                      uptr min_shadow_base_alignment, uptr &high_mem_end);
+uptr MapDynamicShadow(usize shadow_size_bytes, usize shadow_scale,
+                      usize min_shadow_base_alignment, vaddr &high_mem_end);
 
 // Let S = max(shadow_size, num_aliases * alias_size, ring_buffer_size).
 // Reserves 2*S bytes of address space to the right of the returned address and
@@ -141,19 +141,19 @@ uptr MapDynamicShadow(uptr shadow_size_bytes, uptr shadow_scale,
 // Also creates num_aliases regions of accessible memory starting at offset S
 // from the returned address.  Each region has size alias_size and is backed by
 // the same physical memory.
-uptr MapDynamicShadowAndAliases(uptr shadow_size, uptr alias_size,
-                                uptr num_aliases, uptr ring_buffer_size);
+uptr MapDynamicShadowAndAliases(usize shadow_size, usize alias_size,
+                                usize num_aliases, usize ring_buffer_size);
 
 // Reserve memory range [beg, end]. If madvise_shadow is true then apply
 // madvise (e.g. hugepages, core dumping) requested by options.
-void ReserveShadowMemoryRange(uptr beg, uptr end, const char *name,
+void ReserveShadowMemoryRange(vaddr beg, vaddr end, const char *name,
                               bool madvise_shadow = true);
 
 // Protect size bytes of memory starting at addr. Also try to protect
 // several pages at the start of the address space as specified by
 // zero_base_shadow_start, at most up to the size or zero_base_max_shadow_start.
-void ProtectGap(uptr addr, uptr size, uptr zero_base_shadow_start,
-                uptr zero_base_max_shadow_start);
+void ProtectGap(vaddr addr, usize size, vaddr zero_base_shadow_start,
+                vaddr zero_base_max_shadow_start);
 
 // Find an available address space.
 uptr FindAvailableMemoryRange(usize size, usize alignment, usize left_padding,
@@ -178,8 +178,8 @@ class ReservedAddressRange {
  public:
   uptr Init(usize size, const char *name = nullptr, uptr fixed_addr = 0);
   uptr InitAligned(usize size, usize align, const char *name = nullptr);
-  uptr Map(uptr fixed_addr, usize size, const char *name = nullptr);
-  uptr MapOrDie(uptr fixed_addr, usize size, const char *name = nullptr);
+  uptr Map(vaddr fixed_addr, usize size, const char *name = nullptr);
+  uptr MapOrDie(vaddr fixed_addr, usize size, const char *name = nullptr);
   void Unmap(uptr addr, usize size);
   void *base() const { return base_; }
   usize size() const { return size_; }
@@ -396,11 +396,9 @@ inline usize MostSignificantSetBitIndex(usize x) {
 #endif
   return up;
 }
+// XXXR3: we really should get rid of this
 #ifdef __CHERI_PURE_CAPABILITY__
 usize MostSignificantSetBitIndex(uptr x) = delete;
-inline usize MostSignificantSetBitIndex(u64 x) {
-  return MostSignificantSetBitIndex((usize)x);
-}
 #endif
 
 inline usize LeastSignificantSetBitIndex(usize x) {
@@ -421,20 +419,11 @@ inline usize LeastSignificantSetBitIndex(usize x) {
 }
 #ifdef __CHERI_PURE_CAPABILITY__
 usize LeastSignificantSetBitIndex(uptr x) = delete;
-inline usize LeastSignificantSetBitIndex(u64 x) {
-  return LeastSignificantSetBitIndex((usize)x);
-}
 #endif
 
-inline constexpr bool IsPowerOfTwo(u64 x) { return (x & (x - 1)) == 0; }
-#ifdef __CHERI_PURE_CAPABILITY__
-bool IsPowerOfTwo(uptr x) = delete;
-inline constexpr bool IsPowerOfTwo(usize x) {
-  return IsPowerOfTwo((u64)x);
-}
-#endif
+inline constexpr bool IsPowerOfTwo(usize x) { return (x & (x - 1)) == 0; }
 
-inline u64 RoundUpToPowerOfTwo(u64 size) {
+inline usize RoundUpToPowerOfTwo(usize size) {
   CHECK(size);
   if (IsPowerOfTwo(size)) return size;
 
@@ -445,12 +434,9 @@ inline u64 RoundUpToPowerOfTwo(u64 size) {
 }
 #ifdef __CHERI_PURE_CAPABILITY__
 uptr RoundUpToPowerOfTwo(uptr size) = delete;
-inline usize RoundUpToPowerOfTwo(usize x) {
-  return (usize)RoundUpToPowerOfTwo((u64)x);
-}
 #endif
 
-inline constexpr uptr RoundUpTo(uptr p, uptr boundary) {
+inline constexpr uptr RoundUpTo(uptr p, usize boundary) {
   RAW_CHECK(IsPowerOfTwo(boundary));
 #if __has_builtin(__builtin_align_up)
   return __builtin_align_up(p, boundary);
@@ -497,15 +483,12 @@ inline bool IsAligned(const void *ptr, usize alignment) {
   return IsAligned((uptr)ptr, alignment);
 }
 
-inline u64 Log2(u64 x) {
+inline usize Log2(usize x) {
   CHECK(IsPowerOfTwo(x));
   return LeastSignificantSetBitIndex(x);
 }
 #ifdef __CHERI_PURE_CAPABILITY__
 uptr Log2(uptr x) = delete;
-inline constexpr usize Log2(usize x) {
-  return (usize)Log2((u64)x);
-}
 #endif
 
 // Don't use std::min, std::max or std::swap, to minimize dependency
@@ -765,11 +748,11 @@ template <class Container,
           class Compare = CompareLess<typename Container::value_type>>
 void SortAndDedup(Container &v, Compare comp = {}) {
   Sort(v.data(), v.size(), comp);
-  uptr size = v.size();
+  usize size = v.size();
   if (size < 2)
     return;
-  uptr last = 0;
-  for (uptr i = 1; i < size; ++i) {
+  usize last = 0;
+  for (usize i = 1; i < size; ++i) {
     if (comp(v[last], v[i])) {
       ++last;
       if (last != i)
@@ -781,7 +764,7 @@ void SortAndDedup(Container &v, Compare comp = {}) {
   v.resize(last + 1);
 }
 
-constexpr uptr kDefaultFileMaxSize = FIRST_32_SECOND_64(1 << 26, 1 << 28);
+constexpr usize kDefaultFileMaxSize = FIRST_32_SECOND_64(1 << 26, 1 << 28);
 
 // Opens the file 'file_name" and reads up to 'max_len' bytes.
 // The resulting buffer is mmaped and stored in '*buff'.
@@ -854,7 +837,7 @@ class LoadedModule {
   void set(const char *module_name, vaddr base_address);
   void set(const char *module_name, vaddr base_address, ModuleArch arch,
            u8 uuid[kModuleUUIDSize], bool instrumented);
-  void setUuid(const char *uuid, uptr size);
+  void setUuid(const char *uuid, usize size);
   void clear();
   void addAddressRange(vaddr beg, vaddr end, bool executable, bool writable,
                        const char *name = nullptr);
@@ -865,7 +848,7 @@ class LoadedModule {
   vaddr max_executable_address() const { return max_executable_address_; }
   ModuleArch arch() const { return arch_; }
   const u8 *uuid() const { return uuid_; }
-  uptr uuid_size() const { return uuid_size_; }
+  usize uuid_size() const { return uuid_size_; }
   bool instrumented() const { return instrumented_; }
 
   struct AddressRange {
@@ -894,7 +877,7 @@ class LoadedModule {
   vaddr base_address_;
   vaddr max_executable_address_;
   ModuleArch arch_;
-  uptr uuid_size_;
+  usize uuid_size_;
   u8 uuid_[kModuleUUIDSize];
   bool instrumented_;
   IntrusiveList<AddressRange> ranges_;

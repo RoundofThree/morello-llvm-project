@@ -39,7 +39,7 @@ struct LocalAddressSpaceView {
   //
   // The lifetime of loaded memory is implementation defined.
   template <typename T>
-  static const T *Load(const T *target_address, uptr num_elements = 1) {
+  static const T *Load(const T *target_address, usize num_elements = 1) {
     // The target address space is the local address space so
     // nothing needs to be copied. Just return the pointer.
     return target_address;
@@ -65,7 +65,7 @@ struct LocalAddressSpaceView {
   //
   // The lifetime of loaded memory is implementation defined.
   template <typename T>
-  static T *LoadWritable(T *target_address, uptr num_elements = 1) {
+  static T *LoadWritable(T *target_address, usize num_elements = 1) {
     // The target address space is the local address space so
     // nothing needs to be copied. Just return the pointer.
     return target_address;

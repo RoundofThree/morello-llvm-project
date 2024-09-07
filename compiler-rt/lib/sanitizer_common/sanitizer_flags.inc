@@ -15,7 +15,7 @@
 #endif
 
 // COMMON_FLAG(Type, Name, DefaultValue, Description)
-// Supported types: bool, const char *, int, uptr.
+// Supported types: bool, const char *, int, usize.
 // Default value must be a compile-time constant.
 // Description must be a string literal.
 
@@ -115,7 +115,7 @@ COMMON_FLAG(bool, use_sigaltstack, true,
 COMMON_FLAG(bool, detect_deadlocks, true,
             "If set, deadlock detection is enabled.")
 COMMON_FLAG(
-    uptr, clear_shadow_mmap_threshold, 64 * 1024,
+    usize, clear_shadow_mmap_threshold, 64 * 1024,
     "Large shadow regions are zero-filled using mmap(NORESERVE) instead of "
     "memset(). This is the threshold size in bytes.")
 COMMON_FLAG(const char *, color, "auto",
@@ -125,15 +125,15 @@ COMMON_FLAG(
     "Enables support for dynamic libraries linked with libpthread 2.2.5.")
 COMMON_FLAG(bool, intercept_tls_get_addr, false, "Intercept __tls_get_addr.")
 COMMON_FLAG(bool, help, false, "Print the flag descriptions.")
-COMMON_FLAG(uptr, mmap_limit_mb, 0,
+COMMON_FLAG(usize, mmap_limit_mb, 0,
             "Limit the amount of mmap-ed memory (excluding shadow) in Mb; "
             "not a user-facing flag, used mosly for testing the tools")
-COMMON_FLAG(uptr, hard_rss_limit_mb, 0,
+COMMON_FLAG(usize, hard_rss_limit_mb, 0,
             "Hard RSS limit in Mb."
             " If non-zero, a background thread is spawned at startup"
             " which periodically reads RSS and aborts the process if the"
             " limit is reached")
-COMMON_FLAG(uptr, soft_rss_limit_mb, 0,
+COMMON_FLAG(usize, soft_rss_limit_mb, 0,
             "Soft RSS limit in Mb."
             " If non-zero, a background thread is spawned at startup"
             " which periodically reads RSS. If the limit is reached"
@@ -142,7 +142,7 @@ COMMON_FLAG(uptr, soft_rss_limit_mb, 0,
             " until the RSS goes below the soft limit."
             " This limit does not affect memory allocations other than"
             " malloc/new.")
-COMMON_FLAG(uptr, max_allocation_size_mb, 0,
+COMMON_FLAG(usize, max_allocation_size_mb, 0,
             "If non-zero, malloc/new calls larger than this size will return "
             "nullptr (or crash if allocator_may_return_null=false).")
 COMMON_FLAG(bool, heap_profile, false, "Experimental heap profiler, asan-only")

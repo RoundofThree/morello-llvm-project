@@ -72,7 +72,7 @@ inline typename T::Type atomic_load(
     const volatile T *a, memory_order mo) {
   DCHECK(mo & (memory_order_relaxed | memory_order_consume
       | memory_order_acquire | memory_order_seq_cst));
-  DCHECK(!((uptr)a % sizeof(*a)));
+  DCHECK(!((vaddr)a % sizeof(*a)));
   typename T::Type v;
   // FIXME(dvyukov): 64-bit load is not atomic on 32-bits.
   if (mo == memory_order_relaxed) {
@@ -89,7 +89,7 @@ template<typename T>
 inline void atomic_store(volatile T *a, typename T::Type v, memory_order mo) {
   DCHECK(mo & (memory_order_relaxed | memory_order_release
       | memory_order_seq_cst));
-  DCHECK(!((uptr)a % sizeof(*a)));
+  DCHECK(!((vaddr)a % sizeof(*a)));
   // FIXME(dvyukov): 64-bit store is not atomic on 32-bits.
   if (mo == memory_order_relaxed) {
     a->val_dont_use = v;
@@ -105,7 +105,7 @@ inline void atomic_store(volatile T *a, typename T::Type v, memory_order mo) {
 inline u32 atomic_fetch_add(volatile atomic_uint32_t *a,
     u32 v, memory_order mo) {
   (void)mo;
-  DCHECK(!((uptr)a % sizeof(*a)));
+  DCHECK(!((vaddr)a % sizeof(*a)));
   return (u32)_InterlockedExchangeAdd((volatile long *)&a->val_dont_use,
                                       (long)v);
 }
@@ -113,7 +113,7 @@ inline u32 atomic_fetch_add(volatile atomic_uint32_t *a,
 inline uptr atomic_fetch_add(volatile atomic_uintptr_t *a,
     uptr v, memory_order mo) {
   (void)mo;
-  DCHECK(!((uptr)a % sizeof(*a)));
+  DCHECK(!((vaddr)a % sizeof(*a)));
 #ifdef _WIN64
   return (uptr)_InterlockedExchangeAdd64((volatile long long *)&a->val_dont_use,
                                          (long long)v);
@@ -126,7 +126,7 @@ inline uptr atomic_fetch_add(volatile atomic_uintptr_t *a,
 inline u32 atomic_fetch_sub(volatile atomic_uint32_t *a,
     u32 v, memory_order mo) {
   (void)mo;
-  DCHECK(!((uptr)a % sizeof(*a)));
+  DCHECK(!((vaddr)a % sizeof(*a)));
   return (u32)_InterlockedExchangeAdd((volatile long *)&a->val_dont_use,
                                       -(long)v);
 }
@@ -134,7 +134,7 @@ inline u32 atomic_fetch_sub(volatile atomic_uint32_t *a,
 inline uptr atomic_fetch_sub(volatile atomic_uintptr_t *a,
     uptr v, memory_order mo) {
   (void)mo;
-  DCHECK(!((uptr)a % sizeof(*a)));
+  DCHECK(!((vaddr)a % sizeof(*a)));
 #ifdef _WIN64
   return (uptr)_InterlockedExchangeAdd64((volatile long long *)&a->val_dont_use,
                                          -(long long)v);
@@ -147,21 +147,21 @@ inline uptr atomic_fetch_sub(volatile atomic_uintptr_t *a,
 inline u8 atomic_exchange(volatile atomic_uint8_t *a,
     u8 v, memory_order mo) {
   (void)mo;
-  DCHECK(!((uptr)a % sizeof(*a)));
+  DCHECK(!((vaddr)a % sizeof(*a)));
   return (u8)_InterlockedExchange8((volatile char*)&a->val_dont_use, v);
 }
 
 inline u16 atomic_exchange(volatile atomic_uint16_t *a,
     u16 v, memory_order mo) {
   (void)mo;
-  DCHECK(!((uptr)a % sizeof(*a)));
+  DCHECK(!((vaddr)a % sizeof(*a)));
   return (u16)_InterlockedExchange16((volatile short*)&a->val_dont_use, v);
 }
 
 inline u32 atomic_exchange(volatile atomic_uint32_t *a,
     u32 v, memory_order mo) {
   (void)mo;
-  DCHECK(!((uptr)a % sizeof(*a)));
+  DCHECK(!((vaddr)a % sizeof(*a)));
   return (u32)_InterlockedExchange((volatile long*)&a->val_dont_use, v);
 }
 
@@ -170,7 +170,7 @@ inline bool atomic_compare_exchange_strong(volatile atomic_uint8_t *a,
                                            u8 xchgv,
                                            memory_order mo) {
   (void)mo;
-  DCHECK(!((uptr)a % sizeof(*a)));
+  DCHECK(!((vaddr)a % sizeof(*a)));
   u8 cmpv = *cmp;
 #ifdef _WIN64
   u8 prev = (u8)_InterlockedCompareExchange8(

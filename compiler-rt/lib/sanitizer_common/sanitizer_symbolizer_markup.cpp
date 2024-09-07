@@ -48,8 +48,8 @@ const char *Symbolizer::Demangle(const char *name) {
 // once in UBSan to say "in module ..." in a message that also
 // includes an address in the module, so post-processing can already
 // pretty-print that so as to indicate the module.
-bool Symbolizer::GetModuleNameAndOffsetForPC(uptr pc, const char **module_name,
-                                             uptr *module_address) {
+bool Symbolizer::GetModuleNameAndOffsetForPC(vaddr pc, const char **module_name,
+                                             vaddr *module_address) {
   return false;
 }
 

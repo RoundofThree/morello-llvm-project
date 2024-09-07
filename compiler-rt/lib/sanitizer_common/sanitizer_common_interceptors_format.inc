@@ -469,7 +469,7 @@ static int printf_get_value_size(PrintfDirective *dir) {
         break;                                                     \
       default:                                                     \
         Report("WARNING: unexpected floating-point arg size"       \
-               " in printf interceptor: %zu\n", static_cast<uptr>(size));             \
+               " in printf interceptor: %zu\n", static_cast<usize>(size));             \
         return;                                                    \
       }                                                            \
     } else {                                                       \
@@ -484,7 +484,7 @@ static int printf_get_value_size(PrintfDirective *dir) {
         break;                                                     \
       default:                                                     \
         Report("WARNING: unexpected arg size"                      \
-               " in printf interceptor: %zu\n", static_cast<uptr>(size));             \
+               " in printf interceptor: %zu\n", static_cast<usize>(size));             \
         return;                                                    \
       }                                                            \
     }                                                              \

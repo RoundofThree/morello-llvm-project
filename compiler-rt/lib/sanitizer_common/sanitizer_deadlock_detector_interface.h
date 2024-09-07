@@ -33,12 +33,12 @@ struct DDLogicalThread;
 
 struct DDMutex {
 #if SANITIZER_DEADLOCK_DETECTOR_VERSION == 1
-  uptr id;
+  size_t id;
   u32  stk;  // creation stack
 #elif SANITIZER_DEADLOCK_DETECTOR_VERSION == 2
   u32              id;
   u32              recursion;
-  atomic_uintptr_t owner;
+  atomic_vaddr_t   owner;
 #else
 # error "BAD SANITIZER_DEADLOCK_DETECTOR_VERSION"
 #endif

@@ -33,8 +33,8 @@ namespace {
 
 typedef struct {
   uptr absolute_pc;
-  uptr stack_top;
-  uptr stack_size;
+  vaddr stack_top;
+  usize stack_size;
 } backtrace_frame_t;
 
 extern "C" {
@@ -42,7 +42,7 @@ typedef void *(*acquire_my_map_info_list_func)();
 typedef void (*release_my_map_info_list_func)(void *map);
 typedef sptr (*unwind_backtrace_signal_arch_func)(
     void *siginfo, void *sigcontext, void *map_info_list,
-    backtrace_frame_t *backtrace, uptr ignore_depth, uptr max_depth);
+    backtrace_frame_t *backtrace, usize ignore_depth, usize max_depth);
 acquire_my_map_info_list_func acquire_my_map_info_list;
 release_my_map_info_list_func release_my_map_info_list;
 unwind_backtrace_signal_arch_func unwind_backtrace_signal_arch;
@@ -160,12 +160,12 @@ void BufferedStackTrace::UnwindSlow(uptr pc, void *context, u32 max_depth) {
   CHECK(map);
   InternalMmapVector<backtrace_frame_t> frames(kStackTraceMax);
   // siginfo argument appears to be unused.
-  sptr res = unwind_backtrace_signal_arch(/* siginfo */ 0, context, map,
+  ssize res = unwind_backtrace_signal_arch(/* siginfo */ 0, context, map,
                                           frames.data(),
                                           /* ignore_depth */ 0, max_depth);
   release_my_map_info_list(map);
   if (res < 0) return;
-  CHECK_LE((uptr)res, kStackTraceMax);
+  CHECK_LE((usize)res, kStackTraceMax);
 
   size = 0;
   // +2 compensate for libcorkscrew unwinder returning addresses of call

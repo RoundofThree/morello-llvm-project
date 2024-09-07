@@ -22,7 +22,7 @@ namespace __sanitizer {
 // The actual parameter that comes to __tls_get_addr
 // is a pointer to a struct with two words in it:
 struct TlsGetAddrParam {
-  uptr dso_id;
+  usize dso_id;
   usize offset;
 };
 
@@ -71,9 +71,9 @@ static DTLS::DTVBlock *DTLS_NextBlock(atomic_uintptr_t *cur) {
   return new_dtv;
 }
 
-static DTLS::DTV *DTLS_Find(uptr id) {
+static DTLS::DTV *DTLS_Find(usize id) {
   VReport(2, "__tls_get_addr: DTLS_Find %p %zd\n", (void *)&dtls, id);
-  static constexpr uptr kPerBlock = ARRAY_SIZE(DTLS::DTVBlock::dtvs);
+  static constexpr usize kPerBlock = ARRAY_SIZE(DTLS::DTVBlock::dtvs);
   DTLS::DTVBlock *cur = DTLS_NextBlock(&dtls.dtv_block);
   if (!cur)
     return nullptr;
@@ -112,11 +112,11 @@ DTLS::DTV *DTLS_on_tls_get_addr(void *arg_void, void *res,
                                 uptr static_tls_begin, uptr static_tls_end) {
   if (!common_flags()->intercept_tls_get_addr) return 0;
   TlsGetAddrParam *arg = reinterpret_cast<TlsGetAddrParam *>(arg_void);
-  uptr dso_id = arg->dso_id;
+  usize dso_id = arg->dso_id;
   DTLS::DTV *dtv = DTLS_Find(dso_id);
   if (!dtv || dtv->beg)
     return 0;
-  uptr tls_size = 0;
+  usize tls_size = 0;
   uptr tls_beg = reinterpret_cast<uptr>(res) - arg->offset - kDtvOffset;
   VReport(2,
           "__tls_get_addr: %p {0x%zx,0x%zx} => %p; tls_beg: 0x%zx; sp: %p "

@@ -127,11 +127,11 @@ DECLARE__REAL_AND_INTERNAL64(uptr, fstat, fd_t fd, void *buf) {
   return _REAL64(fstat)(fd, (struct stat *)buf);
 }
 
-uptr internal_filesize(fd_t fd) {
+usize internal_filesize(fd_t fd) {
   struct stat st;
   if (internal_fstat(fd, &st))
     return -1;
-  return (uptr)st.st_size;
+  return (usize)st.st_size;
 }
 
 DECLARE__REAL_AND_INTERNAL(uptr, dup, int oldfd) {
@@ -143,7 +143,7 @@ DECLARE__REAL_AND_INTERNAL(uptr, dup2, int oldfd, int newfd) {
 }
 
 DECLARE__REAL_AND_INTERNAL(uptr, readlink, const char *path, char *buf,
-                           uptr bufsize) {
+                           usize bufsize) {
   return _REAL(readlink)(path, buf, bufsize);
 }
 
@@ -212,7 +212,7 @@ u64 NanoTime() {
   return gethrtime();
 }
 
-uptr internal_clock_gettime(__sanitizer_clockid_t clk_id, void *tp) {
+int internal_clock_gettime(__sanitizer_clockid_t clk_id, void *tp) {
   // FIXME: No internal variant.
   return clock_gettime(clk_id, (timespec *)tp);
 }

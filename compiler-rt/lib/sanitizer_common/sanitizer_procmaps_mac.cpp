@@ -38,11 +38,11 @@ namespace __sanitizer {
 // Contains information used to iterate through sections.
 struct MemoryMappedSegmentData {
   char name[kMaxSegName];
-  uptr nsects;
+  usize nsects;
   const char *current_load_cmd_addr;
   u32 lc_type;
-  uptr base_virt_addr;
-  uptr addr_mask;
+  vaddr base_virt_addr;
+  vaddr addr_mask;
 };
 
 template <typename Section>
@@ -51,8 +51,8 @@ static void NextSectionLoad(LoadedModule *module, MemoryMappedSegmentData *data,
   const Section *sc = (const Section *)data->current_load_cmd_addr;
   data->current_load_cmd_addr += sizeof(Section);
 
-  uptr sec_start = (sc->addr & data->addr_mask) + data->base_virt_addr;
-  uptr sec_end = sec_start + sc->size;
+  vaddr sec_start = (sc->addr & data->addr_mask) + data->base_virt_addr;
+  vaddr sec_end = sec_start + sc->size;
   module->addAddressRange(sec_start, sec_end, /*executable=*/false, isWritable,
                           sc->sectname);
 }
@@ -187,9 +187,9 @@ static bool NextSegmentLoad(MemoryMappedSegment *segment,
   layout_data->current_load_cmd_addr += ((const load_command *)lc)->cmdsize;
   if (((const load_command *)lc)->cmd == kLCSegment) {
     const SegmentCommand* sc = (const SegmentCommand *)lc;
-    uptr base_virt_addr, addr_mask;
+    vaddr base_virt_addr, addr_mask;
     if (layout_data->current_image == kDyldImageIdx) {
-      base_virt_addr = (uptr)get_dyld_hdr();
+      base_virt_addr = (vaddr)get_dyld_hdr();
       // vmaddr is masked with 0xfffff because on macOS versions < 10.12,
       // it contains an absolute address rather than an offset for dyld.
       // To make matters even more complicated, this absolute address
@@ -199,7 +199,7 @@ static bool NextSegmentLoad(MemoryMappedSegment *segment,
       addr_mask = 0xfffff;
     } else {
       base_virt_addr =
-          (uptr)_dyld_get_image_vmaddr_slide(layout_data->current_image);
+          (vaddr)_dyld_get_image_vmaddr_slide(layout_data->current_image);
       addr_mask = ~0;
     }
 

@@ -80,7 +80,7 @@ void ThreadContextBase::SetStarted(tid_t _os_id, ThreadType _thread_type,
   OnStarted(arg);
 }
 
-void ThreadContextBase::SetCreated(uptr _user_id, u64 _unique_id,
+void ThreadContextBase::SetCreated(usize _user_id, u64 _unique_id,
                                    bool _detached, u32 _parent_tid, void *arg) {
   status = ThreadStatusCreated;
   user_id = _user_id;
@@ -119,8 +119,8 @@ ThreadRegistry::ThreadRegistry(ThreadContextFactory factory, u32 max_threads,
   invalid_threads_.clear();
 }
 
-void ThreadRegistry::GetNumberOfThreads(uptr *total, uptr *running,
-                                        uptr *alive) {
+void ThreadRegistry::GetNumberOfThreads(usize *total, usize *running,
+                                        usize *alive) {
   ThreadRegistryLock l(this);
   if (total)
     *total = threads_.size();
@@ -128,12 +128,12 @@ void ThreadRegistry::GetNumberOfThreads(uptr *total, uptr *running,
   if (alive) *alive = alive_threads_;
 }
 
-uptr ThreadRegistry::GetMaxAliveThreads() {
+usize ThreadRegistry::GetMaxAliveThreads() {
   ThreadRegistryLock l(this);
   return max_alive_threads_;
 }
 
-u32 ThreadRegistry::CreateThread(uptr user_id, bool detached, u32 parent_tid,
+u32 ThreadRegistry::CreateThread(usize user_id, bool detached, u32 parent_tid,
                                  void *arg) {
   ThreadRegistryLock l(this);
   u32 tid = kInvalidTid;
@@ -209,7 +209,7 @@ ThreadRegistry::FindThreadContextLocked(FindThreadCallback cb, void *arg) {
 
 static bool FindThreadContextByOsIdCallback(ThreadContextBase *tctx,
                                             void *arg) {
-  return (tctx->os_id == (uptr)arg && tctx->status != ThreadStatusInvalid &&
+  return (tctx->os_id == (usize)(uptr)arg && tctx->status != ThreadStatusInvalid &&
       tctx->status != ThreadStatusDead);
 }
 
@@ -227,7 +227,7 @@ void ThreadRegistry::SetThreadName(u32 tid, const char *name) {
   tctx->SetName(name);
 }
 
-void ThreadRegistry::SetThreadNameByUserId(uptr user_id, const char *name) {
+void ThreadRegistry::SetThreadNameByUserId(usize user_id, const char *name) {
   ThreadRegistryLock l(this);
   if (const auto *tid = live_.find(user_id))
     threads_[tid->second]->SetName(name);
@@ -341,7 +341,7 @@ ThreadContextBase *ThreadRegistry::QuarantinePop() {
   return tctx;
 }
 
-u32 ThreadRegistry::ConsumeThreadUserId(uptr user_id) {
+u32 ThreadRegistry::ConsumeThreadUserId(usize user_id) {
   ThreadRegistryLock l(this);
   u32 tid;
   auto *t = live_.find(user_id);
@@ -354,7 +354,7 @@ u32 ThreadRegistry::ConsumeThreadUserId(uptr user_id) {
   return tid;
 }
 
-void ThreadRegistry::SetThreadUserId(u32 tid, uptr user_id) {
+void ThreadRegistry::SetThreadUserId(u32 tid, usize user_id) {
   ThreadRegistryLock l(this);
   ThreadContextBase *tctx = threads_[tid];
   CHECK_NE(tctx, 0);

@@ -196,21 +196,19 @@ ScopedBlockSignals::~ScopedBlockSignals() { SetSigProcMask(&saved_, nullptr); }
 #if !SANITIZER_S390
 uptr internal_mmap(void *addr, usize length, int prot, int flags, int fd,
                    u64 offset) {
-#ifdef __CHERI_PURE_CAPABILITY__
-  return (uptr)mmap(addr, length, prot, flags, fd, offset);
-#elif SANITIZER_FREEBSD || SANITIZER_LINUX_USES_64BIT_SYSCALLS
+#if SANITIZER_FREEBSD || SANITIZER_LINUX_USES_64BIT_SYSCALLS
   return internal_syscall(SYSCALL(mmap), (uptr)addr, length, prot, flags, fd,
                           offset);
 #else
   // mmap2 specifies file offset in 4096-byte units.
   CHECK(IsAligned(offset, 4096));
-  return internal_syscall(SYSCALL(mmap2), addr, length, prot, flags, fd,
+  return internal_syscall(SYSCALL(mmap2), (uptr)addr, length, prot, flags, fd,
                           offset / 4096);
 #endif
 }
 #endif // !SANITIZER_S390
 
-uptr internal_munmap(void *addr, usize length) {
+int internal_munmap(void *addr, usize length) {
   return internal_syscall(SYSCALL(munmap), (uptr)addr, length);
 }
 
@@ -222,11 +220,11 @@ uptr internal_mremap(void *old_address, usize old_size, usize new_size, int flag
 }
 #endif
 
-int internal_mprotect(void *addr, uptr length, int prot) {
+int internal_mprotect(void *addr, usize length, int prot) {
   return internal_syscall(SYSCALL(mprotect), (uptr)addr, length, prot);
 }
 
-int internal_madvise(uptr addr, uptr length, int advice) {
+int internal_madvise(uptr addr, usize length, int advice) {
   return internal_syscall(SYSCALL(madvise), addr, length, advice);
 }
 
@@ -413,7 +411,7 @@ usize internal_filesize(fd_t fd) {
   struct stat st;
   if (internal_fstat(fd, &st))
     return -1;
-  return (uptr)st.st_size;
+  return (usize)st.st_size;
 }
 
 usize internal_dup(int oldfd) {
@@ -437,7 +435,7 @@ usize internal_readlink(const char *path, char *buf, usize bufsize) {
 #endif
 }
 
-uptr internal_unlink(const char *path) {
+usize internal_unlink(const char *path) {
 #if SANITIZER_USES_CANONICAL_LINUX_SYSCALLS
   return internal_syscall(SYSCALL(unlinkat), AT_FDCWD, (uptr)path, 0);
 #else
@@ -534,7 +532,7 @@ u64 NanoTime() {
   return (u64)tv.tv_sec * 1000 * 1000 * 1000 + tv.tv_usec * 1000;
 }
 // Used by real_clock_gettime.
-uptr internal_clock_gettime(__sanitizer_clockid_t clk_id, void *tp) {
+int internal_clock_gettime(__sanitizer_clockid_t clk_id, void *tp) {
   return internal_syscall(SYSCALL(clock_gettime), clk_id, tp);
 }
 #elif !SANITIZER_SOLARIS && !SANITIZER_NETBSD
@@ -840,7 +838,7 @@ int internal_sigaction_norestorer(int signum, const void *act, void *oldact) {
 #endif
   }
 
-  usize result = internal_syscall(SYSCALL(rt_sigaction), (uptr)signum,
+  usize result = internal_syscall(SYSCALL(rt_sigaction), signum,
       (uptr)(u_act ? &k_act : nullptr),
       (uptr)(u_oldact ? &k_oldact : nullptr),
       (uptr)sizeof(__sanitizer_kernel_sigset_t));
@@ -2271,7 +2269,7 @@ void CheckNoDeepBind(const char *filename, int flag) {
 #endif
 }
 
-uptr FindAvailableMemoryRange(usize size, usize alignment, usize left_padding,
+int FindAvailableMemoryRange(usize size, usize alignment, usize left_padding,
                               usize *largest_gap_found,
                               vaddr *max_occupied_addr) {
   UNREACHABLE("FindAvailableMemoryRange is not available");
@@ -2305,10 +2303,10 @@ bool GetRandom(void *buffer, usize length, bool blocking) {
 #endif // SANITIZER_USE_GETRANDOM
   // Up to 256 bytes, a read off /dev/urandom will not be interrupted.
   // blocking is moot here, O_NONBLOCK has no effect when opening /dev/urandom.
-  uptr fd = internal_open("/dev/urandom", O_RDONLY);
+  int fd = internal_open("/dev/urandom", O_RDONLY);
   if (internal_iserror(fd))
     return false;
-  uptr res = internal_read(fd, buffer, length);
+  int res = internal_read(fd, buffer, length);
   if (internal_iserror(res))
     return false;
   internal_close(fd);

@@ -101,7 +101,7 @@ class AtosSymbolizerProcess final : public SymbolizerProcess {
 
 static bool ParseCommandOutput(const char *str, uptr addr, char **out_name,
                                char **out_module, char **out_file, usize *line,
-                               uptr *start_address) {
+                               vaddr *start_address) {
   // Trim ending newlines.
   char *trim;
   ExtractTokenUpToDelimiter(str, "\n", &trim);
@@ -160,7 +160,7 @@ bool AtosSymbolizer::SymbolizePC(uptr addr, SymbolizedStack *stack) {
   const char *buf = process_->SendCommand(command);
   if (!buf) return false;
   usize line;
-  uptr start_address = AddressInfo::kUnknown;
+  vaddr start_address = AddressInfo::kUnknown;
   if (!ParseCommandOutput(buf, addr, &stack->info.function, &stack->info.module,
                           &stack->info.file, &line, &start_address)) {
     process_ = nullptr;
@@ -174,7 +174,7 @@ bool AtosSymbolizer::SymbolizePC(uptr addr, SymbolizedStack *stack) {
     Dl_info info;
     int result = dladdr((const void *)addr, &info);
     if (result)
-      start_address = reinterpret_cast<uptr>(info.dli_saddr);
+      start_address = reinterpret_cast<vaddr>(info.dli_saddr);
   }
 
   // Only assign to `function_offset` if we were able to get the function's

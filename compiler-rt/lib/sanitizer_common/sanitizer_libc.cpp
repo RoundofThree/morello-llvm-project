@@ -272,13 +272,13 @@ s64 internal_simple_strtoll(const char *nptr, const char **endptr, int base) {
 }
 
 usize internal_wcslen(const wchar_t *s) {
-  uptr i = 0;
+  usize i = 0;
   while (s[i]) i++;
   return i;
 }
 
 usize internal_wcsnlen(const wchar_t *s, usize maxlen) {
-  uptr i = 0;
+  usize i = 0;
   while (i < maxlen && s[i]) i++;
   return i;
 }
@@ -288,7 +288,7 @@ bool mem_is_zero(const char *beg, usize size) {
   const char *end = beg + size;
   uptr *aligned_beg = (uptr *)RoundUpTo((uptr)beg, sizeof(uptr));
   uptr *aligned_end = (uptr *)RoundDownTo((uptr)end, sizeof(uptr));
-  uptr all = 0;
+  usize all = 0;
   // Prologue.
   for (const char *mem = beg; mem < (char*)aligned_beg && mem < end; mem++)
     all |= *mem;

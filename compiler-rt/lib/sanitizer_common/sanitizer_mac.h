@@ -60,7 +60,7 @@ DarwinKernelVersion GetDarwinKernelVersion();
 
 char **GetEnviron();
 
-void RestrictMemoryToMaxAddress(uptr max_address);
+void RestrictMemoryToMaxAddress(vaddr max_address);
 
 }  // namespace __sanitizer
 

@@ -89,12 +89,12 @@ class SuspendedThreadsListLinux final : public SuspendedThreadsList {
  public:
   SuspendedThreadsListLinux() { thread_ids_.reserve(1024); }
 
-  tid_t GetThreadID(uptr index) const override;
-  uptr ThreadCount() const override;
+  tid_t GetThreadID(usize index) const override;
+  usize ThreadCount() const override;
   bool ContainsTid(tid_t thread_id) const;
   void Append(tid_t tid);
 
-  PtraceRegistersStatus GetRegistersAndSP(uptr index,
+  PtraceRegistersStatus GetRegistersAndSP(usize index,
                                           InternalMmapVector<uptr> *buffer,
                                           uptr *sp) const override;
 
@@ -110,8 +110,8 @@ struct TracerThreadArgument {
   // preparations.
   Mutex mutex;
   // Tracer thread signals its completion by setting done.
-  atomic_uintptr_t done;
-  uptr parent_pid;
+  atomic_size_t done;
+  usize parent_pid;
 };
 
 // This class handles thread suspending/unsuspending in the tracer thread.
@@ -145,11 +145,11 @@ bool ThreadSuspender::SuspendThread(tid_t tid) {
                        &pterrno)) {
     // Either the thread is dead, or something prevented us from attaching.
     // Log this event and move on.
-    VReport(1, "Could not attach to thread %zu (errno %d).\n", (uptr)tid,
+    VReport(1, "Could not attach to thread %zu (errno %d).\n", (usize)tid,
             pterrno);
     return false;
   } else {
-    VReport(2, "Attached to thread %zu.\n", (uptr)tid);
+    VReport(2, "Attached to thread %zu.\n", (usize)tid);
     // The thread is not guaranteed to stop before ptrace returns, so we must
     // wait on it. Note: if the thread receives a signal concurrently,
     // we can get notification about the signal before notification about stop.
@@ -161,14 +161,14 @@ bool ThreadSuspender::SuspendThread(tid_t tid) {
     // as invisible as possible.
     for (;;) {
       int status;
-      uptr waitpid_status;
+      usize waitpid_status;
       HANDLE_EINTR(waitpid_status, internal_waitpid(tid, &status, __WALL));
       int wperrno;
       if (internal_iserror(waitpid_status, &wperrno)) {
         // Got a ECHILD error. I don't think this situation is possible, but it
         // doesn't hurt to report it.
         VReport(1, "Waiting on thread %zu failed, detaching (errno %d).\n",
-                (uptr)tid, wperrno);
+                (usize)tid, wperrno);
         internal_ptrace(PTRACE_DETACH, tid, nullptr, nullptr);
         return false;
       }
@@ -185,7 +185,7 @@ bool ThreadSuspender::SuspendThread(tid_t tid) {
 }
 
 void ThreadSuspender::ResumeAllThreads() {
-  for (uptr i = 0; i < suspended_threads_list_.ThreadCount(); i++) {
+  for (usize i = 0; i < suspended_threads_list_.ThreadCount(); i++) {
     pid_t tid = suspended_threads_list_.GetThreadID(i);
     int pterrno;
     if (!internal_iserror(internal_ptrace(PTRACE_DETACH, tid, nullptr, nullptr),
@@ -201,7 +201,7 @@ void ThreadSuspender::ResumeAllThreads() {
 }
 
 void ThreadSuspender::KillAllThreads() {
-  for (uptr i = 0; i < suspended_threads_list_.ThreadCount(); i++)
+  for (usize i = 0; i < suspended_threads_list_.ThreadCount(); i++)
     internal_ptrace(PTRACE_KILL, suspended_threads_list_.GetThreadID(i),
                     nullptr, nullptr);
 }
@@ -304,7 +304,7 @@ static int TracerThread(void* argument) {
 
   // Install our handler for synchronous signals. Other signals should be
   // blocked by the mask we inherited from the parent thread.
-  for (uptr i = 0; i < ARRAY_SIZE(kSyncSignals); i++) {
+  for (usize i = 0; i < ARRAY_SIZE(kSyncSignals); i++) {
     __sanitizer_sigaction act;
     internal_memset(&act, 0, sizeof(act));
     act.sigaction = TracerThreadSignalHandler;
@@ -330,7 +330,7 @@ static int TracerThread(void* argument) {
 
 class ScopedStackSpaceWithGuard {
  public:
-  explicit ScopedStackSpaceWithGuard(uptr stack_size) {
+  explicit ScopedStackSpaceWithGuard(usize stack_size) {
     stack_size_ = stack_size;
     guard_size_ = GetPageSizeCached();
     // FIXME: Omitting MAP_STACK here works in current kernels but might break
@@ -347,8 +347,8 @@ class ScopedStackSpaceWithGuard {
   }
 
  private:
-  uptr stack_size_;
-  uptr guard_size_;
+  usize stack_size_;
+  usize guard_size_;
   uptr guard_start_;
 };
 
@@ -381,7 +381,7 @@ class StopTheWorldScope {
 // the tracer should write to the parent's log instead of trying to open a new
 // file. Alert the logging code to the fact that we have a tracer.
 struct ScopedSetTracerPID {
-  explicit ScopedSetTracerPID(uptr tracer_pid) {
+  explicit ScopedSetTracerPID(usize tracer_pid) {
     stoptheworld_tracer_pid = tracer_pid;
     stoptheworld_tracer_ppid = internal_getpid();
   }
@@ -399,7 +399,7 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
   tracer_thread_argument.callback_argument = argument;
   tracer_thread_argument.parent_pid = internal_getpid();
   atomic_store(&tracer_thread_argument.done, 0, memory_order_relaxed);
-  const uptr kTracerStackSize = 2 * 1024 * 1024;
+  const usize kTracerStackSize = 2 * 1024 * 1024;
   ScopedStackSpaceWithGuard tracer_stack(kTracerStackSize);
   // Block the execution of TracerThread until after we have set ptrace
   // permissions.
@@ -424,11 +424,11 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
   // in any observable way. In particular it should not override user signal
   // handlers.
   internal_sigfillset(&blocked_sigset);
-  for (uptr i = 0; i < ARRAY_SIZE(kSyncSignals); i++)
+  for (usize i = 0; i < ARRAY_SIZE(kSyncSignals); i++)
     internal_sigdelset(&blocked_sigset, kSyncSignals[i]);
   int rv = internal_sigprocmask(SIG_BLOCK, &blocked_sigset, &old_sigset);
   CHECK_EQ(rv, 0);
-  uptr tracer_pid = internal_clone(
+  usize tracer_pid = internal_clone(
       TracerThread, tracer_stack.Bottom(),
       CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_UNTRACED,
       &tracer_thread_argument, nullptr /* parent_tidptr */,
@@ -457,7 +457,7 @@ void StopTheWorld(StopTheWorldCallback callback, void *argument) {
     // Now the tracer thread is about to exit and does not touch errno,
     // wait for it.
     for (;;) {
-      uptr waitpid_status = internal_waitpid(tracer_pid, nullptr, __WALL);
+      usize waitpid_status = internal_waitpid(tracer_pid, nullptr, __WALL);
       if (!internal_iserror(waitpid_status, &local_errno))
         break;
       if (local_errno == EINTR)
@@ -532,17 +532,17 @@ static constexpr uptr kExtraRegs[] = {0};
 #error "Unsupported architecture"
 #endif // SANITIZER_ANDROID && defined(__arm__)
 
-tid_t SuspendedThreadsListLinux::GetThreadID(uptr index) const {
+tid_t SuspendedThreadsListLinux::GetThreadID(usize index) const {
   CHECK_LT(index, thread_ids_.size());
   return thread_ids_[index];
 }
 
-uptr SuspendedThreadsListLinux::ThreadCount() const {
+usize SuspendedThreadsListLinux::ThreadCount() const {
   return thread_ids_.size();
 }
 
 bool SuspendedThreadsListLinux::ContainsTid(tid_t thread_id) const {
-  for (uptr i = 0; i < thread_ids_.size(); i++) {
+  for (usize i = 0; i < thread_ids_.size(); i++) {
     if (thread_ids_[i] == thread_id) return true;
   }
   return false;
@@ -553,20 +553,20 @@ void SuspendedThreadsListLinux::Append(tid_t tid) {
 }
 
 PtraceRegistersStatus SuspendedThreadsListLinux::GetRegistersAndSP(
-    uptr index, InternalMmapVector<uptr> *buffer, uptr *sp) const {
+    usize index, InternalMmapVector<uptr> *buffer, uptr *sp) const {
   pid_t tid = GetThreadID(index);
-  constexpr uptr uptr_sz = sizeof(uptr);
+  constexpr usize uptr_sz = sizeof(uptr);
   int pterrno;
 #ifdef ARCH_IOVEC_FOR_GETREGSET
   auto append = [&](uptr regset) {
-    uptr size = buffer->size();
+    usize size = buffer->size();
     // NT_X86_XSTATE requires 64bit alignment.
-    uptr size_up = RoundUpTo(size, 8 / uptr_sz);
-    buffer->reserve(Max<uptr>(1024, size_up));
+    usize size_up = RoundUpTo(size, 8 / uptr_sz);
+    buffer->reserve(Max<usize>(1024, size_up));
     struct iovec regset_io;
     for (;; buffer->resize(buffer->capacity() * 2)) {
       buffer->resize(buffer->capacity());
-      uptr available_bytes = (buffer->size() - size_up) * uptr_sz;
+      usize available_bytes = (buffer->size() - size_up) * uptr_sz;
       regset_io.iov_base = buffer->data() + size_up;
       regset_io.iov_len = available_bytes;
       bool fail =

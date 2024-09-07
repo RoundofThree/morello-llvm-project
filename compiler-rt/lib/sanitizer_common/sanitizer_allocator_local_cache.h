@@ -31,7 +31,7 @@ struct SizeClassAllocator64LocalCache {
       s->Unregister(&stats_);
   }
 
-  void *Allocate(SizeClassAllocator *allocator, uptr class_id) {
+  void *Allocate(SizeClassAllocator *allocator, usize class_id) {
     CHECK_NE(class_id, 0UL);
     CHECK_LT(class_id, kNumClasses);
     PerClass *c = &per_class_[class_id];
@@ -46,7 +46,7 @@ struct SizeClassAllocator64LocalCache {
         allocator->GetRegionBeginBySizeClass(class_id), chunk));
   }
 
-  void Deallocate(SizeClassAllocator *allocator, uptr class_id, void *p) {
+  void Deallocate(SizeClassAllocator *allocator, usize class_id, void *p) {
     CHECK_NE(class_id, 0UL);
     CHECK_LT(class_id, kNumClasses);
     // If the first allocator call on a new thread is a deallocation, then
@@ -64,7 +64,7 @@ struct SizeClassAllocator64LocalCache {
 
   void Drain(SizeClassAllocator *allocator) {
     MemoryMapperT memory_mapper(*allocator);
-    for (uptr i = 1; i < kNumClasses; i++) {
+    for (usize i = 1; i < kNumClasses; i++) {
       PerClass *c = &per_class_[i];
       while (c->count > 0) Drain(&memory_mapper, c, allocator, i, c->count);
     }
@@ -72,13 +72,13 @@ struct SizeClassAllocator64LocalCache {
 
  private:
   typedef typename Allocator::SizeClassMapT SizeClassMap;
-  static const uptr kNumClasses = SizeClassMap::kNumClasses;
+  static const usize kNumClasses = SizeClassMap::kNumClasses;
   typedef typename Allocator::CompactPtrT CompactPtrT;
 
   struct PerClass {
     u32 count;
     u32 max_count;
-    uptr class_size;
+    usize class_size;
     CompactPtrT chunks[2 * SizeClassMap::kMaxNumCachedHint];
   };
   PerClass per_class_[kNumClasses];
@@ -87,9 +87,9 @@ struct SizeClassAllocator64LocalCache {
   void InitCache(PerClass *c) {
     if (LIKELY(c->max_count))
       return;
-    for (uptr i = 1; i < kNumClasses; i++) {
+    for (usize i = 1; i < kNumClasses; i++) {
       PerClass *c = &per_class_[i];
-      const uptr size = Allocator::ClassIdToSize(i);
+      const usize size = Allocator::ClassIdToSize(i);
       c->max_count = 2 * SizeClassMap::MaxCachedHint(size);
       c->class_size = size;
     }
@@ -97,9 +97,9 @@ struct SizeClassAllocator64LocalCache {
   }
 
   NOINLINE bool Refill(PerClass *c, SizeClassAllocator *allocator,
-                       uptr class_id) {
+                       usize class_id) {
     InitCache(c);
-    const uptr num_requested_chunks = c->max_count / 2;
+    const usize num_requested_chunks = c->max_count / 2;
     if (UNLIKELY(!allocator->GetFromAllocator(&stats_, class_id, c->chunks,
                                               num_requested_chunks)))
       return false;
@@ -108,15 +108,15 @@ struct SizeClassAllocator64LocalCache {
   }
 
   NOINLINE void DrainHalfMax(PerClass *c, SizeClassAllocator *allocator,
-                             uptr class_id) {
+                             usize class_id) {
     MemoryMapperT memory_mapper(*allocator);
     Drain(&memory_mapper, c, allocator, class_id, c->max_count / 2);
   }
 
   void Drain(MemoryMapperT *memory_mapper, PerClass *c,
-             SizeClassAllocator *allocator, uptr class_id, uptr count) {
+             SizeClassAllocator *allocator, usize class_id, usize count) {
     CHECK_GE(c->count, count);
-    const uptr first_idx_to_drain = c->count - count;
+    const usize first_idx_to_drain = c->count - count;
     c->count -= count;
     allocator->ReturnToAllocator(memory_mapper, &stats_, class_id,
                                  &c->chunks[first_idx_to_drain], count);
@@ -136,17 +136,17 @@ struct SizeClassAllocator32LocalCache {
   }
 
   // Returns a TransferBatch suitable for class_id.
-  TransferBatch *CreateBatch(uptr class_id, SizeClassAllocator *allocator,
+  TransferBatch *CreateBatch(usize class_id, SizeClassAllocator *allocator,
                              TransferBatch *b) {
-    if (uptr batch_class_id = per_class_[class_id].batch_class_id)
+    if (usize batch_class_id = per_class_[class_id].batch_class_id)
       return (TransferBatch*)Allocate(allocator, batch_class_id);
     return b;
   }
 
   // Destroys TransferBatch b.
-  void DestroyBatch(uptr class_id, SizeClassAllocator *allocator,
+  void DestroyBatch(usize class_id, SizeClassAllocator *allocator,
                     TransferBatch *b) {
-    if (uptr batch_class_id = per_class_[class_id].batch_class_id)
+    if (usize batch_class_id = per_class_[class_id].batch_class_id)
       Deallocate(allocator, batch_class_id, b);
   }
 
@@ -156,7 +156,7 @@ struct SizeClassAllocator32LocalCache {
       s->Unregister(&stats_);
   }
 
-  void *Allocate(SizeClassAllocator *allocator, uptr class_id) {
+  void *Allocate(SizeClassAllocator *allocator, usize class_id) {
     CHECK_NE(class_id, 0UL);
     CHECK_LT(class_id, kNumClasses);
     PerClass *c = &per_class_[class_id];
@@ -171,7 +171,7 @@ struct SizeClassAllocator32LocalCache {
     return res;
   }
 
-  void Deallocate(SizeClassAllocator *allocator, uptr class_id, void *p) {
+  void Deallocate(SizeClassAllocator *allocator, usize class_id, void *p) {
     CHECK_NE(class_id, 0UL);
     CHECK_LT(class_id, kNumClasses);
     // If the first allocator call on a new thread is a deallocation, then
@@ -185,7 +185,7 @@ struct SizeClassAllocator32LocalCache {
   }
 
   void Drain(SizeClassAllocator *allocator) {
-    for (uptr i = 1; i < kNumClasses; i++) {
+    for (usize i = 1; i < kNumClasses; i++) {
       PerClass *c = &per_class_[i];
       while (c->count > 0)
         Drain(c, allocator, i);
@@ -194,8 +194,8 @@ struct SizeClassAllocator32LocalCache {
 
  private:
   typedef typename Allocator::SizeClassMapT SizeClassMap;
-  static const uptr kBatchClassID = SizeClassMap::kBatchClassID;
-  static const uptr kNumClasses = SizeClassMap::kNumClasses;
+  static const usize kBatchClassID = SizeClassMap::kBatchClassID;
+  static const usize kNumClasses = SizeClassMap::kNumClasses;
   // If kUseSeparateSizeClassForBatch is true, all TransferBatch objects are
   // allocated from kBatchClassID size class (except for those that are needed
   // for kBatchClassID itself). The goal is to have TransferBatches in a totally
@@ -216,11 +216,11 @@ struct SizeClassAllocator32LocalCache {
   void InitCache(PerClass *c) {
     if (LIKELY(c->max_count))
       return;
-    const uptr batch_class_id = SizeClassMap::ClassID(sizeof(TransferBatch));
-    for (uptr i = 1; i < kNumClasses; i++) {
+    const usize batch_class_id = SizeClassMap::ClassID(sizeof(TransferBatch));
+    for (usize i = 1; i < kNumClasses; i++) {
       PerClass *c = &per_class_[i];
-      const uptr size = Allocator::ClassIdToSize(i);
-      const uptr max_cached = TransferBatch::MaxCached(size);
+      const usize size = Allocator::ClassIdToSize(i);
+      const usize max_cached = TransferBatch::MaxCached(size);
       c->max_count = 2 * max_cached;
       c->class_size = size;
       // Precompute the class id to use to store batches for the current class
@@ -239,7 +239,7 @@ struct SizeClassAllocator32LocalCache {
   }
 
   NOINLINE bool Refill(PerClass *c, SizeClassAllocator *allocator,
-                       uptr class_id) {
+                       usize class_id) {
     InitCache(c);
     TransferBatch *b = allocator->AllocateBatch(&stats_, this, class_id);
     if (UNLIKELY(!b))
@@ -252,8 +252,8 @@ struct SizeClassAllocator32LocalCache {
   }
 
   NOINLINE void Drain(PerClass *c, SizeClassAllocator *allocator,
-                      uptr class_id) {
-    const uptr count = Min(c->max_count / 2, c->count);
+                      usize class_id) {
+    const usize count = Min(c->max_count / 2, c->count);
     const usize first_idx_to_drain = c->count - count;
     TransferBatch *b = CreateBatch(
         class_id, allocator, (TransferBatch *)c->batch[first_idx_to_drain]);

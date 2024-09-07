@@ -288,9 +288,9 @@ class Addr2LinePool final : public SymbolizerTool {
   }
 
  private:
-  const char *SendCommand(const char *module_name, uptr module_offset) {
+  const char *SendCommand(const char *module_name, usize module_offset) {
     Addr2LineProcess *addr2line = 0;
-    for (uptr i = 0; i < addr2line_pool_.size(); ++i) {
+    for (usize i = 0; i < addr2line_pool_.size(); ++i) {
       if (0 ==
           internal_strcmp(module_name, addr2line_pool_[i]->module_name())) {
         addr2line = addr2line_pool_[i];
@@ -309,11 +309,11 @@ class Addr2LinePool final : public SymbolizerTool {
     return addr2line->SendCommand(buffer);
   }
 
-  static const uptr kBufferSize = 64;
+  static const usize kBufferSize = 64;
   const char *addr2line_path_;
   LowLevelAllocator *allocator_;
   InternalMmapVector<Addr2LineProcess*> addr2line_pool_;
-  static const uptr dummy_address_ =
+  static const vaddr dummy_address_ =
       FIRST_32_SECOND_64(UINT32_MAX, UINT64_MAX);
 };
 
@@ -373,10 +373,10 @@ class InternalSymbolizer final : public SymbolizerTool {
 
   const char *Demangle(const char *name) override {
     if (__sanitizer_symbolize_demangle) {
-      for (uptr res_length = 1024;
+      for (usize res_length = 1024;
            res_length <= InternalSizeClassMap::kMaxSize;) {
         char *res_buff = static_cast<char *>(InternalAlloc(res_length));
-        uptr req_length =
+        usize req_length =
             __sanitizer_symbolize_demangle(name, res_buff, res_length);
         if (req_length > res_length) {
           res_length = req_length + 1;

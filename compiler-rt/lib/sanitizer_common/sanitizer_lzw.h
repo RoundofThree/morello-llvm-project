@@ -45,7 +45,7 @@ ItOut LzwEncode(ItIn begin, ItIn end, ItOut out) {
     *out = dict_len1.size();
     ++out;
 
-    for (uptr i = 0; i != dict_len1.size(); ++i) {
+    for (usize i = 0; i != dict_len1.size(); ++i) {
       // Remap after the Sort.
       prefix_to_code[{kNoPrefix, dict_len1[i]}] = i;
       *out = dict_len1[i];
@@ -119,7 +119,7 @@ ItOut LzwDecode(ItIn begin, ItIn end, ItOut out) {
   };
 
   // Returns lens of the substring with the given code.
-  auto code_to_len = [&code_to_substr, &dict_len1](LzwCodeType code) -> uptr {
+  auto code_to_len = [&code_to_substr, &dict_len1](LzwCodeType code) -> usize {
     if (code < dict_len1.size())
       return 1;
     const auto& s = code_to_substr[code - dict_len1.size()];
@@ -147,7 +147,7 @@ ItOut LzwDecode(ItIn begin, ItIn end, ItOut out) {
 
     // Every time encoded emits the code, it also creates substing of len + 1
     // including the first item of the just emmited substring. Do the same here.
-    uptr len = code_to_len(prev_code);
+    usize len = code_to_len(prev_code);
     code_to_substr.push_back({start - len, start + 1});
 
     prev_code = code;

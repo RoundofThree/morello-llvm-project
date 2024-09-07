@@ -24,34 +24,34 @@ namespace __sanitizer {
 template<class BV>
 class BVGraph {
  public:
-  enum SizeEnum : uptr { kSize = BV::kSize };
-  uptr size() const { return kSize; }
+  enum SizeEnum : usize { kSize = BV::kSize };
+  usize size() const { return kSize; }
   // No CTOR.
   void clear() {
-    for (uptr i = 0; i < size(); i++)
+    for (usize i = 0; i < size(); i++)
       v[i].clear();
   }
 
   bool empty() const {
-    for (uptr i = 0; i < size(); i++)
+    for (usize i = 0; i < size(); i++)
       if (!v[i].empty())
         return false;
     return true;
   }
 
   // Returns true if a new edge was added.
-  bool addEdge(uptr from, uptr to) {
+  bool addEdge(usize from, usize to) {
     check(from, to);
     return v[from].setBit(to);
   }
 
   // Returns true if at least one new edge was added.
-  uptr addEdges(const BV &from, uptr to, uptr added_edges[],
-                uptr max_added_edges) {
-    uptr res = 0;
+  usize addEdges(const BV &from, usize to, usize added_edges[],
+                usize max_added_edges) {
+    usize res = 0;
     t1.copyFrom(from);
     while (!t1.empty()) {
-      uptr node = t1.getAndClearFirstOne();
+      usize node = t1.getAndClearFirstOne();
       if (v[node].setBit(to))
         if (res < max_added_edges)
           added_edges[res++] = node;
@@ -65,17 +65,17 @@ class BVGraph {
   // and thus can be called from different threads w/o locking.
   // This would be racy.
   // FIXME: investigate how much we can prove about this race being "benign".
-  bool hasEdge(uptr from, uptr to) { return v[from].getBit(to); }
+  bool hasEdge(usize from, usize to) { return v[from].getBit(to); }
 
   // Returns true if the edge from=>to was removed.
-  bool removeEdge(uptr from, uptr to) {
+  bool removeEdge(usize from, usize to) {
     return v[from].clearBit(to);
   }
 
   // Returns true if at least one edge *=>to was removed.
   bool removeEdgesTo(const BV &to) {
     bool res = 0;
-    for (uptr from = 0; from < size(); from++) {
+    for (usize from = 0; from < size(); from++) {
       if (v[from].setDifference(to))
         res = true;
     }
@@ -87,7 +87,7 @@ class BVGraph {
     bool res = false;
     t1.copyFrom(from);
     while (!t1.empty()) {
-      uptr idx = t1.getAndClearFirstOne();
+      usize idx = t1.getAndClearFirstOne();
       if (!v[idx].empty()) {
         v[idx].clear();
         res = true;
@@ -96,25 +96,25 @@ class BVGraph {
     return res;
   }
 
-  void removeEdgesFrom(uptr from) {
+  void removeEdgesFrom(usize from) {
     return v[from].clear();
   }
 
-  bool hasEdge(uptr from, uptr to) const {
+  bool hasEdge(usize from, usize to) const {
     check(from, to);
     return v[from].getBit(to);
   }
 
   // Returns true if there is a path from the node 'from'
   // to any of the nodes in 'targets'.
-  bool isReachable(uptr from, const BV &targets) {
+  bool isReachable(usize from, const BV &targets) {
     BV &to_visit = t1,
        &visited = t2;
     to_visit.copyFrom(v[from]);
     visited.clear();
     visited.setBit(from);
     while (!to_visit.empty()) {
-      uptr idx = to_visit.getAndClearFirstOne();
+      usize idx = to_visit.getAndClearFirstOne();
       if (visited.setBit(idx))
         to_visit.setUnion(v[idx]);
     }
@@ -124,7 +124,7 @@ class BVGraph {
   // Finds a path from 'from' to one of the nodes in 'target',
   // stores up to 'path_size' items of the path into 'path',
   // returns the path length, or 0 if there is no path of size 'path_size'.
-  uptr findPath(uptr from, const BV &targets, uptr *path, uptr path_size) {
+  usize findPath(usize from, const BV &targets, usize *path, usize path_size) {
     if (path_size == 0)
       return 0;
     path[0] = from;
@@ -133,24 +133,24 @@ class BVGraph {
     // The function is recursive, so we don't want to create BV on stack.
     // Instead of a getAndClearFirstOne loop we use the slower iterator.
     for (typename BV::Iterator it(v[from]); it.hasNext(); ) {
-      uptr idx = it.next();
-      if (uptr res = findPath(idx, targets, path + 1, path_size - 1))
+      usize idx = it.next();
+      if (usize res = findPath(idx, targets, path + 1, path_size - 1))
         return res + 1;
     }
     return 0;
   }
 
   // Same as findPath, but finds a shortest path.
-  uptr findShortestPath(uptr from, const BV &targets, uptr *path,
-                        uptr path_size) {
-    for (uptr p = 1; p <= path_size; p++)
+  usize findShortestPath(usize from, const BV &targets, usize *path,
+                        usize path_size) {
+    for (usize p = 1; p <= path_size; p++)
       if (findPath(from, targets, path, p) == p)
         return p;
     return 0;
   }
 
  private:
-  void check(uptr idx1, uptr idx2) const {
+  void check(usize idx1, usize idx2) const {
     CHECK_LT(idx1, size());
     CHECK_LT(idx2, size());
   }

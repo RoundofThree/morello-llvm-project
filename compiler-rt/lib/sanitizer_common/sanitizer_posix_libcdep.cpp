@@ -51,8 +51,8 @@ u32 GetUid() {
   return getuid();
 }
 
-uptr GetThreadSelf() {
-  return (uptr)pthread_self();
+vaddr GetThreadSelf() {
+  return (vaddr)pthread_self();
 }
 
 void ReleaseMemoryPagesToOS(uptr beg, uptr end) {
@@ -303,7 +303,7 @@ static bool MmapFixed(uptr fixed_addr, usize size, int additional_flags,
   size = RoundUpTo(size, GetPageSizeCached());
   fixed_addr = RoundDownTo(fixed_addr, GetPageSizeCached());
   uptr p =
-      MmapNamed((void *)fixed_addr, size, PROT_READ | PROT_WRITE,
+      MmapNamed((void *)(vaddr)fixed_addr, size, PROT_READ | PROT_WRITE,
                 MAP_PRIVATE | MAP_FIXED | additional_flags | MAP_ANON, name);
   int reserrno;
   if (internal_iserror(p, &reserrno)) {

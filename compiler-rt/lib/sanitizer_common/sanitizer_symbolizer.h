@@ -33,7 +33,7 @@ struct AddressInfo {
   usize module_offset;
   ModuleArch module_arch;
   u8 uuid[kModuleUUIDSize];
-  uptr uuid_size;
+  usize uuid_size;
 
   static const vaddr kUnknown = ~(vaddr)0;
   char *function;
@@ -48,7 +48,7 @@ struct AddressInfo {
   void Clear();
   void FillModuleInfo(const char *mod_name, usize mod_offset, ModuleArch arch);
   void FillModuleInfo(const LoadedModule &mod);
-  uptr module_base() const { return address - module_offset; }
+  vaddr module_base() const { return address - module_offset; }
 };
 
 // Linked list of symbolized frames (each frame is described by AddressInfo).

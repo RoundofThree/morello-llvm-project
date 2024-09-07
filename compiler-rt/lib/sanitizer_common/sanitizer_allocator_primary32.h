@@ -285,7 +285,7 @@ class SizeClassAllocator32 {
   };
   COMPILER_CHECK(sizeof(SizeClassInfo) % kCacheLineSize == 0);
 
-  uptr ComputeRegionId(vaddr mem) const {
+  usize ComputeRegionId(vaddr mem) const {
     if (SANITIZER_SIGN_EXTENDED_ADDRESSES)
       mem &= (kSpaceSize - 1);
     const usize res = (usize)mem >> kRegionSizeLog;
@@ -353,9 +353,9 @@ class SizeClassAllocator32 {
     DCHECK_GT(max_count, 0);
     TransferBatch *b = nullptr;
     constexpr usize kShuffleArraySize = 48;
-    uptr shuffle_array[kShuffleArraySize];
+    usize shuffle_array[kShuffleArraySize];
     usize count = 0;
-    for (uptr i = region; i < region + n_chunks * size; i += size) {
+    for (usize i = region; i < region + n_chunks * size; i += size) {
       shuffle_array[count++] = i;
       if (count == kShuffleArraySize) {
         if (UNLIKELY(!PopulateBatches(c, sci, class_id, &b, max_count,

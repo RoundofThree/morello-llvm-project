@@ -113,7 +113,7 @@ const char *Symbolizer::ModuleNameOwner::GetOwnedCopy(const char *str) {
 
   // FIXME: this is linear search.
   // We should optimize this further if this turns out to be a bottleneck later.
-  for (uptr i = 0; i < storage_.size(); ++i) {
+  for (usize i = 0; i < storage_.size(); ++i) {
     if (!internal_strcmp(storage_[i], str)) {
       last_match_ = storage_[i];
       return last_match_;

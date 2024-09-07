@@ -22,7 +22,7 @@ namespace __sanitizer {
 static const char *StripFunctionName(const char *function, const char *prefix) {
   if (!function) return nullptr;
   if (!prefix) return function;
-  uptr prefix_len = internal_strlen(prefix);
+  usize prefix_len = internal_strlen(prefix);
   if (0 == internal_strncmp(function, prefix, prefix_len))
     return function + prefix_len;
   return function;
@@ -110,7 +110,7 @@ static void MaybeBuildIdToBuffer(const AddressInfo &info, bool PrefixSpace,
     if (PrefixSpace)
       buffer->append(" ");
     buffer->append("(BuildId: ");
-    for (uptr i = 0; i < info.uuid_size; ++i) {
+    for (usize i = 0; i < info.uuid_size; ++i) {
       buffer->append("%02x", info.uuid[i]);
     }
     buffer->append(")");
@@ -120,7 +120,7 @@ static void MaybeBuildIdToBuffer(const AddressInfo &info, bool PrefixSpace,
 static const char kDefaultFormat[] = "    #%n %p %F %L";
 
 void RenderFrame(InternalScopedString *buffer, const char *format, int frame_no,
-                 uptr address, const AddressInfo *info, bool vs_style,
+                 vaddr address, const AddressInfo *info, bool vs_style,
                  const char *strip_path_prefix, const char *strip_func_prefix) {
   // info will be null in the case where symbolization is not needed for the
   // given format. This ensures that the code below will get a hard failure
@@ -298,7 +298,7 @@ void RenderSourceLocation(InternalScopedString *buffer, const char *file,
 }
 
 void RenderModuleLocation(InternalScopedString *buffer, const char *module,
-                          uptr offset, ModuleArch arch,
+                          usize offset, ModuleArch arch,
                           const char *strip_path_prefix) {
   buffer->append("(%s", StripPathPrefix(module, strip_path_prefix));
   if (arch != kModuleArchUnknown) {

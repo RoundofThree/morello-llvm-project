@@ -36,7 +36,7 @@ void CommonFlags::CopyFrom(const CommonFlags &other) {
 // %b = binary basename
 // %p = pid
 // %d = binary directory
-void SubstituteForFlagValue(const char *s, char *out, uptr out_size) {
+void SubstituteForFlagValue(const char *s, char *out, usize out_size) {
   char *out_end = out + out_size;
   while (*s && out < out_end - 1) {
     if (s[0] != '%') {
@@ -66,7 +66,7 @@ void SubstituteForFlagValue(const char *s, char *out, uptr out_size) {
         break;
       }
       case 'd': {
-        uptr len = ReadBinaryDir(out, out_end - out);
+        usize len = ReadBinaryDir(out, out_end - out);
         out += len;
         s += 2;  // skip "%d"
         break;
@@ -99,7 +99,7 @@ class FlagHandlerInclude final : public FlagHandlerBase {
     }
     return parser_->ParseFile(value, ignore_missing_);
   }
-  bool Format(char *buffer, uptr size) override {
+  bool Format(char *buffer, usize size) override {
     // Note `original_path_` isn't actually what's parsed due to `%`
     // substitutions. Printing the substituted path would require holding onto
     // mmap'ed memory.

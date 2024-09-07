@@ -61,7 +61,7 @@ void Semaphore::Post(u32 count) {
 // unnecessary (we almost never lock multiple mutexes of the same type recursively).
 static constexpr int kMutexTypeMax = 20;
 SANITIZER_WEAK_ATTRIBUTE MutexMeta mutex_meta[kMutexTypeMax] = {};
-SANITIZER_WEAK_ATTRIBUTE void PrintMutexPC(uptr pc) {}
+SANITIZER_WEAK_ATTRIBUTE void PrintMutexPC(vaddr pc) {}
 static StaticSpinMutex mutex_meta_mtx;
 static int mutex_type_count = -1;
 // Adjacency matrix of what mutexes can be locked under what mutexes.
@@ -80,7 +80,7 @@ void DebugMutexInit() {
     if (!mutex_meta[t].name)
       break;
     CHECK_EQ(t, mutex_meta[t].type);
-    for (uptr j = 0; j < ARRAY_SIZE(mutex_meta[t].can_lock); j++) {
+    for (usize j = 0; j < ARRAY_SIZE(mutex_meta[t].can_lock); j++) {
       MutexType z = mutex_meta[t].can_lock[j];
       if (z == MutexInvalid)
         break;
@@ -140,14 +140,14 @@ void DebugMutexInit() {
 struct InternalDeadlockDetector {
   struct LockDesc {
     u64 seq;
-    uptr pc;
+    vaddr pc;
     int recursion;
   };
   int initialized;
   u64 sequence;
   LockDesc locked[kMutexTypeMax];
 
-  void Lock(MutexType type, uptr pc) {
+  void Lock(MutexType type, vaddr pc) {
     if (!Initialize(type))
       return;
     CHECK_LT(type, mutex_type_count);
@@ -215,7 +215,7 @@ struct InternalDeadlockDetector {
 
 static THREADLOCAL InternalDeadlockDetector deadlock_detector;
 
-void CheckedMutex::LockImpl(uptr pc) { deadlock_detector.Lock(type_, pc); }
+void CheckedMutex::LockImpl(vaddr pc) { deadlock_detector.Lock(type_, pc); }
 
 void CheckedMutex::UnlockImpl() { deadlock_detector.Unlock(type_); }
 

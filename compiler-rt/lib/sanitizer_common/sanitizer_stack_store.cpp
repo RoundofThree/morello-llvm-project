@@ -20,31 +20,32 @@ namespace __sanitizer {
 
 namespace {
 struct StackTraceHeader {
+  // XXXR3: this maybe needs modification for CHERI purecap
   static constexpr u32 kStackSizeBits = 8;
 
   u8 size;
   u8 tag;
   explicit StackTraceHeader(const StackTrace &trace)
-      : size(Min<uptr>(trace.size, (1u << 8) - 1)), tag(trace.tag) {
-    CHECK_EQ(trace.tag, static_cast<uptr>(tag));
+      : size(Min<usize>(trace.size, (1u << 8) - 1)), tag(trace.tag) {
+    CHECK_EQ(trace.tag, static_cast<usize>(tag));
   }
   explicit StackTraceHeader(uptr h)
       : size(h & ((1 << kStackSizeBits) - 1)), tag(h >> kStackSizeBits) {}
 
-  uptr ToUptr() const {
+  uptr ToBlock() const {
     return static_cast<uptr>(size) | (static_cast<uptr>(tag) << kStackSizeBits);
   }
 };
 }  // namespace
 
-StackStore::Id StackStore::Store(const StackTrace &trace, uptr *pack) {
+StackStore::Id StackStore::Store(const StackTrace &trace, usize *pack) {
   if (!trace.size && !trace.tag)
     return 0;
   StackTraceHeader h(trace);
-  uptr idx = 0;
+  usize idx = 0;
   *pack = 0;
   uptr *stack_trace = Alloc(h.size + 1, &idx, pack);
-  *stack_trace = h.ToUptr();
+  *stack_trace = h.ToBlock();
   internal_memcpy(stack_trace + 1, trace.trace, h.size * sizeof(uptr));
   *pack += blocks_[GetBlockIdx(idx)].Stored(h.size + 1);
   return OffsetToId(idx);
@@ -53,8 +54,8 @@ StackStore::Id StackStore::Store(const StackTrace &trace, uptr *pack) {
 StackTrace StackStore::Load(Id id) {
   if (!id)
     return {};
-  uptr idx = IdToOffset(id);
-  uptr block_idx = GetBlockIdx(idx);
+  usize idx = IdToOffset(id);
+  usize block_idx = GetBlockIdx(idx);
   CHECK_LT(block_idx, ARRAY_SIZE(blocks_));
   const uptr *stack_trace = blocks_[block_idx].GetOrUnpack(this);
   if (!stack_trace)
@@ -64,17 +65,17 @@ StackTrace StackStore::Load(Id id) {
   return StackTrace(stack_trace + 1, h.size, h.tag);
 }
 
-uptr StackStore::Allocated() const {
+usize StackStore::Allocated() const {
   return atomic_load_relaxed(&allocated_) + sizeof(*this);
 }
 
-uptr *StackStore::Alloc(uptr count, uptr *idx, uptr *pack) {
+usize *StackStore::Alloc(usize count, usize *idx, usize *pack) {
   for (;;) {
     // Optimisic lock-free allocation, essentially try to bump the
     // total_frames_.
-    uptr start = atomic_fetch_add(&total_frames_, count, memory_order_relaxed);
-    uptr block_idx = GetBlockIdx(start);
-    uptr last_idx = GetBlockIdx(start + count - 1);
+    usize start = atomic_fetch_add(&total_frames_, count, memory_order_relaxed);
+    usize block_idx = GetBlockIdx(start);
+    usize last_idx = GetBlockIdx(start + count - 1);
     if (LIKELY(block_idx == last_idx)) {
       // Fits into the a single block.
       CHECK_LT(block_idx, ARRAY_SIZE(blocks_));
@@ -84,7 +85,7 @@ uptr *StackStore::Alloc(uptr count, uptr *idx, uptr *pack) {
 
     // Retry. We can't use range allocated in two different blocks.
     CHECK_LE(count, kBlockSizeFrames);
-    uptr in_first = kBlockSizeFrames - GetInBlockIdx(start);
+    usize in_first = kBlockSizeFrames - GetInBlockIdx(start);
     // Mark tail/head of these blocks as "stored".to avoid waiting before we can
     // Pack().
     *pack += blocks_[block_idx].Stored(in_first);
@@ -92,18 +93,18 @@ uptr *StackStore::Alloc(uptr count, uptr *idx, uptr *pack) {
   }
 }
 
-void *StackStore::Map(uptr size, const char *mem_type) {
+void *StackStore::Map(usize size, const char *mem_type) {
   atomic_fetch_add(&allocated_, size, memory_order_relaxed);
   return MmapNoReserveOrDie(size, mem_type);
 }
 
-void StackStore::Unmap(void *addr, uptr size) {
+void StackStore::Unmap(void *addr, usize size) {
   atomic_fetch_sub(&allocated_, size, memory_order_relaxed);
   UnmapOrDie(addr, size);
 }
 
-uptr StackStore::Pack(Compression type) {
-  uptr res = 0;
+usize StackStore::Pack(Compression type) {
+  usize res = 0;
   for (BlockInfo &b : blocks_) res += b.Pack(type, this);
   return res;
 }
@@ -241,7 +242,7 @@ static uptr *UncompressLzw(const u8 *from, const u8 *from_end, uptr *to,
 #endif
 namespace {
 struct PackedHeader {
-  uptr size;
+  usize size;
   StackStore::Compression type;
   u8 data[];
 };
@@ -268,7 +269,7 @@ uptr *StackStore::BlockInfo::GetOrUnpack(StackStore *store) {
   CHECK_LE(header->size, kBlockSizeBytes);
   CHECK_GE(header->size, sizeof(PackedHeader));
 
-  uptr packed_size_aligned = RoundUpTo(header->size, GetPageSizeCached());
+  usize packed_size_aligned = RoundUpTo(header->size, GetPageSizeCached());
 
   uptr *unpacked =
       reinterpret_cast<uptr *>(store->Map(kBlockSizeBytes, "StackStoreUnpack"));
@@ -298,7 +299,7 @@ uptr *StackStore::BlockInfo::GetOrUnpack(StackStore *store) {
   return Get();
 }
 
-uptr StackStore::BlockInfo::Pack(Compression type, StackStore *store) {
+usize StackStore::BlockInfo::Pack(Compression type, StackStore *store) {
   if (type == Compression::None)
     return 0;
 
@@ -349,7 +350,7 @@ uptr StackStore::BlockInfo::Pack(Compression type, StackStore *store) {
     return 0;
   }
 
-  uptr packed_size_aligned = RoundUpTo(header->size, GetPageSizeCached());
+  usize packed_size_aligned = RoundUpTo(header->size, GetPageSizeCached());
   store->Unmap(packed + packed_size_aligned,
                kBlockSizeBytes - packed_size_aligned);
   MprotectReadOnly(reinterpret_cast<uptr>(packed), packed_size_aligned);
@@ -366,7 +367,7 @@ void StackStore::BlockInfo::TestOnlyUnmap(StackStore *store) {
     store->Unmap(ptr, kBlockSizeBytes);
 }
 
-bool StackStore::BlockInfo::Stored(uptr n) {
+bool StackStore::BlockInfo::Stored(usize n) {
   return n + atomic_fetch_add(&stored_, n, memory_order_release) ==
          kBlockSizeFrames;
 }

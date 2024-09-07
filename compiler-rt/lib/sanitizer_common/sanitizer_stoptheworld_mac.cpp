@@ -31,13 +31,13 @@ class SuspendedThreadsListMac final : public SuspendedThreadsList {
  public:
   SuspendedThreadsListMac() : threads_(1024) {}
 
-  tid_t GetThreadID(uptr index) const override;
-  thread_t GetThread(uptr index) const;
-  uptr ThreadCount() const override;
+  tid_t GetThreadID(usize index) const override;
+  thread_t GetThread(usize index) const;
+  usize ThreadCount() const override;
   bool ContainsThread(thread_t thread) const;
   void Append(thread_t thread);
 
-  PtraceRegistersStatus GetRegistersAndSP(uptr index,
+  PtraceRegistersStatus GetRegistersAndSP(usize index,
                                           InternalMmapVector<uptr> *buffer,
                                           uptr *sp) const override;
 
@@ -72,7 +72,7 @@ void *RunThread(void *arg) {
 
   run_args->callback(suspended_threads_list, run_args->argument);
 
-  uptr num_suspended = suspended_threads_list.ThreadCount();
+  usize num_suspended = suspended_threads_list.ThreadCount();
   for (unsigned int i = 0; i < num_suspended; ++i) {
     thread_resume(suspended_threads_list.GetThread(i));
   }
@@ -108,22 +108,22 @@ typedef x86_thread_state32_t regs_struct;
 #error "Unsupported architecture"
 #endif
 
-tid_t SuspendedThreadsListMac::GetThreadID(uptr index) const {
+tid_t SuspendedThreadsListMac::GetThreadID(usize index) const {
   CHECK_LT(index, threads_.size());
   return threads_[index].tid;
 }
 
-thread_t SuspendedThreadsListMac::GetThread(uptr index) const {
+thread_t SuspendedThreadsListMac::GetThread(usize index) const {
   CHECK_LT(index, threads_.size());
   return threads_[index].thread;
 }
 
-uptr SuspendedThreadsListMac::ThreadCount() const {
+usize SuspendedThreadsListMac::ThreadCount() const {
   return threads_.size();
 }
 
 bool SuspendedThreadsListMac::ContainsThread(thread_t thread) const {
-  for (uptr i = 0; i < threads_.size(); i++) {
+  for (usize i = 0; i < threads_.size(); i++) {
     if (threads_[i].thread == thread) return true;
   }
   return false;
@@ -142,7 +142,7 @@ void SuspendedThreadsListMac::Append(thread_t thread) {
 }
 
 PtraceRegistersStatus SuspendedThreadsListMac::GetRegistersAndSP(
-    uptr index, InternalMmapVector<uptr> *buffer, uptr *sp) const {
+    usize index, InternalMmapVector<uptr> *buffer, uptr *sp) const {
   thread_t thread = GetThread(index);
   regs_struct regs;
   int err;

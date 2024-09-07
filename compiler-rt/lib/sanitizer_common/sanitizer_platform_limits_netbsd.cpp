@@ -653,7 +653,7 @@ int map_fixed = MAP_FIXED;
 int af_inet = (int)AF_INET;
 int af_inet6 = (int)AF_INET6;
 
-uptr __sanitizer_in_addr_sz(int af) {
+usize __sanitizer_in_addr_sz(int af) {
   if (af == AF_INET)
     return sizeof(struct in_addr);
   else if (af == AF_INET6)
@@ -674,7 +674,7 @@ int struct_ttyent_sz = sizeof(struct ttyent);
 
 struct __sanitizer_nvlist_ref_t {
   void *buf;
-  uptr len;
+  usize len;
   int flags;
 };
 

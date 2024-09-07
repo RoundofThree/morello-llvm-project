@@ -38,9 +38,9 @@ bool MemoryMappingLayout::Next(MemoryMappedSegment *segment) {
   prxmap_t *xmapentry =
       const_cast<prxmap_t *>(reinterpret_cast<const prxmap_t *>(data_.current));
 
-  segment->start = (uptr)xmapentry->pr_vaddr;
-  segment->end = (uptr)(xmapentry->pr_vaddr + xmapentry->pr_size);
-  segment->offset = (uptr)xmapentry->pr_offset;
+  segment->start = (vaddr)xmapentry->pr_vaddr;
+  segment->end = (vaddr)(xmapentry->pr_vaddr + xmapentry->pr_size);
+  segment->offset = (usize)xmapentry->pr_offset;
 
   segment->protection = 0;
   if ((xmapentry->pr_mflags & MA_READ) != 0)

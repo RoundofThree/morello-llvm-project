@@ -56,8 +56,8 @@ u64 GetMallocZoneAllocatorEnumerationVersion() {
 INTERCEPTOR(malloc_zone_t *, malloc_create_zone,
                              vm_size_t start_size, unsigned zone_flags) {
   COMMON_MALLOC_ENTER();
-  uptr page_size = GetPageSizeCached();
-  uptr allocated_size = RoundUpTo(sizeof(sanitizer_zone), page_size);
+  usize page_size = GetPageSizeCached();
+  usize allocated_size = RoundUpTo(sizeof(sanitizer_zone), page_size);
   COMMON_MALLOC_MEMALIGN(page_size, allocated_size);
   malloc_zone_t *new_zone = (malloc_zone_t *)p;
   internal_memcpy(new_zone, &sanitizer_zone, sizeof(sanitizer_zone));
@@ -74,8 +74,8 @@ INTERCEPTOR(void, malloc_destroy_zone, malloc_zone_t *zone) {
   COMMON_MALLOC_ENTER();
   // We don't need to do anything here.  We're not registering new zones, so we
   // don't to unregister.  Just un-mprotect and free() the zone.
-  uptr page_size = GetPageSizeCached();
-  uptr allocated_size = RoundUpTo(sizeof(sanitizer_zone), page_size);
+  usize page_size = GetPageSizeCached();
+  usize allocated_size = RoundUpTo(sizeof(sanitizer_zone), page_size);
   mprotect(zone, allocated_size, PROT_READ | PROT_WRITE);
   if (zone->zone_name) {
     COMMON_MALLOC_FREE((void *)zone->zone_name);
@@ -187,7 +187,7 @@ size_t __sanitizer_mz_size(malloc_zone_t* zone, const void* ptr) {
 
 extern "C"
 SANITIZER_INTERFACE_ATTRIBUTE
-void *__sanitizer_mz_malloc(malloc_zone_t *zone, uptr size) {
+void *__sanitizer_mz_malloc(malloc_zone_t *zone, usize size) {
   COMMON_MALLOC_ENTER();
   COMMON_MALLOC_MALLOC(size);
   return p;

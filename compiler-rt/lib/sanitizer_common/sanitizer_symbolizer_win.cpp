@@ -154,7 +154,7 @@ bool WinSymbolizerTool::SymbolizePC(uptr addr, SymbolizedStack *frame) {
   BOOL got_fileline = SymGetLineFromAddr64(GetCurrentProcess(), (DWORD64)addr,
                                            &unused, &line_info);
   frame->info.function = internal_strdup(symbol->Name);
-  frame->info.function_offset = (uptr)offset;
+  frame->info.function_offset = (usize)offset;
   if (got_fileline) {
     frame->info.file = internal_strdup(line_info.FileName);
     frame->info.line = line_info.LineNumber;

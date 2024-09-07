@@ -37,7 +37,8 @@ struct DTLS {
   // Array of DTLS chunks for the current Thread.
   // If beg == 0, the chunk is unused.
   struct DTV {
-    uptr beg, size;
+    uptr beg;
+    usize size;
   };
   struct DTVBlock {
     atomic_uintptr_t next;

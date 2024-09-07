@@ -71,7 +71,7 @@ class StackDepotBase {
   StackDepotStats GetStats() const {
     return {
         atomic_load_relaxed(&n_uniq_ids),
-        nodes.MemoryUsage() + Node::allocated(),
+        nodes.MemoryUsage() + Node::allocated(), // XXXR3
     };
   }
 
@@ -193,7 +193,7 @@ template <class Node, int kReservedBits, int kTabSizeLog>
 void StackDepotBase<Node, kReservedBits, kTabSizeLog>::UnlockAll() {
   for (int i = 0; i < kTabSize; ++i) {
     atomic_uint32_t *p = &tab[i];
-    uptr s = atomic_load(p, memory_order_relaxed);
+    u32 s = atomic_load(p, memory_order_relaxed);
     unlock(p, s & kUnlockMask);
   }
 }

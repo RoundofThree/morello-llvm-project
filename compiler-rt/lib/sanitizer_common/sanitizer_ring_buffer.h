@@ -32,17 +32,17 @@ class RingBuffer {
   void Delete() {
     UnmapOrDie(this, SizeInBytes(size()));
   }
-  uptr size() const {
+  usize size() const {
     return last_ + 1 -
            reinterpret_cast<T *>(reinterpret_cast<uptr>(this) +
                                  2 * sizeof(T *));
   }
 
-  static uptr SizeInBytes(usize Size) {
+  static usize SizeInBytes(usize Size) {
     return Size * sizeof(T) + 2 * sizeof(T*);
   }
 
-  uptr SizeInBytes() { return SizeInBytes(size()); }
+  usize SizeInBytes() { return SizeInBytes(size()); }
 
   void push(T t) {
     *next_ = t;
@@ -52,7 +52,7 @@ class RingBuffer {
       next_ = last_;
   }
 
-  T operator[](uptr Idx) const {
+  T operator[](usize Idx) const {
     CHECK_LT(Idx, size());
     sptr IdxNext = Idx + 1;
     if (IdxNext > last_ - next_)
@@ -86,9 +86,9 @@ class CompactRingBuffer {
   // Lower bytes store the address of the next buffer element.
   static constexpr int kPageSizeBits = 12;
   static constexpr int kSizeShift = 56;
-  static constexpr uptr kNextMask = (1ULL << kSizeShift) - 1;
+  static constexpr vaddr kNextMask = (1ULL << kSizeShift) - 1;
 
-  uptr GetStorageSize() const { return (long_ >> kSizeShift) << kPageSizeBits; }
+  usize GetStorageSize() const { return (long_ >> kSizeShift) << kPageSizeBits; }
 
   void Init(void *storage, usize size) {
     CHECK_EQ(sizeof(CompactRingBuffer<T>), sizeof(void *));
@@ -97,12 +97,12 @@ class CompactRingBuffer {
     CHECK_LE(size, 128 << kPageSizeBits);
     CHECK_EQ(size % 4096, 0);
     CHECK_EQ(size % sizeof(T), 0);
-    CHECK_EQ((uptr)storage % (size * 2), 0);
-    long_ = (uptr)storage | ((size >> kPageSizeBits) << kSizeShift);
+    CHECK_EQ((vaddr)storage % (size * 2), 0);
+    long_ = (vaddr)storage | ((size >> kPageSizeBits) << kSizeShift);
   }
 
   void SetNext(const T *next) {
-    long_ = (long_ & ~kNextMask) | (uptr)next;
+    long_ = (long_ & ~kNextMask) | (vaddr)next;
   }
 
  public:
@@ -112,34 +112,34 @@ class CompactRingBuffer {
 
   // A copy constructor of sorts.
   CompactRingBuffer(const CompactRingBuffer &other, void *storage) {
-    uptr size = other.GetStorageSize();
+    usize size = other.GetStorageSize();
     internal_memcpy(storage, other.StartOfStorage(), size);
     Init(storage, size);
-    uptr Idx = other.Next() - (const T *)other.StartOfStorage();
+    usize Idx = other.Next() - (const T *)other.StartOfStorage();
     SetNext((const T *)storage + Idx);
   }
 
   T *Next() const { return (T *)(long_ & kNextMask); }
 
   void *StartOfStorage() const {
-    return (void *)((uptr)Next() & ~(GetStorageSize() - 1));
+    return (void *)((vaddr)Next() & ~(GetStorageSize() - 1));
   }
 
   void *EndOfStorage() const {
-    return (void *)((uptr)StartOfStorage() + GetStorageSize());
+    return (void *)((vaddr)StartOfStorage() + GetStorageSize());
   }
 
-  uptr size() const { return GetStorageSize() / sizeof(T); }
+  usize size() const { return GetStorageSize() / sizeof(T); }
 
   void push(T t) {
     T *next = Next();
     *next = t;
     next++;
-    next = (T *)((uptr)next & ~GetStorageSize());
+    next = (T *)((vaddr)next & ~GetStorageSize());
     SetNext(next);
   }
 
-  const T &operator[](uptr Idx) const {
+  const T &operator[](usize Idx) const {
     CHECK_LT(Idx, size());
     const T *Begin = (const T *)StartOfStorage();
     sptr StorageIdx = Next() - Begin;
@@ -153,7 +153,7 @@ class CompactRingBuffer {
   ~CompactRingBuffer() {}
   CompactRingBuffer(const CompactRingBuffer &) = delete;
 
-  uptr long_;
+  vaddr long_;
 };
 #endif
 }  // namespace __sanitizer

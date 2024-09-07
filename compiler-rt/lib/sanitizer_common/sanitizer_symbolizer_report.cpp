@@ -105,8 +105,8 @@ void ReportMmapWriteExec(int prot, int flags) {
   InternalMmapVector<BufferedStackTrace> stack_buffer(1);
   BufferedStackTrace *stack = stack_buffer.data();
   stack->Reset();
-  uptr top = 0;
-  uptr bottom = 0;
+  vaddr top = 0;
+  vaddr bottom = 0;
   GET_CALLER_PC_BP_SP;
   (void)sp;
   bool fast = common_flags()->fast_unwind_on_fatal;

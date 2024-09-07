@@ -65,7 +65,7 @@ bool MemoryMappingLayout::Next(MemoryMappedSegment *segment) {
           ((flags & ZX_VM_PERM_WRITE) ? kProtectionWrite : 0) |
           ((flags & ZX_VM_PERM_EXECUTE) ? kProtectionExecute : 0);
       if (segment->filename && segment->filename_size > 0) {
-        uptr len = Min(sizeof(entry.name), segment->filename_size) - 1;
+        usize len = Min(sizeof(entry.name), segment->filename_size) - 1;
         internal_strncpy(segment->filename, entry.name, len);
         segment->filename[len] = 0;
       }

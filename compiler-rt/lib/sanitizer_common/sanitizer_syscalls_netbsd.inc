@@ -1052,7 +1052,7 @@ POST_SYSCALL(readv)
 (long long res, long long fd_, void *iovp_, long long iovcnt_) {
   struct __sanitizer_iovec *iovp = (struct __sanitizer_iovec *)iovp_;
   int i;
-  uptr m, n = res;
+  usize m, n = res;
   if (res > 0) {
     if (iovp) {
       POST_READ(iovp, sizeof(struct __sanitizer_iovec) * iovcnt_);
@@ -1078,7 +1078,7 @@ POST_SYSCALL(writev)
 (long long res, long long fd_, void *iovp_, long long iovcnt_) {
   struct __sanitizer_iovec *iovp = (struct __sanitizer_iovec *)iovp_;
   int i;
-  uptr m, n = res;
+  usize m, n = res;
   if (res > 0) {
     if (iovp) {
       POST_READ(iovp, sizeof(struct __sanitizer_iovec) * iovcnt_);

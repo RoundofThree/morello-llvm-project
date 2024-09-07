@@ -78,22 +78,22 @@ struct DenseMapInfo<T *> {
   // static_assert(alignof(T) <= (1 << Log2MaxAlign),
   //               "DenseMap does not support pointer keys requiring more than "
   //               "Log2MaxAlign bits of alignment");
-  static constexpr uptr Log2MaxAlign = 12;
+  static constexpr usize Log2MaxAlign = 12;
 
   static constexpr T *getEmptyKey() {
-    uptr Val = static_cast<uptr>(-1);
+    vaddr Val = static_cast<vaddr>(-1);
     Val <<= Log2MaxAlign;
-    return reinterpret_cast<T *>(Val);
+    return reinterpret_cast<T *>((uptr)Val);
   }
 
   static constexpr T *getTombstoneKey() {
-    uptr Val = static_cast<uptr>(-2);
+    vaddr Val = static_cast<vaddr>(-2);
     Val <<= Log2MaxAlign;
-    return reinterpret_cast<T *>(Val);
+    return reinterpret_cast<T *>((uptr)Val);
   }
 
   static constexpr unsigned getHashValue(const T *PtrVal) {
-    return (unsigned((uptr)PtrVal) >> 4) ^ (unsigned((uptr)PtrVal) >> 9);
+    return (unsigned((vaddr)(uptr)PtrVal) >> 4) ^ (unsigned((vaddr)(uptr)PtrVal) >> 9);
   }
 
   static constexpr bool isEqual(const T *LHS, const T *RHS) {

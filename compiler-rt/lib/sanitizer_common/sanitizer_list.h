@@ -34,7 +34,7 @@ struct IntrusiveList {
   }
 
   bool empty() const { return size_ == 0; }
-  uptr size() const { return size_; }
+  usize size() const { return size_; }
 
   void push_back(Item *x) {
     if (empty()) {
@@ -118,7 +118,7 @@ struct IntrusiveList {
       CHECK_EQ(first_, 0);
       CHECK_EQ(last_, 0);
     } else {
-      uptr count = 0;
+      usize count = 0;
       for (Item *i = first_; ; i = i->next) {
         count++;
         if (i == last_) break;
@@ -155,8 +155,8 @@ struct IntrusiveList {
   ConstIterator begin() const { return ConstIterator(first_); }
   ConstIterator end() const { return ConstIterator(0); }
 
-// private, don't use directly.
-  uptr size_;
+  // private, don't use directly.
+  usize size_;
   Item *first_;
   Item *last_;
 };

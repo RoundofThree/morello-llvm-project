@@ -25,16 +25,16 @@ SANITIZER_WEAK_ATTRIBUTE StackDepotStats StackDepotGetStats() { return {}; }
 
 void *BackgroundThread(void *arg) {
   VPrintf(1, "%s: Started BackgroundThread\n", SanitizerToolName);
-  const uptr hard_rss_limit_mb = common_flags()->hard_rss_limit_mb;
-  const uptr soft_rss_limit_mb = common_flags()->soft_rss_limit_mb;
+  const usize hard_rss_limit_mb = common_flags()->hard_rss_limit_mb;
+  const usize soft_rss_limit_mb = common_flags()->soft_rss_limit_mb;
   const bool heap_profile = common_flags()->heap_profile;
-  uptr prev_reported_rss = 0;
-  uptr prev_reported_stack_depot_size = 0;
+  usize prev_reported_rss = 0;
+  usize prev_reported_stack_depot_size = 0;
   bool reached_soft_rss_limit = false;
-  uptr rss_during_last_reported_profile = 0;
+  usize rss_during_last_reported_profile = 0;
   while (true) {
     SleepForMillis(100);
-    const uptr current_rss_mb = GetRSS() >> 20;
+    const usize current_rss_mb = GetRSS() >> 20;
     if (Verbosity()) {
       // If RSS has grown 10% since last time, print some information.
       if (prev_reported_rss * 11 / 10 < current_rss_mb) {
@@ -154,7 +154,7 @@ void ReserveShadowMemoryRange(uptr beg, uptr end, const char *name,
                               bool madvise_shadow) {
   CHECK_EQ((beg % GetMmapGranularity()), 0);
   CHECK_EQ(((end + 1) % GetMmapGranularity()), 0);
-  uptr size = end - beg + 1;
+  usize size = end - beg + 1;
   DecreaseTotalMmap(size);  // Don't count the shadow against mmap_limit_mb.
   if (madvise_shadow ? !MmapFixedSuperNoReserve(beg, size, name)
                      : !MmapFixedNoReserve(beg, size, name)) {
@@ -168,7 +168,7 @@ void ReserveShadowMemoryRange(uptr beg, uptr end, const char *name,
     DontDumpShadowMemory(beg, size);
 }
 
-void ProtectGap(uptr addr, uptr size, uptr zero_base_shadow_start,
+void ProtectGap(uptr addr, usize size, uptr zero_base_shadow_start,
                 uptr zero_base_max_shadow_start) {
   if (!size)
     return;

@@ -41,7 +41,7 @@ static int AppendChar(char **buff, const char *buff_end, char c) {
 static int AppendNumber(char **buff, const char *buff_end, u64 absolute_value,
                         u8 base, u8 minimal_num_length, bool pad_with_zero,
                         bool negative, bool uppercase) {
-  uptr const kMaxLen = 30;
+  usize const kMaxLen = 30;
   RAW_CHECK(base == 10 || base == 16);
   RAW_CHECK(base == 10 || !negative);
   RAW_CHECK(absolute_value || !negative);
@@ -51,10 +51,10 @@ static int AppendNumber(char **buff, const char *buff_end, u64 absolute_value,
     --minimal_num_length;
   if (negative && pad_with_zero)
     result += AppendChar(buff, buff_end, '-');
-  uptr num_buffer[kMaxLen];
+  usize num_buffer[kMaxLen];
   int pos = 0;
   do {
-    RAW_CHECK_MSG((uptr)pos < kMaxLen, "AppendNumber buffer overflow");
+    RAW_CHECK_MSG((usize)pos < kMaxLen, "AppendNumber buffer overflow");
     num_buffer[pos++] = absolute_value % base;
     absolute_value /= base;
   } while (absolute_value > 0);
@@ -338,14 +338,14 @@ int internal_snprintf(char *buffer, usize length, const char *format, ...) {
 }
 
 void InternalScopedString::append(const char *format, ...) {
-  uptr prev_len = length();
+  usize prev_len = length();
 
   while (true) {
     buffer_.resize(buffer_.capacity());
 
     va_list args;
     va_start(args, format);
-    uptr sz = VSNPrintf(buffer_.data() + prev_len, buffer_.size() - prev_len,
+    usize sz = VSNPrintf(buffer_.data() + prev_len, buffer_.size() - prev_len,
                         format, args);
     va_end(args);
     if (sz < buffer_.size() - prev_len) {

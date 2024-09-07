@@ -80,9 +80,9 @@ bool MemoryMappingLayout::Next(MemoryMappedSegment *segment) {
   const struct kinfo_vmentry *VmEntry =
       (const struct kinfo_vmentry *)data_.current;
 
-  segment->start = (uptr)VmEntry->kve_start;
-  segment->end = (uptr)VmEntry->kve_end;
-  segment->offset = (uptr)VmEntry->kve_offset;
+  segment->start = (vaddr)VmEntry->kve_start;
+  segment->end = (vaddr)VmEntry->kve_end;
+  segment->offset = (usize)VmEntry->kve_offset;
 
   segment->protection = 0;
   if ((VmEntry->kve_protection & KVME_PROT_READ) != 0)

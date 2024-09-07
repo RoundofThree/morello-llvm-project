@@ -38,16 +38,16 @@ class Vector {
     last_ = 0;
   }
 
-  uptr Size() const {
+  usize Size() const {
     return end_ - begin_;
   }
 
-  T &operator[](uptr i) {
+  T &operator[](usize i) {
     DCHECK_LT(i, end_ - begin_);
     return begin_[i];
   }
 
-  const T &operator[](uptr i) const {
+  const T &operator[](usize i) const {
     DCHECK_LT(i, end_ - begin_);
     return begin_[i];
   }
@@ -76,14 +76,14 @@ class Vector {
       end_ = begin_;
       return;
     }
-    uptr old_size = Size();
+    usize old_size = Size();
     if (size <= old_size) {
       end_ = begin_ + size;
       return;
     }
     EnsureSize(size);
     if (old_size < size) {
-      for (uptr i = old_size; i < size; i++)
+      for (usize i = old_size; i < size; i++)
         internal_memset(&begin_[i], 0, sizeof(begin_[i]));
     }
   }
@@ -96,12 +96,12 @@ class Vector {
   void EnsureSize(usize size) {
     if (size <= Size())
       return;
-    if (size <= (uptr)(last_ - begin_)) {
+    if (size <= (usize)(last_ - begin_)) {
       end_ = begin_ + size;
       return;
     }
-    uptr cap0 = last_ - begin_;
-    uptr cap = cap0 * 5 / 4;  // 25% growth
+    usize cap0 = last_ - begin_;
+    usize cap = cap0 * 5 / 4;  // 25% growth
     if (cap == 0)
       cap = 16;
     if (cap < size)

@@ -8511,7 +8511,7 @@ INTERCEPTOR(bool, cap_rights_contains, const __sanitizer_cap_rights *big,
   return REAL(cap_rights_contains)(big, little);
 }
 
-INTERCEPTOR(int, cap_ioctls_limit, int fd, const uptr *cmds, SIZE_T ncmds) {
+INTERCEPTOR(int, cap_ioctls_limit, int fd, const usize *cmds, SIZE_T ncmds) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, cap_ioctls_limit, fd, cmds, ncmds);
   if (cmds)
@@ -8520,7 +8520,7 @@ INTERCEPTOR(int, cap_ioctls_limit, int fd, const uptr *cmds, SIZE_T ncmds) {
   return REAL(cap_ioctls_limit)(fd, cmds, ncmds);
 }
 
-INTERCEPTOR(int, cap_ioctls_get, int fd, uptr *cmds, SIZE_T maxcmds) {
+INTERCEPTOR(int, cap_ioctls_get, int fd, usize *cmds, SIZE_T maxcmds) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, cap_ioctls_get, fd, cmds, maxcmds);
   int ret = REAL(cap_ioctls_get)(fd, cmds, maxcmds);

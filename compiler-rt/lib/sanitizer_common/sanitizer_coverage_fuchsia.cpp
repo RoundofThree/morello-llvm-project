@@ -81,7 +81,7 @@ class TracePcGuardController final {
     }
   }
 
-  void TracePcGuard(u32 *guard, uptr pc) {
+  void TracePcGuard(u32 *guard, vaddr pc) {
     atomic_uint32_t *guard_ptr = reinterpret_cast<atomic_uint32_t *>(guard);
     u32 idx = atomic_exchange(guard_ptr, 0, memory_order_relaxed);
     if (idx > 0)
@@ -114,10 +114,10 @@ class TracePcGuardController final {
   // for every possible 32-bit index value.  This avoids the need
   // to change the mapping when increasing the size of the VMO.
   // We can always spare the 32G of address space.
-  static constexpr size_t MappingSize = sizeof(uptr) << 32;
+  static constexpr size_t MappingSize = sizeof(vaddr) << 32;
 
   Mutex setup_lock_;
-  uptr *array_ = nullptr;
+  vaddr *array_ = nullptr;
   u32 next_index_ = 0;
   zx_handle_t vmo_ = {};
   char vmo_name_[ZX_MAX_NAME_LEN] = {};
@@ -160,7 +160,7 @@ class TracePcGuardController final {
 
       // Hereafter other threads are free to start storing into
       // elements [1, next_index_) of the big array.
-      array_ = reinterpret_cast<uptr *>(mapping);
+      array_ = reinterpret_cast<vaddr *>(mapping);
 
       // Store the magic number.
       // Hereafter, the VMO serves as the contents of the '.sancov' file.
@@ -209,8 +209,8 @@ void InitializeCoverage(bool enabled, const char *dir) {
 }  // namespace __sanitizer
 
 extern "C" {
-SANITIZER_INTERFACE_ATTRIBUTE void __sanitizer_dump_coverage(const uptr *pcs,
-                                                             uptr len) {
+SANITIZER_INTERFACE_ATTRIBUTE void __sanitizer_dump_coverage(const vaddr *pcs,
+                                                             usize len) {
   UNIMPLEMENTED();
 }
 

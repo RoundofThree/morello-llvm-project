@@ -22,11 +22,11 @@ namespace __sanitizer {
 
 // This is used by UBSan for type names, and by ASan for global variable names.
 constexpr const char *kFormatDemangle = "{{{symbol:%s}}}";
-constexpr uptr kFormatDemangleMax = 1024;  // Arbitrary.
+constexpr usize kFormatDemangleMax = 1024;  // Arbitrary.
 
 // Function name or equivalent from PC location.
 constexpr const char *kFormatFunction = "{{{pc:%p}}}";
-constexpr uptr kFormatFunctionMax = 64;  // More than big enough for 64-bit hex.
+constexpr usize kFormatFunctionMax = 64;  // More than big enough for 64-bit hex.
 
 // Global variable name or equivalent from data memory address.
 constexpr const char *kFormatData = "{{{data:%p}}}";

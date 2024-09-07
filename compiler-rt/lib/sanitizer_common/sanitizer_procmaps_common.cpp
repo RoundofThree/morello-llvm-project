@@ -34,8 +34,8 @@ static int TranslateDigit(char c) {
 }
 
 // Parse a number and promote 'p' up to the first non-digit character.
-static uptr ParseNumber(const char **p, int base) {
-  uptr n = 0;
+static usize ParseNumber(const char **p, int base) {
+  usize n = 0;
   int d;
   CHECK(base >= 2 && base <= 16);
   while ((d = TranslateDigit(**p)) >= 0 && d < base) {
@@ -50,7 +50,7 @@ bool IsDecimal(char c) {
   return d >= 0 && d < 10;
 }
 
-uptr ParseDecimal(const char **p) {
+usize ParseDecimal(const char **p) {
   return ParseNumber(p, 10);
 }
 
@@ -59,7 +59,7 @@ bool IsHex(char c) {
   return d >= 0 && d < 16;
 }
 
-uptr ParseHex(const char **p) {
+usize ParseHex(const char **p) {
   return ParseNumber(p, 16);
 }
 
@@ -122,7 +122,7 @@ void MemoryMappingLayout::DumpListOfModules(
   Reset();
   InternalMmapVector<char> module_name(kMaxPathLength);
   MemoryMappedSegment segment(module_name.data(), module_name.size());
-  for (uptr i = 0; Next(&segment); i++) {
+  for (usize i = 0; Next(&segment); i++) {
     const char *cur_name = segment.filename;
     if (cur_name[0] == '\0')
       continue;
@@ -137,7 +137,7 @@ void MemoryMappingLayout::DumpListOfModules(
     //   mapped high at address space (in particular, higher than
     //   shadow memory of the tool), so the module can't be the
     //   first entry.
-    uptr base_address = (i ? segment.start : 0) - segment.offset;
+    vaddr base_address = (i ? segment.start : 0) - segment.offset;
     LoadedModule cur_module;
     cur_module.set(cur_name, base_address);
     segment.AddAddressRanges(&cur_module);
@@ -157,7 +157,7 @@ void GetMemoryProfile(fill_profile_f cb, usize *stats) {
 
 void ParseUnixMemoryProfile(fill_profile_f cb, usize *stats, char *smaps,
                             usize smaps_len) {
-  uptr start = 0;
+  vaddr start = 0;
   bool file = false;
   const char *pos = smaps;
   char *end = smaps + smaps_len;

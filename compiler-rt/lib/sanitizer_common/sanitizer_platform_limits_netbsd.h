@@ -70,7 +70,7 @@ typedef struct __sanitizer_modctl_load {
   const char *ml_filename;
   int ml_flags;
   const char *ml_props;
-  uptr ml_propslen;
+  usize ml_propslen;
 } __sanitizer_modctl_load_t;
 extern const int modctl_load;
 extern const int modctl_unload;
@@ -93,7 +93,7 @@ struct __sanitizer_sigevent {
 struct __sanitizer_aiocb {
   u64 aio_offset;
   uptr aio_buf;
-  uptr aio_nbytes;
+  usize aio_nbytes;
   int aio_fildes;
   int aio_lio_opcode;
   int aio_reqprio;
@@ -332,10 +332,10 @@ extern const uptr sa_siginfo;
 
 extern int af_inet;
 extern int af_inet6;
-uptr __sanitizer_in_addr_sz(int af);
+usize __sanitizer_in_addr_sz(int af);
 
 struct __sanitizer_dl_phdr_info {
-  uptr dlpi_addr;
+  vaddr dlpi_addr;
   const char *dlpi_name;
   const void *dlpi_phdr;
   short dlpi_phnum;
@@ -2362,7 +2362,7 @@ struct __sanitizer_cdbr {
   void (*unmap)(void *, void *, uptr);
   void *cookie;
   u8 *mmap_base;
-  uptr mmap_size;
+  usize mmap_size;
 
   u8 *hash_base;
   u8 *offset_base;
@@ -2383,14 +2383,14 @@ struct __sanitizer_cdbr {
 };
 
 struct __sanitizer_cdbw {
-  uptr data_counter;
-  uptr data_allocated;
-  uptr data_size;
-  uptr *data_len;
+  usize data_counter;
+  usize data_allocated;
+  usize data_size;
+  usize *data_len;
   void **data_ptr;
-  uptr hash_size;
+  usize hash_size;
   void *hash;
-  uptr key_counter;
+  usize key_counter;
 };
 }  // namespace __sanitizer
 

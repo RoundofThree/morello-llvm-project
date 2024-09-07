@@ -72,16 +72,16 @@ void BufferedStackTrace::Init(const uptr *pcs, usize cnt, uptr extra_top_pc) {
 // cell in stack to be a saved frame pointer. GetCanonicFrame returns the
 // pointer to saved frame pointer in any case.
 static inline uhwptr *GetCanonicFrame(uptr bp,
-                                      uptr stack_top,
-                                      uptr stack_bottom) {
+                                      vaddr stack_top,
+                                      vaddr stack_bottom) {
   CHECK_GT(stack_top, stack_bottom);
 #ifdef __arm__
-  if (!IsValidFrame(bp, stack_top, stack_bottom)) return 0;
+  if (!IsValidFrame((vaddr)bp, stack_top, stack_bottom)) return 0;
   uhwptr *bp_prev = (uhwptr *)bp;
-  if (IsValidFrame((uptr)bp_prev[0], stack_top, stack_bottom)) return bp_prev;
+  if (IsValidFrame((vaddr)bp_prev[0], stack_top, stack_bottom)) return bp_prev;
   // The next frame pointer does not look right. This could be a GCC frame, step
   // back by 1 word and try again.
-  if (IsValidFrame((uptr)bp_prev[-1], stack_top, stack_bottom))
+  if (IsValidFrame((vaddr)bp_prev[-1], stack_top, stack_bottom))
     return bp_prev - 1;
   // Nope, this does not look right either. This means the frame after next does
   // not have a valid frame pointer, but we can still extract the caller PC.
@@ -93,20 +93,20 @@ static inline uhwptr *GetCanonicFrame(uptr bp,
 #endif
 }
 
-void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, uptr stack_top,
-                                    uptr stack_bottom, u32 max_depth) {
+void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, vaddr stack_top,
+                                    vaddr stack_bottom, u32 max_depth) {
   // TODO(yln): add arg sanity check for stack_top/stack_bottom
   CHECK_GE(max_depth, 2);
-  const uptr kPageSize = GetPageSizeCached();
+  const usize kPageSize = GetPageSizeCached();
   trace_buffer[0] = pc;
   size = 1;
   if (stack_top < 4096) return;  // Sanity check for stack top.
   uhwptr *frame = GetCanonicFrame(bp, stack_top, stack_bottom);
   // Lowest possible address that makes sense as the next frame pointer.
   // Goes up as we walk the stack.
-  uptr bottom = stack_bottom;
+  vaddr bottom = stack_bottom;
   // Avoid infinite loop when frame == frame[0] by using frame > prev_frame.
-  while (IsValidFrame((uptr)frame, stack_top, bottom) &&
+  while (IsValidFrame((vaddr)frame, stack_top, bottom) &&
          IsAligned((uptr)frame, sizeof(*frame)) &&
          size < max_depth) {
 #ifdef __powerpc__
@@ -114,7 +114,7 @@ void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, uptr stack_top,
     // 16 of the *caller's* stack frame.  Thus we must dereference the
     // back chain to find the caller frame before extracting it.
     uhwptr *caller_frame = (uhwptr*)frame[0];
-    if (!IsValidFrame((uptr)caller_frame, stack_top, bottom) ||
+    if (!IsValidFrame((vaddr)caller_frame, stack_top, bottom) ||
         !IsAligned((uptr)caller_frame, sizeof(uhwptr)))
       break;
     uhwptr pc1 = caller_frame[2];
@@ -134,7 +134,7 @@ void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, uptr stack_top,
     if (pc1 != pc) {
       trace_buffer[size++] = (uptr) pc1;
     }
-    bottom = (uptr)frame;
+    bottom = (vaddr)frame;
 #if defined(__riscv)
     // frame[-2] contain fp of the previous frame
     uptr new_bp = (uptr)frame[-2];

@@ -142,7 +142,7 @@ void LoadedModule::set(const char *module_name, vaddr base_address,
   instrumented_ = instrumented;
 }
 
-void LoadedModule::setUuid(const char *uuid, uptr size) {
+void LoadedModule::setUuid(const char *uuid, usize size) {
   if (size > kModuleUUIDSize)
     size = kModuleUUIDSize;
   internal_memcpy(uuid_, uuid, size);
@@ -281,10 +281,10 @@ usize ReadBinaryNameCached(/*out*/char *buf, usize buf_len) {
   return name_len;
 }
 
-uptr ReadBinaryDir(/*out*/ char *buf, uptr buf_len) {
+usize ReadBinaryDir(/*out*/ char *buf, usize buf_len) {
   ReadBinaryNameCached(buf, buf_len);
   const char *exec_name_pos = StripModuleName(buf);
-  uptr name_len = exec_name_pos - buf;
+  usize name_len = exec_name_pos - buf;
   buf[name_len] = '\0';
   return name_len;
 }

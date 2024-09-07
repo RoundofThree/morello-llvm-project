@@ -41,7 +41,7 @@ void LibIgnore::OnLibraryLoaded(const char *name) {
   InternalMmapVector<char> buf(kMaxPathLength);
   if (name && internal_readlink(name, buf.data(), buf.size() - 1) > 0 &&
       buf[0]) {
-    for (uptr i = 0; i < count_; i++) {
+    for (usize i = 0; i < count_; i++) {
       Lib *lib = &libs_[i];
       if (!lib->loaded && (!lib->real_name) &&
           TemplateMatch(lib->templ, name))
@@ -52,7 +52,7 @@ void LibIgnore::OnLibraryLoaded(const char *name) {
   // Scan suppressions list and find newly loaded and unloaded libraries.
   ListOfModules modules;
   modules.init();
-  for (uptr i = 0; i < count_; i++) {
+  for (usize i = 0; i < count_; i++) {
     Lib *lib = &libs_[i];
     bool loaded = false;
     for (const auto &mod : modules) {
@@ -78,7 +78,7 @@ void LibIgnore::OnLibraryLoaded(const char *name) {
                 lib->templ, mod.full_name());
         lib->loaded = true;
         lib->name = internal_strdup(mod.full_name());
-        const uptr idx =
+        const usize idx =
             atomic_load(&ignored_ranges_count_, memory_order_relaxed);
         CHECK_LT(idx, ARRAY_SIZE(ignored_code_ranges_));
         ignored_code_ranges_[idx].begin = range.beg;
@@ -107,7 +107,7 @@ void LibIgnore::OnLibraryLoaded(const char *name) {
           continue;
         VReport(1, "Adding instrumented range 0x%zx-0x%zx from library '%s'\n",
                 range.beg, range.end, mod.full_name());
-        const uptr idx =
+        const usize idx =
             atomic_load(&instrumented_ranges_count_, memory_order_relaxed);
         CHECK_LT(idx, ARRAY_SIZE(instrumented_code_ranges_));
         instrumented_code_ranges_[idx].begin = range.beg;

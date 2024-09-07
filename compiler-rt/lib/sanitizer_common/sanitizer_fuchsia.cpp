@@ -30,7 +30,7 @@ namespace __sanitizer {
 
 void NORETURN internal__exit(int exitcode) { _zx_process_exit(exitcode); }
 
-uptr internal_sched_yield() {
+usize internal_sched_yield() {
   zx_status_t status = _zx_nanosleep(0);
   CHECK_EQ(status, ZX_OK);
   return 0;  // Why doesn't this return void?
@@ -52,13 +52,13 @@ u64 NanoTime() {
 
 u64 MonotonicNanoTime() { return _zx_clock_get_monotonic(); }
 
-uptr internal_getpid() {
+usize internal_getpid() {
   zx_info_handle_basic_t info;
   zx_status_t status =
       _zx_object_get_info(_zx_process_self(), ZX_INFO_HANDLE_BASIC, &info,
                           sizeof(info), NULL, NULL);
   CHECK_EQ(status, ZX_OK);
-  uptr pid = static_cast<uptr>(info.koid);
+  usize pid = static_cast<usize>(info.koid);
   CHECK_EQ(pid, info.koid);
   return pid;
 }
@@ -112,22 +112,22 @@ void FutexWake(atomic_uint32_t *p, u32 count) {
   CHECK_EQ(status, ZX_OK);
 }
 
-uptr GetPageSize() { return _zx_system_get_page_size(); }
+usize GetPageSize() { return _zx_system_get_page_size(); }
 
-uptr GetMmapGranularity() { return _zx_system_get_page_size(); }
+usize GetMmapGranularity() { return _zx_system_get_page_size(); }
 
 sanitizer_shadow_bounds_t ShadowBounds;
 
 void InitShadowBounds() { ShadowBounds = __sanitizer_shadow_bounds(); }
 
-uptr GetMaxUserVirtualAddress() {
+vaddr GetMaxUserVirtualAddress() {
   InitShadowBounds();
   return ShadowBounds.memory_limit - 1;
 }
 
-uptr GetMaxVirtualAddress() { return GetMaxUserVirtualAddress(); }
+vaddr GetMaxVirtualAddress() { return GetMaxUserVirtualAddress(); }
 
-static void *DoAnonymousMmapOrDie(uptr size, const char *mem_type,
+static void *DoAnonymousMmapOrDie(usize size, const char *mem_type,
                                   bool raw_report, bool die_for_nomem) {
   size = RoundUpTo(size, GetPageSize());
 
@@ -161,19 +161,19 @@ static void *DoAnonymousMmapOrDie(uptr size, const char *mem_type,
   return reinterpret_cast<void *>(addr);
 }
 
-void *MmapOrDie(uptr size, const char *mem_type, bool raw_report) {
+void *MmapOrDie(usize size, const char *mem_type, bool raw_report) {
   return DoAnonymousMmapOrDie(size, mem_type, raw_report, true);
 }
 
-void *MmapNoReserveOrDie(uptr size, const char *mem_type) {
+void *MmapNoReserveOrDie(usize size, const char *mem_type) {
   return MmapOrDie(size, mem_type);
 }
 
-void *MmapOrDieOnFatalError(uptr size, const char *mem_type) {
+void *MmapOrDieOnFatalError(usize size, const char *mem_type) {
   return DoAnonymousMmapOrDie(size, mem_type, false, false);
 }
 
-uptr ReservedAddressRange::Init(uptr init_size, const char *name,
+uptr ReservedAddressRange::Init(usize init_size, const char *name,
                                 uptr fixed_addr) {
   init_size = RoundUpTo(init_size, GetPageSize());
   DCHECK_EQ(os_handle_, ZX_HANDLE_INVALID);
@@ -195,7 +195,7 @@ uptr ReservedAddressRange::Init(uptr init_size, const char *name,
 
 static uptr DoMmapFixedOrDie(zx_handle_t vmar, uptr fixed_addr, uptr map_size,
                              void *base, const char *name, bool die_for_nomem) {
-  uptr offset = fixed_addr - reinterpret_cast<uptr>(base);
+  usize offset = fixed_addr - reinterpret_cast<uptr>(base);
   map_size = RoundUpTo(map_size, GetPageSize());
   zx_handle_t vmo;
   zx_status_t status = _zx_vmo_create(map_size, 0, &vmo);
@@ -222,18 +222,18 @@ static uptr DoMmapFixedOrDie(zx_handle_t vmar, uptr fixed_addr, uptr map_size,
   return addr;
 }
 
-uptr ReservedAddressRange::Map(uptr fixed_addr, uptr map_size,
+uptr ReservedAddressRange::Map(uptr fixed_addr, usize map_size,
                                const char *name) {
   return DoMmapFixedOrDie(os_handle_, fixed_addr, map_size, base_, name_,
                           false);
 }
 
-uptr ReservedAddressRange::MapOrDie(uptr fixed_addr, uptr map_size,
+uptr ReservedAddressRange::MapOrDie(uptr fixed_addr, usize map_size,
                                     const char *name) {
   return DoMmapFixedOrDie(os_handle_, fixed_addr, map_size, base_, name_, true);
 }
 
-void UnmapOrDieVmar(void *addr, uptr size, zx_handle_t target_vmar) {
+void UnmapOrDieVmar(void *addr, usize size, zx_handle_t target_vmar) {
   if (!addr || !size)
     return;
   size = RoundUpTo(size, GetPageSize());
@@ -249,7 +249,7 @@ void UnmapOrDieVmar(void *addr, uptr size, zx_handle_t target_vmar) {
   DecreaseTotalMmap(size);
 }
 
-void ReservedAddressRange::Unmap(uptr addr, uptr size) {
+void ReservedAddressRange::Unmap(uptr addr, usize size) {
   CHECK_LE(size, size_);
   const zx_handle_t vmar = static_cast<zx_handle_t>(os_handle_);
   if (addr == reinterpret_cast<uptr>(base_)) {
@@ -270,20 +270,20 @@ void ReservedAddressRange::Unmap(uptr addr, uptr size) {
 }
 
 // This should never be called.
-void *MmapFixedNoAccess(uptr fixed_addr, uptr size, const char *name) {
+void *MmapFixedNoAccess(uptr fixed_addr, usize size, const char *name) {
   UNIMPLEMENTED();
 }
 
-bool MprotectNoAccess(uptr addr, uptr size) {
+bool MprotectNoAccess(uptr addr, usize size) {
   return _zx_vmar_protect(_zx_vmar_root_self(), 0, addr, size) == ZX_OK;
 }
 
-bool MprotectReadOnly(uptr addr, uptr size) {
+bool MprotectReadOnly(uptr addr, usize size) {
   return _zx_vmar_protect(_zx_vmar_root_self(), ZX_VM_PERM_READ, addr, size) ==
          ZX_OK;
 }
 
-void *MmapAlignedOrDieOnFatalError(uptr size, uptr alignment,
+void *MmapAlignedOrDieOnFatalError(usize size, usize alignment,
                                    const char *mem_type) {
   CHECK_GE(size, GetPageSize());
   CHECK(IsPowerOfTwo(size));
@@ -347,7 +347,7 @@ void *MmapAlignedOrDieOnFatalError(uptr size, uptr alignment,
   return reinterpret_cast<void *>(addr);
 }
 
-void UnmapOrDie(void *addr, uptr size) {
+void UnmapOrDie(void *addr, usize size) {
   UnmapOrDieVmar(addr, size, _zx_vmar_root_self());
 }
 
@@ -359,7 +359,7 @@ void ReleaseMemoryPagesToOS(uptr beg, uptr end) {
     CHECK_NE(root_vmar, ZX_HANDLE_INVALID);
     zx_status_t status =
         _zx_vmar_op_range(root_vmar, ZX_VMAR_OP_DECOMMIT, beg_aligned,
-                          end_aligned - beg_aligned, nullptr, 0);
+                          (usize)(end_aligned - beg_aligned), nullptr, 0);
     CHECK_EQ(status, ZX_OK);
   }
 }
@@ -369,7 +369,7 @@ void DumpProcessMap() {
   return;
 }
 
-bool IsAccessibleMemoryRange(uptr beg, uptr size) {
+bool IsAccessibleMemoryRange(uptr beg, usize size) {
   // TODO(mcgrathr): Figure out a better way.
   zx_handle_t vmo;
   zx_status_t status = _zx_vmo_create(size, 0, &vmo);
@@ -383,8 +383,8 @@ bool IsAccessibleMemoryRange(uptr beg, uptr size) {
 // FIXME implement on this platform.
 void GetMemoryProfile(fill_profile_f cb, uptr *stats) {}
 
-bool ReadFileToBuffer(const char *file_name, char **buff, uptr *buff_size,
-                      uptr *read_len, uptr max_len, error_t *errno_p) {
+bool ReadFileToBuffer(const char *file_name, char **buff, usize *buff_size,
+                      usize *read_len, usize max_len, error_t *errno_p) {
   zx_handle_t vmo;
   zx_status_t status = __sanitizer_get_configuration(file_name, &vmo);
   if (status == ZX_OK) {
@@ -438,7 +438,7 @@ void RawWrite(const char *buffer) {
   }
 }
 
-void CatastrophicErrorWrite(const char *buffer, uptr length) {
+void CatastrophicErrorWrite(const char *buffer, usize length) {
   __sanitizer_log_write(buffer, length);
 }
 
@@ -450,7 +450,7 @@ char **GetEnviron() { return StoredEnviron; }
 
 const char *GetEnv(const char *name) {
   if (StoredEnviron) {
-    uptr NameLen = internal_strlen(name);
+    usize NameLen = internal_strlen(name);
     for (char **Env = StoredEnviron; *Env != 0; Env++) {
       if (internal_strncmp(*Env, name, NameLen) == 0 && (*Env)[NameLen] == '=')
         return (*Env) + NameLen + 1;
@@ -459,7 +459,7 @@ const char *GetEnv(const char *name) {
   return nullptr;
 }
 
-uptr ReadBinaryName(/*out*/ char *buf, uptr buf_len) {
+usize ReadBinaryName(/*out*/ char *buf, usize buf_len) {
   const char *argv0 = "<UNKNOWN>";
   if (StoredArgv && StoredArgv[0]) {
     argv0 = StoredArgv[0];
@@ -468,13 +468,13 @@ uptr ReadBinaryName(/*out*/ char *buf, uptr buf_len) {
   return internal_strlen(buf);
 }
 
-uptr ReadLongProcessName(/*out*/ char *buf, uptr buf_len) {
+usize ReadLongProcessName(/*out*/ char *buf, usize buf_len) {
   return ReadBinaryName(buf, buf_len);
 }
 
-uptr MainThreadStackBase, MainThreadStackSize;
+usize MainThreadStackBase, MainThreadStackSize;
 
-bool GetRandom(void *buffer, uptr length, bool blocking) {
+bool GetRandom(void *buffer, usize length, bool blocking) {
   CHECK_LE(length, ZX_CPRNG_DRAW_MAX_LEN);
   _zx_cprng_draw(buffer, length);
   return true;
@@ -482,7 +482,7 @@ bool GetRandom(void *buffer, uptr length, bool blocking) {
 
 u32 GetNumberOfCPUs() { return zx_system_get_num_cpus(); }
 
-uptr GetRSS() { UNIMPLEMENTED(); }
+usize GetRSS() { UNIMPLEMENTED(); }
 
 void *internal_start_thread(void *(*func)(void *arg), void *arg) { return 0; }
 void internal_join_thread(void *th) {}

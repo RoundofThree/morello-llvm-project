@@ -41,13 +41,13 @@ namespace {
 # if SANITIZER_CP_DEMANGLE
 struct CplusV3DemangleData {
   char *buf;
-  uptr size, allocated;
+  usize size, allocated;
 };
 
 extern "C" {
 static void CplusV3DemangleCallback(const char *s, size_t l, void *vdata) {
   CplusV3DemangleData *data = (CplusV3DemangleData *)vdata;
-  uptr needed = data->size + l + 1;
+  usize needed = data->size + l + 1;
   if (needed > data->allocated) {
     data->allocated *= 2;
     if (needed > data->allocated)
@@ -87,7 +87,7 @@ char *CplusV3Demangle(const char *name) {
 struct SymbolizeCodeCallbackArg {
   SymbolizedStack *first;
   SymbolizedStack *last;
-  uptr frames_symbolized;
+  usize frames_symbolized;
 
   AddressInfo *get_new_frame(uintptr_t addr) {
     CHECK(last);
@@ -155,7 +155,7 @@ LibbacktraceSymbolizer *LibbacktraceSymbolizer::get(LowLevelAllocator *alloc) {
   return new(*alloc) LibbacktraceSymbolizer(state);
 }
 
-bool LibbacktraceSymbolizer::SymbolizePC(uptr addr, SymbolizedStack *stack) {
+bool LibbacktraceSymbolizer::SymbolizePC(vaddr addr, SymbolizedStack *stack) {
   SymbolizeCodeCallbackArg data;
   data.first = stack;
   data.last = stack;
@@ -169,7 +169,7 @@ bool LibbacktraceSymbolizer::SymbolizePC(uptr addr, SymbolizedStack *stack) {
   return (data.frames_symbolized > 0);
 }
 
-bool LibbacktraceSymbolizer::SymbolizeData(uptr addr, DataInfo *info) {
+bool LibbacktraceSymbolizer::SymbolizeData(vaddr addr, DataInfo *info) {
   backtrace_syminfo((backtrace_state *)state_, addr, SymbolizeDataCallback,
                     ErrorCallback, info);
   return true;

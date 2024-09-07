@@ -1417,21 +1417,21 @@ POST_SYSCALL(io_getevents)
 
 PRE_SYSCALL(io_submit)(long ctx_id, long nr, __sanitizer_iocb **iocbpp) {
   for (long i = 0; i < nr; ++i) {
-    uptr op = iocbpp[i]->aio_lio_opcode;
+    usize op = iocbpp[i]->aio_lio_opcode;
     void *data = (void *)iocbpp[i]->aio_data;
     void *buf = (void *)iocbpp[i]->aio_buf;
-    uptr len = (uptr)iocbpp[i]->aio_nbytes;
+    usize len = (usize)iocbpp[i]->aio_nbytes;
     if (op == iocb_cmd_pwrite && buf && len) {
       PRE_READ(buf, len);
     } else if (op == iocb_cmd_pread && buf && len) {
       POST_WRITE(buf, len);
     } else if (op == iocb_cmd_pwritev) {
       __sanitizer_iovec *iovec = (__sanitizer_iovec *)buf;
-      for (uptr v = 0; v < len; v++)
+      for (usize v = 0; v < len; v++)
         PRE_READ(iovec[v].iov_base, iovec[v].iov_len);
     } else if (op == iocb_cmd_preadv) {
       __sanitizer_iovec *iovec = (__sanitizer_iovec *)buf;
-      for (uptr v = 0; v < len; v++)
+      for (usize v = 0; v < len; v++)
         POST_WRITE(iovec[v].iov_base, iovec[v].iov_len);
     }
     // See comment in io_getevents.
@@ -3135,13 +3135,13 @@ POST_SYSCALL(rt_sigaction)
   }
 }
 
-PRE_SYSCALL(getrandom)(void *buf, uptr count, long flags) {
+PRE_SYSCALL(getrandom)(void *buf, usize count, long flags) {
   if (buf) {
     PRE_WRITE(buf, count);
   }
 }
 
-POST_SYSCALL(getrandom)(long res, void *buf, uptr count, long flags) {
+POST_SYSCALL(getrandom)(long res, void *buf, usize count, long flags) {
   if (res > 0 && buf) {
     POST_WRITE(buf, res);
   }

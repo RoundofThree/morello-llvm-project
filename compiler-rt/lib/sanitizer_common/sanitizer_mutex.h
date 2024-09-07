@@ -148,7 +148,7 @@ class CheckedMutex {
 #if SANITIZER_CHECK_DEADLOCKS
   const MutexType type_;
 
-  void LockImpl(uptr pc);
+  void LockImpl(vaddr pc);
   void UnlockImpl();
   static void CheckNoLocksImpl();
 #endif
@@ -167,7 +167,7 @@ class SANITIZER_MUTEX Mutex : CheckedMutex {
     CheckedMutex::Lock();
     u64 reset_mask = ~0ull;
     u64 state = atomic_load_relaxed(&state_);
-    for (uptr spin_iters = 0;; spin_iters++) {
+    for (usize spin_iters = 0;; spin_iters++) {
       u64 new_state;
       bool locked = (state & (kWriterLock | kReaderLockMask)) != 0;
       if (LIKELY(!locked)) {
@@ -240,7 +240,7 @@ class SANITIZER_MUTEX Mutex : CheckedMutex {
     CheckedMutex::Lock();
     u64 reset_mask = ~0ull;
     u64 state = atomic_load_relaxed(&state_);
-    for (uptr spin_iters = 0;; spin_iters++) {
+    for (usize spin_iters = 0;; spin_iters++) {
       bool locked = (state & kWriterLock) != 0;
       u64 new_state;
       if (LIKELY(!locked)) {
@@ -352,7 +352,7 @@ class SANITIZER_MUTEX Mutex : CheckedMutex {
   static constexpr u64 kWriterSpinWait = 1ull << (3 * kCounterWidth + 1);
   static constexpr u64 kReaderSpinWait = 1ull << (3 * kCounterWidth + 2);
 
-  static constexpr uptr kMaxSpinIters = 1500;
+  static constexpr usize kMaxSpinIters = 1500;
 
   Mutex(LinkerInitialized) = delete;
   Mutex(const Mutex &) = delete;

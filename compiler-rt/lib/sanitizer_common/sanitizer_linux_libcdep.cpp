@@ -99,8 +99,8 @@ int internal_sigaction(int signum, const void *act, void *oldact) {
                    (struct sigaction *)oldact);
 }
 
-void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
-                                uptr *stack_bottom) {
+void GetThreadStackTopAndBottom(bool at_initialization, vaddr *stack_top,
+                                vaddr *stack_bottom) {
   CHECK(stack_top);
   CHECK(stack_bottom);
   if (at_initialization) {
@@ -114,13 +114,13 @@ void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
       *stack_top = *stack_bottom = 0;
       return;
     }
-    MemoryMappedSegment segment;
-    uptr prev_end = 0;
+    MemoryMappedSegment segment; //
+    vaddr prev_end = 0;
     while (proc_maps.Next(&segment)) {
-      if ((uptr)&rl < segment.end) break;
+      if ((vaddr)&rl < segment.end) break;
       prev_end = segment.end;
     }
-    CHECK((uptr)&rl >= segment.start && (uptr)&rl < segment.end);
+    CHECK((vaddr)&rl >= segment.start && (vaddr)&rl < segment.end);
 
     // Get stacksize from rlimit, but clip it so that it does not overlap
     // with other mappings.
@@ -151,8 +151,8 @@ void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
   pthread_attr_destroy(&attr);
 #endif  // SANITIZER_SOLARIS
 
-  *stack_top = (uptr)stackaddr + stacksize;
-  *stack_bottom = (uptr)stackaddr;
+  *stack_top = (vaddr)stackaddr + stacksize;
+  *stack_bottom = (vaddr)stackaddr;
 }
 
 #if !SANITIZER_GO
@@ -312,23 +312,23 @@ static usize TlsPreTcbSize() {
 #if !SANITIZER_GO
 namespace {
 struct TlsBlock {
-  uptr begin, end, align;
-  size_t tls_modid;
+  vaddr begin, end;
+  size_t align, tls_modid;
   bool operator<(const TlsBlock &rhs) const { return begin < rhs.begin; }
 };
 }  // namespace
 
 #ifdef __s390__
-extern "C" uptr __tls_get_offset(void *arg);
+extern "C" usize __tls_get_offset(void *arg);
 
-static uptr TlsGetOffset(uptr ti_module, uptr ti_offset) {
+static usize TlsGetOffset(usize ti_module, usize ti_offset) {
   // The __tls_get_offset ABI requires %r12 to point to GOT and %r2 to be an
   // offset of a struct tls_index inside GOT. We don't possess either of the
   // two, so violate the letter of the "ELF Handling For Thread-Local
   // Storage" document and assume that the implementation just dereferences
   // %r2 + %r12.
-  uptr tls_index[2] = {ti_module, ti_offset};
-  register uptr r2 asm("2") = 0;
+  usize tls_index[2] = {ti_module, ti_offset};
+  register usize r2 asm("2") = 0;
   register void *r12 asm("12") = tls_index;
   asm("basr %%r14, %[__tls_get_offset]"
       : "+r"(r2)
@@ -344,16 +344,16 @@ static int CollectStaticTlsBlocks(struct dl_phdr_info *info, size_t size,
                                   void *data) {
   if (!info->dlpi_tls_modid)
     return 0;
-  uptr begin = (uptr)info->dlpi_tls_data;
+  vaddr begin = (vaddr)info->dlpi_tls_data;
   if (!g_use_dlpi_tls_data) {
     // Call __tls_get_addr as a fallback. This forces TLS allocation on glibc
     // and FreeBSD.
 #ifdef __s390__
-    begin = (uptr)__builtin_thread_pointer() +
+    begin = (vaddr)__builtin_thread_pointer() +
             TlsGetOffset(info->dlpi_tls_modid, 0);
 #else
     size_t mod_and_off[2] = {info->dlpi_tls_modid, 0};
-    begin = (uptr)__tls_get_addr(mod_and_off);
+    begin = (vaddr)__tls_get_addr(mod_and_off);
 #endif
   }
   for (unsigned i = 0; i != info->dlpi_phnum; ++i)
@@ -366,16 +366,16 @@ static int CollectStaticTlsBlocks(struct dl_phdr_info *info, size_t size,
   return 0;
 }
 
-__attribute__((unused)) static void GetStaticTlsBoundary(uptr *addr, uptr *size,
-                                                         uptr *align) {
+__attribute__((unused)) static void GetStaticTlsBoundary(vaddr *addr, usize *size,
+                                                         usize *align) {
   InternalMmapVector<TlsBlock> ranges;
   dl_iterate_phdr(CollectStaticTlsBlocks, &ranges);
-  uptr len = ranges.size();
+  usize len = ranges.size();
   Sort(ranges.begin(), len);
   // Find the range with tls_modid=1. For glibc, because libc.so uses PT_TLS,
   // this module is guaranteed to exist and is one of the initially loaded
   // modules.
-  uptr one = 0;
+  usize one = 0;
   while (one != len && ranges[one].tls_modid != 1) ++one;
   if (one == len) {
     // This may happen with musl if no module uses PT_TLS.
@@ -387,11 +387,11 @@ __attribute__((unused)) static void GetStaticTlsBoundary(uptr *addr, uptr *size,
   // Find the maximum consecutive ranges. We consider two modules consecutive if
   // the gap is smaller than the alignment. The dynamic loader places static TLS
   // blocks this way not to waste space.
-  uptr l = one;
+  usize l = one;
   *align = ranges[l].align;
   while (l != 0 && ranges[l].begin < ranges[l - 1].end + ranges[l - 1].align)
     *align = Max(*align, ranges[--l].align);
-  uptr r = one + 1;
+  uszie r = one + 1;
   while (r != len && ranges[r].begin < ranges[r - 1].end + ranges[r - 1].align)
     *align = Max(*align, ranges[r++].align);
   *addr = ranges[l].begin;
@@ -412,7 +412,7 @@ static struct tls_tcb * ThreadSelfTlsTcb() {
   return tcb;
 }
 
-uptr ThreadSelf() { return (uptr)ThreadSelfTlsTcb()->tcb_pthread; }
+vaddr ThreadSelf() { return (vaddr)ThreadSelfTlsTcb()->tcb_pthread; }
 #endif  // SANITIZER_NETBSD
 
 #if SANITIZER_NETBSD || (SANITIZER_FREEBSD && defined(__mips__))
@@ -422,7 +422,7 @@ int GetSizeFromHdr(struct dl_phdr_info *info, size_t size, void *data) {
 
   for (; hdr != last_hdr; ++hdr) {
     if (hdr->p_type == PT_TLS && info->dlpi_tls_modid == 1) {
-      *(uptr*)data = hdr->p_memsz;
+      *(usize*)data = hdr->p_memsz;
       break;
     }
   }
@@ -437,13 +437,13 @@ extern "C" SANITIZER_WEAK_ATTRIBUTE void __libc_get_static_tls_bounds(void **,
 #endif
 
 #if !SANITIZER_GO
-static void GetTls(uptr *addr, usize *size) {
+static void GetTls(vaddr *addr, usize *size) {
 #if SANITIZER_ANDROID
   if (&__libc_get_static_tls_bounds) {
     void *start_addr;
     void *end_addr;
     __libc_get_static_tls_bounds(&start_addr, &end_addr);
-    *addr = reinterpret_cast<uptr>(start_addr);
+    *addr = reinterpret_cast<vaddr>(start_addr);
     *size = static_cast<char *>(end_addr) - static_cast<char *>(start_addr);
   } else {
     *addr = 0;
@@ -457,29 +457,29 @@ static void GetTls(uptr *addr, usize *size) {
   *addr -= *size;
   *addr += ThreadDescriptorSize();
 #elif SANITIZER_GLIBC && defined(__aarch64__)
-  *addr = reinterpret_cast<uptr>(__builtin_thread_pointer()) -
+  *addr = reinterpret_cast<vaddr>(__builtin_thread_pointer()) -
           ThreadDescriptorSize();
   *size = g_tls_size + ThreadDescriptorSize();
 #elif SANITIZER_GLIBC && defined(__powerpc64__)
   // Workaround for glibc<2.25(?). 2.27 is known to not need this.
-  uptr tp;
+  vaddr tp;
   asm("addi %0,13,-0x7000" : "=r"(tp));
-  const uptr pre_tcb_size = TlsPreTcbSize();
+  const usize pre_tcb_size = TlsPreTcbSize();
   *addr = tp - pre_tcb_size;
   *size = g_tls_size + pre_tcb_size;
 #elif SANITIZER_FREEBSD || SANITIZER_LINUX
-  uptr align;
+  usize align;
   GetStaticTlsBoundary(addr, size, &align);
 #if defined(__x86_64__) || defined(__i386__) || defined(__s390__) || \
     defined(__sparc__)
   if (SANITIZER_GLIBC) {
 #if defined(__x86_64__) || defined(__i386__)
-    align = Max<uptr>(align, 64);
+    align = Max<usize>(align, 64);
 #else
-    align = Max<uptr>(align, 16);
+    align = Max<usize>(align, 16);
 #endif
   }
-  const uptr tp = RoundUpTo(*addr + *size, align);
+  const vaddr tp = RoundUpTo(*addr + *size, align);
 
   // lsan requires the range to additionally cover the static TLS surplus
   // (elf/dl-tls.c defines 1664). Otherwise there may be false positives for
@@ -502,14 +502,14 @@ static void GetTls(uptr *addr, usize *size) {
   else if (SANITIZER_FREEBSD)
     *size += 128;  // RTLD_STATIC_TLS_EXTRA
 #if defined(__mips__) || defined(__powerpc64__) || SANITIZER_RISCV64
-  const uptr pre_tcb_size = TlsPreTcbSize();
+  const usize pre_tcb_size = TlsPreTcbSize();
   *addr -= pre_tcb_size;
   *size += pre_tcb_size;
 #else
   // arm and aarch64 reserve two words at TP, so this underestimates the range.
   // However, this is sufficient for the purpose of finding the pointers to
   // thread-specific data keys.
-  const uptr tcb_size = ThreadDescriptorSize();
+  const usize tcb_size = ThreadDescriptorSize();
   *addr -= tcb_size;
   *size += tcb_size;
 #endif
@@ -525,7 +525,7 @@ static void GetTls(uptr *addr, usize *size) {
 
     if (*size != 0) {
       // The block has been found and tcb_dtv[1] contains the base address
-      *addr = (uptr)tcb->tcb_dtv[1];
+      *addr = (vaddr)tcb->tcb_dtv[1];
     }
   }
 #elif SANITIZER_SOLARIS
@@ -542,7 +542,7 @@ static void GetTls(uptr *addr, usize *size) {
 usize GetTlsSize() {
 #if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_NETBSD || \
     SANITIZER_SOLARIS
-  uptr addr;
+  vaddr addr;
   usize size;
   GetTls(&addr, &size);
   return size;
@@ -552,15 +552,15 @@ usize GetTlsSize() {
 }
 #endif
 
-void GetThreadStackAndTls(bool main, uptr *stk_addr, usize *stk_size,
-                          uptr *tls_addr, usize *tls_size) {
+void GetThreadStackAndTls(bool main, vaddr *stk_addr, usize *stk_size,
+                          vaddr *tls_addr, usize *tls_size) {
 #if SANITIZER_GO
   // Stub implementation for Go.
   *stk_addr = *stk_size = *tls_addr = *tls_size = 0;
 #else
   GetTls(tls_addr, tls_size);
 
-  uptr stack_top, stack_bottom;
+  vaddr stack_top, stack_bottom;
   GetThreadStackTopAndBottom(main, &stack_top, &stack_bottom);
   *stk_addr = stack_bottom;
   *stk_size = (char *)stack_top - (char *)stack_bottom;
@@ -598,15 +598,15 @@ static int AddModuleSegments(const char *module_name, dl_phdr_info *info,
   for (int i = 0; i < (int)info->dlpi_phnum; i++) {
     const Elf_Phdr *phdr = &info->dlpi_phdr[i];
     if (phdr->p_type == PT_LOAD) {
-      uptr cur_beg = info->dlpi_addr + phdr->p_vaddr;
-      uptr cur_end = cur_beg + phdr->p_memsz;
+      vaddr cur_beg = info->dlpi_addr + phdr->p_vaddr;
+      vaddr cur_end = cur_beg + phdr->p_memsz;
       bool executable = phdr->p_flags & PF_X;
       bool writable = phdr->p_flags & PF_W;
       cur_module.addAddressRange(cur_beg, cur_end, executable,
                                  writable);
     } else if (phdr->p_type == PT_NOTE) {
 #  ifdef NT_GNU_BUILD_ID
-      uptr off = 0;
+      usize off = 0;
       while (off + sizeof(ElfW(Nhdr)) < phdr->p_memsz) {
         auto *nhdr = reinterpret_cast<const ElfW(Nhdr) *>(info->dlpi_addr +
                                                           phdr->p_vaddr + off);
@@ -716,7 +716,7 @@ usize GetRSS() {
   if (fd == kInvalidFd)
     return GetRSSFromGetrusage();
   char buf[64];
-  uptr len = internal_read(fd, buf, sizeof(buf) - 1);
+  usize len = internal_read(fd, buf, sizeof(buf) - 1);
   internal_close(fd);
   if ((sptr)len <= 0)
     return 0;
@@ -732,7 +732,7 @@ usize GetRSS() {
   while (!(*pos >= '0' && *pos <= '9') && *pos != 0)
     pos++;
   // Read the number.
-  uptr rss = 0;
+  usize rss = 0;
   while (*pos >= '0' && *pos <= '9')
     rss = rss * 10 + *pos++ - '0';
   return rss * GetPageSizeCached();
@@ -916,18 +916,18 @@ void ReExec() {
   pathname = reinterpret_cast<const char *>(getauxval(AT_EXECFN));
 #endif
 
-  uptr rv = internal_execve(pathname, GetArgv(), GetEnviron());
+  usize rv = internal_execve(pathname, GetArgv(), GetEnviron());
   int rverrno;
   CHECK_EQ(internal_iserror(rv, &rverrno), true);
   Printf("execve failed, errno %d\n", rverrno);
   Die();
 }
 
-void UnmapFromTo(uptr from, uptr to) {
+void UnmapFromTo(uptr from, vaddr to) {
   if (to == from)
     return;
   CHECK(to >= from);
-  uptr res = internal_munmap(reinterpret_cast<void *>(from), to - from);
+  usize res = internal_munmap(reinterpret_cast<void *>(from), to - from);
   if (UNLIKELY(internal_iserror(res))) {
     Report("ERROR: %s failed to unmap 0x%zx (%zd) bytes at address %p\n",
            SanitizerToolName, to - from, to - from, (void *)from);
@@ -935,17 +935,17 @@ void UnmapFromTo(uptr from, uptr to) {
   }
 }
 
-uptr MapDynamicShadow(uptr shadow_size_bytes, uptr shadow_scale,
-                      uptr min_shadow_base_alignment,
+uptr MapDynamicShadow(usize shadow_size_bytes, usize shadow_scale,
+                      usize min_shadow_base_alignment,
                       UNUSED uptr &high_mem_end) {
-  const uptr granularity = GetMmapGranularity();
-  const uptr alignment =
-      Max<uptr>(granularity << shadow_scale, 1ULL << min_shadow_base_alignment);
-  const uptr left_padding =
-      Max<uptr>(granularity, 1ULL << min_shadow_base_alignment);
+  const usize granularity = GetMmapGranularity();
+  const usize alignment =
+      Max<usize>(granularity << shadow_scale, 1ULL << min_shadow_base_alignment);
+  const usize left_padding =
+      Max<usize>(granularity, 1ULL << min_shadow_base_alignment);
 
-  const uptr shadow_size = RoundUpTo(shadow_size_bytes, granularity);
-  const uptr map_size = shadow_size + left_padding + alignment;
+  const usize shadow_size = RoundUpTo(shadow_size_bytes, granularity);
+  const usize map_size = shadow_size + left_padding + alignment;
 
   const uptr map_start = (uptr)MmapNoAccess(map_size);
   CHECK_NE(map_start, ~(uptr)0);
@@ -958,14 +958,14 @@ uptr MapDynamicShadow(uptr shadow_size_bytes, uptr shadow_scale,
   return shadow_start;
 }
 
-static uptr MmapSharedNoReserve(uptr addr, uptr size) {
+static uptr MmapSharedNoReserve(vaddr addr, usize size) {
   return internal_mmap(
       reinterpret_cast<void *>(addr), size, PROT_READ | PROT_WRITE,
       MAP_FIXED | MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
 }
 
-static uptr MremapCreateAlias(uptr base_addr, uptr alias_addr,
-                              uptr alias_size) {
+static uptr MremapCreateAlias(vaddr base_addr, vaddr alias_addr,
+                              usize alias_size) {
 #if SANITIZER_LINUX
   return internal_mremap(reinterpret_cast<void *>(base_addr), 0, alias_size,
                          MREMAP_MAYMOVE | MREMAP_FIXED,
@@ -976,34 +976,34 @@ static uptr MremapCreateAlias(uptr base_addr, uptr alias_addr,
 #endif
 }
 
-static void CreateAliases(uptr start_addr, uptr alias_size, uptr num_aliases) {
-  uptr total_size = alias_size * num_aliases;
+static void CreateAliases(vaddr start_addr, usize alias_size, usize num_aliases) {
+  usize total_size = alias_size * num_aliases;
   uptr mapped = MmapSharedNoReserve(start_addr, total_size);
   CHECK_EQ(mapped, start_addr);
 
-  for (uptr i = 1; i < num_aliases; ++i) {
-    uptr alias_addr = start_addr + i * alias_size;
+  for (usize i = 1; i < num_aliases; ++i) {
+    vaddr alias_addr = start_addr + i * alias_size;
     CHECK_EQ(MremapCreateAlias(start_addr, alias_addr, alias_size), alias_addr);
   }
 }
 
-uptr MapDynamicShadowAndAliases(uptr shadow_size, uptr alias_size,
-                                uptr num_aliases, uptr ring_buffer_size) {
+uptr MapDynamicShadowAndAliases(usize shadow_size, usize alias_size,
+                                usize num_aliases, usize ring_buffer_size) {
   CHECK_EQ(alias_size & (alias_size - 1), 0);
   CHECK_EQ(num_aliases & (num_aliases - 1), 0);
   CHECK_EQ(ring_buffer_size & (ring_buffer_size - 1), 0);
 
-  const uptr granularity = GetMmapGranularity();
+  const usize granularity = GetMmapGranularity();
   shadow_size = RoundUpTo(shadow_size, granularity);
   CHECK_EQ(shadow_size & (shadow_size - 1), 0);
 
-  const uptr alias_region_size = alias_size * num_aliases;
-  const uptr alignment =
+  const usize alias_region_size = alias_size * num_aliases;
+  const usize alignment =
       2 * Max(Max(shadow_size, alias_region_size), ring_buffer_size);
-  const uptr left_padding = ring_buffer_size;
+  const usize left_padding = ring_buffer_size;
 
-  const uptr right_size = alignment;
-  const uptr map_size = left_padding + 2 * alignment;
+  const usize right_size = alignment;
+  const usize map_size = left_padding + 2 * alignment;
 
   const uptr map_start = reinterpret_cast<uptr>(MmapNoAccess(map_size));
   CHECK_NE(map_start, static_cast<uptr>(-1));

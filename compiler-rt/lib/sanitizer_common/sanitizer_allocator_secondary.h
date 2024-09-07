@@ -19,7 +19,7 @@
 class LargeMmapAllocatorPtrArrayStatic {
  public:
   inline void *Init() { return &p_[0]; }
-  inline void EnsureSpace(uptr n) { CHECK_LT(n, kMaxNumChunks); }
+  inline void EnsureSpace(usize n) { CHECK_LT(n, kMaxNumChunks); }
  private:
   static const int kMaxNumChunks = 1 << 15;
   uptr p_[kMaxNumChunks];
@@ -38,7 +38,7 @@ class LargeMmapAllocatorPtrArrayDynamic {
     return reinterpret_cast<void*>(p);
   }
 
-  inline void EnsureSpace(uptr n) {
+  inline void EnsureSpace(usize n) {
     CHECK_LT(n, kMaxNumChunks);
     DCHECK(n <= n_reserved_);
     if (UNLIKELY(n == n_reserved_)) {
@@ -54,7 +54,7 @@ class LargeMmapAllocatorPtrArrayDynamic {
   static const int kMaxNumChunks = 1 << 20;
   static const int kChunksBlockCount = 1 << 14;
   ReservedAddressRange address_range_;
-  uptr n_reserved_;
+  usize n_reserved_;
 };
 
 #if SANITIZER_WORDSIZE == 32
@@ -117,7 +117,7 @@ class LargeMmapAllocator {
     {
       SpinMutexLock l(&mutex_);
       ptr_array_.EnsureSpace(n_chunks_);
-      uptr idx = n_chunks_++;
+      usize idx = n_chunks_++;
       h->chunk_idx = idx;
       chunks_[idx] = h;
       chunks_sorted_ = false;
@@ -135,7 +135,7 @@ class LargeMmapAllocator {
     Header *h = GetHeader(p);
     {
       SpinMutexLock l(&mutex_);
-      uptr idx = h->chunk_idx;
+      usize idx = h->chunk_idx;
       CHECK_EQ(chunks_[idx], h);
       CHECK_LT(idx, n_chunks_);
       chunks_[idx] = chunks_[--n_chunks_];
@@ -150,10 +150,10 @@ class LargeMmapAllocator {
     UnmapOrDie(reinterpret_cast<void*>(h->map_beg), h->map_size);
   }
 
-  uptr TotalMemoryUsed() {
+  usize TotalMemoryUsed() {
     SpinMutexLock l(&mutex_);
-    uptr res = 0;
-    for (uptr i = 0; i < n_chunks_; i++) {
+    usize res = 0;
+    for (usize i = 0; i < n_chunks_; i++) {
       Header *h = chunks_[i];
       CHECK_EQ(h->chunk_idx, i);
       res += RoundUpMapSize(h->size);
@@ -165,7 +165,7 @@ class LargeMmapAllocator {
     return GetBlockBegin(p) != nullptr;
   }
 
-  uptr GetActuallyAllocatedSize(void *p) {
+  usize GetActuallyAllocatedSize(void *p) {
     return RoundUpTo(GetHeader(p)->size, page_size_);
   }
 
@@ -208,7 +208,7 @@ class LargeMmapAllocator {
     if (chunks_sorted_) return;
     Header **chunks = AddressSpaceView::LoadWritable(chunks_, n_chunks_);
     Sort(reinterpret_cast<uptr *>(chunks), n_chunks_);
-    for (uptr i = 0; i < n_chunks_; i++)
+    for (usize i = 0; i < n_chunks_; i++)
       AddressSpaceView::LoadWritable(chunks[i])->chunk_idx = i;
     chunks_sorted_ = true;
   }
@@ -218,7 +218,7 @@ class LargeMmapAllocator {
   void *GetBlockBeginFastLocked(void *ptr) {
     mutex_.CheckLocked();
     uptr p = reinterpret_cast<uptr>(ptr);
-    uptr n = n_chunks_;
+    usize n = n_chunks_;
     if (!n) return nullptr;
     EnsureSortedChunks();
     Header *const *chunks = AddressSpaceView::Load(chunks_, n_chunks_);
@@ -257,8 +257,8 @@ class LargeMmapAllocator {
            "remains %zd (%zd K) max %zd M; by size logs: ",
            stats.n_allocs, stats.n_allocs - stats.n_frees,
            stats.currently_allocated >> 10, stats.max_allocated >> 20);
-    for (uptr i = 0; i < ARRAY_SIZE(stats.by_size_log); i++) {
-      uptr c = stats.by_size_log[i];
+    for (usize i = 0; i < ARRAY_SIZE(stats.by_size_log); i++) {
+      usize c = stats.by_size_log[i];
       if (!c) continue;
       Printf("%zd:%zd; ", i, c);
     }
@@ -276,7 +276,7 @@ class LargeMmapAllocator {
   void ForEachChunk(ForEachChunkCallback callback, void *arg) {
     EnsureSortedChunks();  // Avoid doing the sort while iterating.
     const Header *const *chunks = AddressSpaceView::Load(chunks_, n_chunks_);
-    for (uptr i = 0; i < n_chunks_; i++) {
+    for (usize i = 0; i < n_chunks_; i++) {
       const Header *t = chunks[i];
       callback(reinterpret_cast<uptr>(GetUser(t)), arg);
       // Consistency check: verify that the array did not change.
@@ -306,7 +306,7 @@ class LargeMmapAllocator {
     return reinterpret_cast<void*>(reinterpret_cast<uptr>(h) + page_size_);
   }
 
-  uptr RoundUpMapSize(usize size) {
+  usize RoundUpMapSize(usize size) {
     return RoundUpTo(size, page_size_) + page_size_;
   }
 

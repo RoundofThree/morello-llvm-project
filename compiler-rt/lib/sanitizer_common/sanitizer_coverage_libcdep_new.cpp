@@ -162,14 +162,14 @@ static TracePcGuardController pc_guard_controller;
 namespace SingletonCounterCoverage {
 
 static char *counters_beg, *counters_end;
-static const uptr *pcs_beg, *pcs_end;
+static const vaddr *pcs_beg, *pcs_end;
 
 static void DumpCoverage() {
   const char* file_path = common_flags()->cov_8bit_counters_out;
   if (file_path && internal_strlen(file_path)) {
     fd_t fd = OpenFile(file_path);
     FileCloser file_closer(fd);
-    uptr size = counters_end - counters_beg;
+    usize size = counters_end - counters_beg;
     WriteToFile(fd, counters_beg, size);
     if (common_flags()->verbosity)
       __sanitizer::Printf("cov_8bit_counters_out: written %zd bytes to %s\n",
@@ -179,7 +179,7 @@ static void DumpCoverage() {
   if (file_path && internal_strlen(file_path)) {
     fd_t fd = OpenFile(file_path);
     FileCloser file_closer(fd);
-    uptr size = (pcs_end - pcs_beg) * sizeof(uptr);
+    usize size = (pcs_end - pcs_beg) * sizeof(vaddr);
     WriteToFile(fd, pcs_beg, size);
     if (common_flags()->verbosity)
       __sanitizer::Printf("cov_pcs_out: written %zd bytes to %s\n", size,
@@ -193,7 +193,7 @@ static void Cov8bitCountersInit(char* beg, char* end) {
   Atexit(DumpCoverage);
 }
 
-static void CovPcsInit(const uptr* beg, const uptr* end) {
+static void CovPcsInit(const vaddr* beg, const vaddr* end) {
   pcs_beg = beg;
   pcs_end = end;
 }
@@ -262,8 +262,8 @@ SANITIZER_INTERFACE_WEAK_DEF(void, __sanitizer_cov_8bit_counters_init,
   __sancov::SingletonCounterCoverage::Cov8bitCountersInit(start, end);
 }
 SANITIZER_INTERFACE_WEAK_DEF(void, __sanitizer_cov_bool_flag_init, void) {}
-SANITIZER_INTERFACE_WEAK_DEF(void, __sanitizer_cov_pcs_init, const uptr* beg,
-                             const uptr* end) {
+SANITIZER_INTERFACE_WEAK_DEF(void, __sanitizer_cov_pcs_init, const vaddr* beg,
+                             const vaddr* end) {
   __sancov::SingletonCounterCoverage::CovPcsInit(beg, end);
 }
 }  // extern "C"

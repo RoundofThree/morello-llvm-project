@@ -31,7 +31,7 @@ struct DlSymAllocator {
            UNLIKELY(internal_allocator()->FromPrimary(ptr));
   }
 
-  static void *Allocate(uptr size_in_bytes) {
+  static void *Allocate(usize size_in_bytes) {
     void *ptr = InternalAlloc(size_in_bytes, nullptr, kWordSize);
     CHECK(internal_allocator()->FromPrimary(ptr));
     Details::OnAllocate(ptr,
@@ -48,12 +48,12 @@ struct DlSymAllocator {
   }
 
   static void Free(void *ptr) {
-    uptr size = internal_allocator()->GetActuallyAllocatedSize(ptr);
+    usize size = internal_allocator()->GetActuallyAllocatedSize(ptr);
     Details::OnFree(ptr, size);
     InternalFree(ptr);
   }
 
-  static void *Realloc(void *ptr, uptr new_size) {
+  static void *Realloc(void *ptr, usize new_size) {
     if (!ptr)
       return Allocate(new_size);
     CHECK(internal_allocator()->FromPrimary(ptr));
@@ -61,8 +61,8 @@ struct DlSymAllocator {
       Free(ptr);
       return nullptr;
     }
-    uptr size = internal_allocator()->GetActuallyAllocatedSize(ptr);
-    uptr memcpy_size = Min(new_size, size);
+    usize size = internal_allocator()->GetActuallyAllocatedSize(ptr);
+    usize memcpy_size = Min(new_size, size);
     void *new_ptr = Allocate(new_size);
     if (new_ptr)
       internal_memcpy(new_ptr, ptr, memcpy_size);
@@ -70,8 +70,8 @@ struct DlSymAllocator {
     return new_ptr;
   }
 
-  static void OnAllocate(const void *ptr, uptr size) {}
-  static void OnFree(const void *ptr, uptr size) {}
+  static void OnAllocate(const void *ptr, usize size) {}
+  static void OnFree(const void *ptr, usize size) {}
 };
 
 }  // namespace __sanitizer

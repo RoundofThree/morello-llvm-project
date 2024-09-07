@@ -77,14 +77,14 @@ static void RawInternalFree(void *ptr, InternalAllocatorCache *cache) {
   internal_allocator()->Deallocate(cache, ptr);
 }
 
-static void NORETURN ReportInternalAllocatorOutOfMemory(uptr requested_size) {
+static void NORETURN ReportInternalAllocatorOutOfMemory(usize requested_size) {
   SetAllocatorOutOfMemory();
   Report("FATAL: %s: internal allocator is out of memory trying to allocate "
          "0x%zx bytes\n", SanitizerToolName, requested_size);
   Die();
 }
 
-void *InternalAlloc(uptr size, InternalAllocatorCache *cache, usize alignment) {
+void *InternalAlloc(usize size, InternalAllocatorCache *cache, usize alignment) {
   void *p = RawInternalAlloc(size, cache, alignment);
   if (UNLIKELY(!p))
     ReportInternalAllocatorOutOfMemory(size);
@@ -145,7 +145,7 @@ static LowLevelAllocateCallback low_level_alloc_callback;
 void *LowLevelAllocator::Allocate(usize size) {
   // Align allocation size.
   size = RoundUpTo(size, low_level_alloc_min_alignment);
-  if (allocated_end_ - allocated_current_ < (sptr)size) {
+  if (allocated_end_ - allocated_current_ < (ssize)size) {
     usize size_to_allocate = RoundUpTo(size, GetPageSizeCached());
     allocated_current_ =
         (char*)MmapOrDie(size_to_allocate, __func__);
@@ -155,7 +155,7 @@ void *LowLevelAllocator::Allocate(usize size) {
                                size_to_allocate);
     }
   }
-  CHECK(allocated_end_ - allocated_current_ >= (sptr)size);
+  CHECK(allocated_end_ - allocated_current_ >= (ssize)size);
   void *res = allocated_current_;
   allocated_current_ += size;
   return res;

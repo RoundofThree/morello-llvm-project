@@ -19,20 +19,20 @@
 
 namespace __sanitizer {
 
-void NORETURN ReportCallocOverflow(uptr count, usize size,
+void NORETURN ReportCallocOverflow(usize count, usize size,
                                    const StackTrace *stack);
 void NORETURN ReportReallocArrayOverflow(usize count, usize size,
                                          const StackTrace *stack);
 void NORETURN ReportPvallocOverflow(usize size, const StackTrace *stack);
-void NORETURN ReportInvalidAllocationAlignment(uptr alignment,
+void NORETURN ReportInvalidAllocationAlignment(usize alignment,
                                                const StackTrace *stack);
 void NORETURN ReportInvalidAlignedAllocAlignment(usize size, usize alignment,
                                                  const StackTrace *stack);
-void NORETURN ReportInvalidPosixMemalignAlignment(uptr alignment,
+void NORETURN ReportInvalidPosixMemalignAlignment(usize alignment,
                                                   const StackTrace *stack);
-void NORETURN ReportAllocationSizeTooBig(uptr user_size, uptr max_size,
+void NORETURN ReportAllocationSizeTooBig(usize user_size, usize max_size,
                                          const StackTrace *stack);
-void NORETURN ReportOutOfMemory(uptr requested_size, const StackTrace *stack);
+void NORETURN ReportOutOfMemory(usize requested_size, const StackTrace *stack);
 void NORETURN ReportRssLimitExceeded(const StackTrace *stack);
 
 }  // namespace __sanitizer

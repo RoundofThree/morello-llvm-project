@@ -40,7 +40,7 @@ class ScopedAllocatorErrorReport {
   const SanitizerCommonDecorator d;
 };
 
-void NORETURN ReportCallocOverflow(uptr count, usize size,
+void NORETURN ReportCallocOverflow(usize count, usize size,
                                    const StackTrace *stack) {
   {
     ScopedAllocatorErrorReport report("calloc-overflow", stack);
@@ -73,7 +73,7 @@ void NORETURN ReportPvallocOverflow(usize size, const StackTrace *stack) {
   Die();
 }
 
-void NORETURN ReportInvalidAllocationAlignment(uptr alignment,
+void NORETURN ReportInvalidAllocationAlignment(usize alignment,
                                                const StackTrace *stack) {
   {
     ScopedAllocatorErrorReport report("invalid-allocation-alignment", stack);
@@ -101,7 +101,7 @@ void NORETURN ReportInvalidAlignedAllocAlignment(usize size, usize alignment,
   Die();
 }
 
-void NORETURN ReportInvalidPosixMemalignAlignment(uptr alignment,
+void NORETURN ReportInvalidPosixMemalignAlignment(usize alignment,
                                                   const StackTrace *stack) {
   {
     ScopedAllocatorErrorReport report("invalid-posix-memalign-alignment",
@@ -115,7 +115,7 @@ void NORETURN ReportInvalidPosixMemalignAlignment(uptr alignment,
   Die();
 }
 
-void NORETURN ReportAllocationSizeTooBig(uptr user_size, uptr max_size,
+void NORETURN ReportAllocationSizeTooBig(usize user_size, usize max_size,
                                          const StackTrace *stack) {
   {
     ScopedAllocatorErrorReport report("allocation-size-too-big", stack);
@@ -125,7 +125,7 @@ void NORETURN ReportAllocationSizeTooBig(uptr user_size, uptr max_size,
   Die();
 }
 
-void NORETURN ReportOutOfMemory(uptr requested_size, const StackTrace *stack) {
+void NORETURN ReportOutOfMemory(usize requested_size, const StackTrace *stack) {
   {
     ScopedAllocatorErrorReport report("out-of-memory", stack);
     Report("ERROR: %s: allocator is out of memory trying to allocate 0x%zx "

@@ -34,12 +34,12 @@ struct SuspendedThreadsListWindows final : public SuspendedThreadsList {
     threadHandles.reserve(1024);
   }
 
-  PtraceRegistersStatus GetRegistersAndSP(uptr index,
+  PtraceRegistersStatus GetRegistersAndSP(usize index,
                                           InternalMmapVector<uptr> *buffer,
                                           uptr *sp) const override;
 
-  tid_t GetThreadID(uptr index) const override;
-  uptr ThreadCount() const override;
+  tid_t GetThreadID(usize index) const override;
+  usize ThreadCount() const override;
 };
 
 // Stack Pointer register names on different architectures
@@ -54,7 +54,7 @@ struct SuspendedThreadsListWindows final : public SuspendedThreadsList {
 #  endif
 
 PtraceRegistersStatus SuspendedThreadsListWindows::GetRegistersAndSP(
-    uptr index, InternalMmapVector<uptr> *buffer, uptr *sp) const {
+    usize index, InternalMmapVector<uptr> *buffer, uptr *sp) const {
   CHECK_LT(index, threadHandles.size());
 
   buffer->resize(RoundUpTo(sizeof(CONTEXT), sizeof(uptr)) / sizeof(uptr));
@@ -66,12 +66,12 @@ PtraceRegistersStatus SuspendedThreadsListWindows::GetRegistersAndSP(
   return REGISTERS_AVAILABLE;
 }
 
-tid_t SuspendedThreadsListWindows::GetThreadID(uptr index) const {
+tid_t SuspendedThreadsListWindows::GetThreadID(usize index) const {
   CHECK_LT(index, threadIds.size());
   return threadIds[index];
 }
 
-uptr SuspendedThreadsListWindows::ThreadCount() const {
+usize SuspendedThreadsListWindows::ThreadCount() const {
   return threadIds.size();
 }
 

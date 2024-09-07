@@ -190,8 +190,8 @@ void DD::MutexBeforeLock(DDCallback *cb, DDMutex *m, bool wlock) {
   DDPhysicalThread *pt = cb->pt;
   DDLogicalThread *lt = cb->lt;
 
-  uptr owner = atomic_load(&m->owner, memory_order_relaxed);
-  if (owner == (uptr)cb->lt) {
+  vaddr owner = atomic_load(&m->owner, memory_order_relaxed);
+  if (owner == (vaddr)cb->lt) {
     VPrintf(3, "#%llu: DD::MutexBeforeLock recursive\n",
         cb->lt->ctx);
     return;
@@ -269,8 +269,8 @@ void DD::MutexAfterLock(DDCallback *cb, DDMutex *m, bool wlock,
       cb->lt->ctx, m, wlock, trylock, cb->lt->nlocked);
   DDLogicalThread *lt = cb->lt;
 
-  uptr owner = atomic_load(&m->owner, memory_order_relaxed);
-  if (owner == (uptr)cb->lt) {
+  vaddr owner = atomic_load(&m->owner, memory_order_relaxed);
+  if (owner == (vaddr)cb->lt) {
     VPrintf(3, "#%llu: DD::MutexAfterLock recursive\n", cb->lt->ctx);
     CHECK(wlock);
     m->recursion++;
@@ -281,7 +281,7 @@ void DD::MutexAfterLock(DDCallback *cb, DDMutex *m, bool wlock,
     VPrintf(3, "#%llu: DD::MutexAfterLock set owner\n", cb->lt->ctx);
     CHECK_EQ(m->recursion, 0);
     m->recursion = 1;
-    atomic_store(&m->owner, (uptr)cb->lt, memory_order_relaxed);
+    atomic_store(&m->owner, (vaddr)cb->lt, memory_order_relaxed);
   }
 
   if (!trylock)
@@ -301,8 +301,8 @@ void DD::MutexBeforeUnlock(DDCallback *cb, DDMutex *m, bool wlock) {
       cb->lt->ctx, m, wlock, cb->lt->nlocked);
   DDLogicalThread *lt = cb->lt;
 
-  uptr owner = atomic_load(&m->owner, memory_order_relaxed);
-  if (owner == (uptr)cb->lt) {
+  vaddr owner = atomic_load(&m->owner, memory_order_relaxed);
+  if (owner == (vaddr)cb->lt) {
     VPrintf(3, "#%llu: DD::MutexBeforeUnlock recursive\n", cb->lt->ctx);
     if (--m->recursion > 0)
       return;

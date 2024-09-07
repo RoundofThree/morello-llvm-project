@@ -25,11 +25,11 @@
 
 namespace __sanitizer {
 
-void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, uptr stack_top,
-                                    uptr stack_bottom, u32 max_depth) {
+void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, vaddr stack_top,
+                                    vaddr stack_bottom, u32 max_depth) {
   // TODO(yln): add arg sanity check for stack_top/stack_bottom
   CHECK_GE(max_depth, 2);
-  const uptr kPageSize = GetPageSizeCached();
+  const usize kPageSize = GetPageSizeCached();
 #if defined(__GNUC__)
   // __builtin_return_address returns the address of the call instruction
   // on the SPARC and not the return address, so we need to compensate.
@@ -60,9 +60,9 @@ void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, uptr stack_top,
     bp = prev_bp;
   // Lowest possible address that makes sense as the next frame pointer.
   // Goes up as we walk the stack.
-  uptr bottom = stack_bottom;
+  vaddr bottom = stack_bottom;
   // Avoid infinite loop when frame == frame[0] by using frame > prev_frame.
-  while (IsValidFrame(bp, stack_top, bottom) && IsAligned(bp, sizeof(uhwptr)) &&
+  while (IsValidFrame((vaddr)bp, stack_top, bottom) && IsAligned(bp, sizeof(uhwptr)) &&
          size < max_depth) {
     uhwptr pc1 = ((uhwptr *)bp)[15];
     // Let's assume that any pointer in the 0th page is invalid and
@@ -75,7 +75,7 @@ void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, uptr stack_top,
       // return address, so we need to compensate.
       trace_buffer[size++] = GetNextInstructionPc((uptr)pc1);
     }
-    bottom = bp;
+    bottom = (vaddr)bp;
     bp = (uptr)((uhwptr *)bp)[14] + STACK_BIAS;
   }
 }

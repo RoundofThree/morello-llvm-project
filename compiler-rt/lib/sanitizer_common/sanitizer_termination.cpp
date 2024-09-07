@@ -68,8 +68,8 @@ void NORETURN CheckFailed(const char *file, int line, const char *cond,
                           u64 v1, u64 v2) {
   u32 tid = GetTid();
   Printf("%s: CHECK failed: %s:%d \"%s\" (0x%zx, 0x%zx) (tid=%u)\n",
-         SanitizerToolName, StripModuleName(file), line, cond, (uptr)v1,
-         (uptr)v2, tid);
+         SanitizerToolName, StripModuleName(file), line, cond, (usize)v1,
+         (usize)v2, tid);
   static atomic_uint32_t first_tid;
   u32 cmp = 0;
   if (!atomic_compare_exchange_strong(&first_tid, &cmp, tid,

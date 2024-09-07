@@ -22,7 +22,7 @@
 
 namespace __sanitizer {
 
-extern uptr MainThreadStackBase, MainThreadStackSize;
+extern usize MainThreadStackBase, MainThreadStackSize;
 extern sanitizer_shadow_bounds_t ShadowBounds;
 
 struct MemoryMappingLayoutData {

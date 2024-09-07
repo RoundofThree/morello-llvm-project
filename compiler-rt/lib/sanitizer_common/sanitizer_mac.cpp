@@ -148,7 +148,7 @@ uptr internal_mremap(void *old_address, usize old_size, usize new_size, int flag
   return 0;
 }
 
-int internal_mprotect(void *addr, uptr length, int prot) {
+int internal_mprotect(void *addr, usize length, int prot) {
   return mprotect(addr, length, prot);
 }
 
@@ -539,8 +539,8 @@ usize GetTlsSize() {
 void InitTlsSize() {
 }
 
-uptr TlsBaseAddr() {
-  uptr segbase = 0;
+vaddr TlsBaseAddr() {
+  vaddr segbase = 0;
 #if defined(__x86_64__)
   asm("movq %%gs:0,%0" : "=r"(segbase));
 #elif defined(__i386__)
@@ -563,10 +563,10 @@ usize TlsSize() {
 #endif
 }
 
-void GetThreadStackAndTls(bool main, uptr *stk_addr, usize *stk_size,
-                          uptr *tls_addr, usize *tls_size) {
+void GetThreadStackAndTls(bool main, vaddr *stk_addr, usize *stk_size,
+                          vaddr *tls_addr, usize *tls_size) {
 #if !SANITIZER_GO
-  uptr stack_top, stack_bottom;
+  vaddr stack_top, stack_bottom;
   GetThreadStackTopAndBottom(main, &stack_top, &stack_bottom);
   *stk_addr = stack_bottom;
   *stk_size = stack_top - stack_bottom;
@@ -626,7 +626,7 @@ constexpr u16 GetOSMajorKernelOffset() {
 
 using VersStr = char[64];
 
-static uptr ApproximateOSVersionViaKernelVersion(VersStr vers) {
+static int ApproximateOSVersionViaKernelVersion(VersStr vers) {
   u16 kernel_major = GetDarwinKernelVersion().major;
   u16 offset = GetOSMajorKernelOffset();
   CHECK_GE(kernel_major, offset);
@@ -644,7 +644,7 @@ static uptr ApproximateOSVersionViaKernelVersion(VersStr vers) {
 }
 
 static void GetOSVersion(VersStr vers) {
-  uptr len = sizeof(VersStr);
+  usize len = sizeof(VersStr);
   if (SANITIZER_IOSSIM) {
     const char *vers_env = GetEnv("SIMULATOR_RUNTIME_VERSION");
     if (!vers_env) {
@@ -1176,16 +1176,16 @@ static vaddr GetTaskInfoMaxAddress() {
 vaddr GetMaxUserVirtualAddress() {
   static vaddr max_vm = GetTaskInfoMaxAddress();
   if (max_vm != 0) {
-    const uptr ret_value = max_vm - 1;
+    const usize ret_value = max_vm - 1;
     CHECK_LE(ret_value, SANITIZER_MMAP_RANGE_SIZE);
     return ret_value;
   }
 
   // xnu cannot provide vm address limit
 # if SANITIZER_WORDSIZE == 32
-  constexpr uptr fallback_max_vm = 0xffe00000 - 1;
+  constexpr usize fallback_max_vm = 0xffe00000 - 1;
 # else
-  constexpr uptr fallback_max_vm = 0x200000000 - 1;
+  constexpr usize fallback_max_vm = 0x200000000 - 1;
 # endif
   static_assert(fallback_max_vm <= SANITIZER_MMAP_RANGE_SIZE,
                 "Max virtual address must be less than mmap range size.");
@@ -1196,10 +1196,10 @@ vaddr GetMaxUserVirtualAddress() {
 
 vaddr GetMaxUserVirtualAddress() {
 # if SANITIZER_WORDSIZE == 64
-  constexpr uptr max_vm = (1ULL << 47) - 1;  // 0x00007fffffffffffUL;
+  constexpr vaddr max_vm = (1ULL << 47) - 1;  // 0x00007fffffffffffUL;
 # else // SANITIZER_WORDSIZE == 32
   static_assert(SANITIZER_WORDSIZE == 32, "Wrong wordsize");
-  constexpr uptr max_vm = (1ULL << 32) - 1;  // 0xffffffff;
+  constexpr vaddr max_vm = (1ULL << 32) - 1;  // 0xffffffff;
 # endif
   static_assert(max_vm <= SANITIZER_MMAP_RANGE_SIZE,
                 "Max virtual address must be less than mmap range size.");
@@ -1211,36 +1211,36 @@ vaddr GetMaxVirtualAddress() {
   return GetMaxUserVirtualAddress();
 }
 
-uptr MapDynamicShadow(uptr shadow_size_bytes, uptr shadow_scale,
-                      uptr min_shadow_base_alignment, uptr &high_mem_end) {
-  const uptr granularity = GetMmapGranularity();
-  const uptr alignment =
-      Max<uptr>(granularity << shadow_scale, 1ULL << min_shadow_base_alignment);
-  const uptr left_padding =
-      Max<uptr>(granularity, 1ULL << min_shadow_base_alignment);
+vaddr MapDynamicShadow(usize shadow_size_bytes, usize shadow_scale,
+                      usize min_shadow_base_alignment, vaddr &high_mem_end) {
+  const usize granularity = GetMmapGranularity();
+  const usize alignment =
+      Max<usize>(granularity << shadow_scale, 1ULL << min_shadow_base_alignment);
+  const usize left_padding =
+      Max<usize>(granularity, 1ULL << min_shadow_base_alignment);
 
-  uptr space_size = shadow_size_bytes + left_padding;
+  usize space_size = shadow_size_bytes + left_padding;
 
-  uptr largest_gap_found = 0;
-  uptr max_occupied_addr = 0;
+  vaddr largest_gap_found = 0;
+  vaddr max_occupied_addr = 0;
   VReport(2, "FindDynamicShadowStart, space_size = %p\n", (void *)space_size);
-  uptr shadow_start =
+  vaddr shadow_start =
       FindAvailableMemoryRange(space_size, alignment, granularity,
                                &largest_gap_found, &max_occupied_addr);
   // If the shadow doesn't fit, restrict the address space to make it fit.
   if (shadow_start == 0) {
     VReport(
         2,
-        "Shadow doesn't fit, largest_gap_found = %p, max_occupied_addr = %p\n",
-        (void *)largest_gap_found, (void *)max_occupied_addr);
-    uptr new_max_vm = RoundDownTo(largest_gap_found << shadow_scale, alignment);
+        "Shadow doesn't fit, largest_gap_found = 0x%zx, max_occupied_addr = 0x%zx\n",
+        largest_gap_found, max_occupied_addr);
+    vaddr new_max_vm = RoundDownTo(largest_gap_found << shadow_scale, alignment);
     if (new_max_vm < max_occupied_addr) {
       Report("Unable to find a memory range for dynamic shadow.\n");
       Report(
-          "space_size = %p, largest_gap_found = %p, max_occupied_addr = %p, "
-          "new_max_vm = %p\n",
-          (void *)space_size, (void *)largest_gap_found,
-          (void *)max_occupied_addr, (void *)new_max_vm);
+          "space_size = 0x%zx, largest_gap_found = 0x%zx, max_occupied_addr = 0x%zx, "
+          "new_max_vm = 0x%zx\n",
+          space_size, largest_gap_found,
+          max_occupied_addr, new_max_vm);
       CHECK(0 && "cannot place shadow");
     }
     RestrictMemoryToMaxAddress(new_max_vm);
@@ -1254,7 +1254,7 @@ uptr MapDynamicShadow(uptr shadow_size_bytes, uptr shadow_scale,
       CHECK(0 && "cannot place shadow after restricting vm");
     }
   }
-  CHECK_NE((uptr)0, shadow_start);
+  CHECK_NE((vaddr)0, shadow_start);
   CHECK(IsAligned(shadow_start, alignment));
   return shadow_start;
 }
@@ -1265,9 +1265,9 @@ uptr MapDynamicShadowAndAliases(usize shadow_size, usize alias_size,
   return 0;
 }
 
-uptr FindAvailableMemoryRange(usize size, usize alignment, usize left_padding,
-                              uptr *largest_gap_found,
-                              uptr *max_occupied_addr) {
+vaddr FindAvailableMemoryRange(usize size, usize alignment, usize left_padding,
+                              usize *largest_gap_found,
+                              vaddr *max_occupied_addr) {
   typedef vm_region_submap_short_info_data_64_t RegionInfo;
   enum { kRegionInfoSize = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64 };
   // Start searching for available memory region past PAGEZERO, which is
@@ -1296,8 +1296,8 @@ uptr FindAvailableMemoryRange(usize size, usize alignment, usize left_padding,
     }
     if (free_begin != address) {
       // We found a free region [free_begin..address-1].
-      uptr gap_start = RoundUpTo((uptr)free_begin + left_padding, alignment);
-      uptr gap_end = RoundDownTo((uptr)address, alignment);
+      vaddr gap_start = RoundUpTo((vaddr)free_begin + left_padding, alignment);
+      vaddr gap_end = RoundDownTo((vaddr)address, alignment);
       usize gap_size = gap_end > gap_start ? gap_end - gap_start : 0;
       if (size < gap_size) {
         return gap_start;

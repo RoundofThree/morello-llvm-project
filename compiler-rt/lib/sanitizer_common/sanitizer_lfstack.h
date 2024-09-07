@@ -22,6 +22,7 @@
 
 namespace __sanitizer {
 
+// XXXR3: this cannot be purecap without a design change
 template<typename T>
 struct LFStack {
   void Clear() {
@@ -36,7 +37,7 @@ struct LFStack {
     u64 cmp = atomic_load(&head_, memory_order_relaxed);
     for (;;) {
       u64 cnt = (cmp & kCounterMask) + kCounterInc;
-      u64 xch = (u64)(uptr)p | cnt;
+      u64 xch = (u64)(vaddr)p | cnt;
       p->next = (T*)(uptr)(cmp & kPtrMask);
       if (atomic_compare_exchange_weak(&head_, &cmp, xch,
                                        memory_order_release))

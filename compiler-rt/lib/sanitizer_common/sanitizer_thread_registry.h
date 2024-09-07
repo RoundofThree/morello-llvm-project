@@ -44,7 +44,7 @@ class ThreadContextBase {
   u64 unique_id;  // Unique thread ID.
   u32 reuse_count;  // Number of times this tid was reused.
   tid_t os_id;     // PID (used for reporting).
-  uptr user_id;   // Some opaque user thread id (e.g. pthread_t).
+  usize user_id;   // Some opaque user thread id (e.g. pthread_t).
   char name[64];  // As annotated by user.
 
   ThreadStatus status;
@@ -62,7 +62,7 @@ class ThreadContextBase {
   void SetJoined(void *arg);
   void SetFinished();
   void SetStarted(tid_t _os_id, ThreadType _thread_type, void *arg);
-  void SetCreated(uptr _user_id, u64 _unique_id, bool _detached,
+  void SetCreated(usize _user_id, u64 _unique_id, bool _detached,
                   u32 _parent_tid, void *arg);
   void Reset();
 
@@ -91,9 +91,9 @@ class SANITIZER_MUTEX ThreadRegistry {
   ThreadRegistry(ThreadContextFactory factory);
   ThreadRegistry(ThreadContextFactory factory, u32 max_threads,
                  u32 thread_quarantine_size, u32 max_reuse);
-  void GetNumberOfThreads(uptr *total = nullptr, uptr *running = nullptr,
-                          uptr *alive = nullptr);
-  uptr GetMaxAliveThreads();
+  void GetNumberOfThreads(usize *total = nullptr, usize *running = nullptr,
+                          usize *alive = nullptr);
+  usize GetMaxAliveThreads();
 
   void Lock() SANITIZER_ACQUIRE() { mtx_.Lock(); }
   void CheckLocked() const SANITIZER_CHECK_LOCKED() { mtx_.CheckLocked(); }
@@ -106,7 +106,7 @@ class SANITIZER_MUTEX ThreadRegistry {
 
   u32 NumThreadsLocked() const { return threads_.size(); }
 
-  u32 CreateThread(uptr user_id, bool detached, u32 parent_tid, void *arg);
+  u32 CreateThread(usize user_id, bool detached, u32 parent_tid, void *arg);
 
   typedef void (*ThreadCallback)(ThreadContextBase *tctx, void *arg);
   // Invokes callback with a specified arg for each thread context.
@@ -124,14 +124,14 @@ class SANITIZER_MUTEX ThreadRegistry {
   ThreadContextBase *FindThreadContextByOsIDLocked(tid_t os_id);
 
   void SetThreadName(u32 tid, const char *name);
-  void SetThreadNameByUserId(uptr user_id, const char *name);
+  void SetThreadNameByUserId(usize user_id, const char *name);
   void DetachThread(u32 tid, void *arg);
   void JoinThread(u32 tid, void *arg);
   // Finishes thread and returns previous status.
   ThreadStatus FinishThread(u32 tid);
   void StartThread(u32 tid, tid_t os_id, ThreadType thread_type, void *arg);
-  u32 ConsumeThreadUserId(uptr user_id);
-  void SetThreadUserId(u32 tid, uptr user_id);
+  u32 ConsumeThreadUserId(usize user_id);
+  void SetThreadUserId(u32 tid, usize user_id);
 
   // OnFork must be called in the child process after fork to purge old
   // threads that don't exist anymore (except for the current thread tid).
@@ -148,14 +148,14 @@ class SANITIZER_MUTEX ThreadRegistry {
 
   u64 total_threads_;   // Total number of created threads. May be greater than
                         // max_threads_ if contexts were reused.
-  uptr alive_threads_;  // Created or running.
-  uptr max_alive_threads_;
-  uptr running_threads_;
+  usize alive_threads_;  // Created or running.
+  usize max_alive_threads_;
+  usize running_threads_;
 
   InternalMmapVector<ThreadContextBase *> threads_;
   IntrusiveList<ThreadContextBase> dead_threads_;
   IntrusiveList<ThreadContextBase> invalid_threads_;
-  DenseMap<uptr, Tid> live_;
+  DenseMap<vaddr, Tid> live_;
 
   void QuarantinePush(ThreadContextBase *tctx);
   ThreadContextBase *QuarantinePop();

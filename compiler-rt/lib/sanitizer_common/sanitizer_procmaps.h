@@ -49,8 +49,8 @@ class MemoryMappedSegment {
 
   void AddAddressRanges(LoadedModule *module);
 
-  uptr start;
-  uptr end;
+  vaddr start;
+  vaddr end;
   OFF_T offset;
   char *filename;  // owned by caller
   usize filename_size;
@@ -97,12 +97,12 @@ class MemoryMappingLayout final : public MemoryMappingLayoutBase {
 };
 
 // Returns code range for the specified module.
-bool GetCodeRangeForFile(const char *module, uptr *start, uptr *end);
+bool GetCodeRangeForFile(const char *module, vaddr *start, vaddr *end);
 
 bool IsDecimal(char c);
-uptr ParseDecimal(const char **p);
+usize ParseDecimal(const char **p);
 bool IsHex(char c);
-uptr ParseHex(const char **p);
+usize ParseHex(const char **p);
 
 }  // namespace __sanitizer
 

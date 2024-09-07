@@ -82,7 +82,7 @@ int internal_dlinfo(void *handle, int request, void *p);
 usize internal_sched_yield();
 
 // Error handling
-bool internal_iserror(uptr retval, int *rverrno = nullptr);
+bool internal_iserror(usize retval, int *rverrno = nullptr);
 
 } // namespace __sanitizer
 

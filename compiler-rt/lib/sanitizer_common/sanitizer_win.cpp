@@ -67,25 +67,25 @@ namespace __sanitizer {
 #include "sanitizer_syscall_generic.inc"
 
 // --------------------- sanitizer_common.h
-uptr GetPageSize() {
+usize GetPageSize() {
   SYSTEM_INFO si;
   GetSystemInfo(&si);
   return si.dwPageSize;
 }
 
-uptr GetMmapGranularity() {
+usize GetMmapGranularity() {
   SYSTEM_INFO si;
   GetSystemInfo(&si);
   return si.dwAllocationGranularity;
 }
 
-uptr GetMaxUserVirtualAddress() {
+vaddr GetMaxUserVirtualAddress() {
   SYSTEM_INFO si;
   GetSystemInfo(&si);
-  return (uptr)si.lpMaximumApplicationAddress;
+  return (vaddr)si.lpMaximumApplicationAddress;
 }
 
-uptr GetMaxVirtualAddress() {
+vaddr GetMaxVirtualAddress() {
   return GetMaxUserVirtualAddress();
 }
 
@@ -93,7 +93,7 @@ bool FileExists(const char *filename) {
   return ::GetFileAttributesA(filename) != INVALID_FILE_ATTRIBUTES;
 }
 
-uptr internal_getpid() {
+usize internal_getpid() {
   return GetProcessId(GetCurrentProcess());
 }
 
@@ -112,8 +112,8 @@ uptr GetThreadSelf() {
 }
 
 #if !SANITIZER_GO
-void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
-                                uptr *stack_bottom) {
+void GetThreadStackTopAndBottom(bool at_initialization, vaddr *stack_top,
+                                vaddr *stack_bottom) {
   CHECK(stack_top);
   CHECK(stack_bottom);
   MEMORY_BASIC_INFORMATION mbi;
@@ -121,8 +121,8 @@ void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
   // FIXME: is it possible for the stack to not be a single allocation?
   // Are these values what ASan expects to get (reserved, not committed;
   // including stack guard page) ?
-  *stack_top = (uptr)mbi.BaseAddress + mbi.RegionSize;
-  *stack_bottom = (uptr)mbi.AllocationBase;
+  *stack_top = (vaddr)mbi.BaseAddress + mbi.RegionSize;
+  *stack_bottom = (vaddr)mbi.AllocationBase;
 }
 #endif  // #if !SANITIZER_GO
 
@@ -336,7 +336,7 @@ bool MprotectNoAccess(uptr addr, usize size) {
   return VirtualProtect((LPVOID)addr, size, PAGE_NOACCESS, &old_protection);
 }
 
-bool MprotectReadOnly(uptr addr, uptr size) {
+bool MprotectReadOnly(uptr addr, usize size) {
   DWORD old_protection;
   return VirtualProtect((LPVOID)addr, size, PAGE_READONLY, &old_protection);
 }
@@ -360,15 +360,15 @@ bool DontDumpShadowMemory(uptr addr, usize length) {
   return true;
 }
 
-uptr MapDynamicShadow(uptr shadow_size_bytes, uptr shadow_scale,
-                      uptr min_shadow_base_alignment,
-                      UNUSED uptr &high_mem_end) {
-  const uptr granularity = GetMmapGranularity();
-  const uptr alignment =
-      Max<uptr>(granularity << shadow_scale, 1ULL << min_shadow_base_alignment);
-  const uptr left_padding =
-      Max<uptr>(granularity, 1ULL << min_shadow_base_alignment);
-  uptr space_size = shadow_size_bytes + left_padding;
+uptr MapDynamicShadow(usize shadow_size_bytes, usize shadow_scale,
+                      usize min_shadow_base_alignment,
+                      UNUSED vaddr &high_mem_end) {
+  const usize granularity = GetMmapGranularity();
+  const usize alignment =
+      Max<usize>(granularity << shadow_scale, 1ULL << min_shadow_base_alignment);
+  const usize left_padding =
+      Max<usize>(granularity, 1ULL << min_shadow_base_alignment);
+  usize space_size = shadow_size_bytes + left_padding;
   uptr shadow_start = FindAvailableMemoryRange(space_size, alignment,
                                                granularity, nullptr, nullptr);
   CHECK_NE((uptr)0, shadow_start);
@@ -398,20 +398,20 @@ uptr FindAvailableMemoryRange(usize size, usize alignment, uptr left_padding,
   return 0;
 }
 
-uptr MapDynamicShadowAndAliases(uptr shadow_size, uptr alias_size,
-                                uptr num_aliases, uptr ring_buffer_size) {
+uptr MapDynamicShadowAndAliases(usize shadow_size, usize alias_size,
+                                usize num_aliases, usize ring_buffer_size) {
   CHECK(false && "HWASan aliasing is unimplemented on Windows");
   return 0;
 }
 
-bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
+bool MemoryRangeIsAvailable(vaddr range_start, vaddr range_end) {
   MEMORY_BASIC_INFORMATION mbi;
   CHECK(VirtualQuery((void *)range_start, &mbi, sizeof(mbi)));
   return mbi.Protect == PAGE_NOACCESS &&
-         (uptr)mbi.BaseAddress + mbi.RegionSize >= range_end;
+         (vaddr)mbi.BaseAddress + mbi.RegionSize >= range_end;
 }
 
-void *MapFileToMemory(const char *file_name, uptr *buff_size) {
+void *MapFileToMemory(const char *file_name, usize *buff_size) {
   UNIMPLEMENTED();
 }
 
@@ -465,8 +465,8 @@ u32 GetUid() {
 namespace {
 struct ModuleInfo {
   const char *filepath;
-  uptr base_address;
-  uptr end_address;
+  vaddr base_address;
+  vaddr end_address;
 };
 
 #if !SANITIZER_GO
@@ -484,7 +484,7 @@ void DumpProcessMap() {
   Report("Dumping process modules:\n");
   ListOfModules modules;
   modules.init();
-  uptr num_modules = modules.size();
+  usize num_modules = modules.size();
 
   InternalMmapVector<ModuleInfo> module_infos(num_modules);
   for (size_t i = 0; i < num_modules; ++i) {
@@ -523,7 +523,7 @@ bool StackSizeIsUnlimited() {
   UNIMPLEMENTED();
 }
 
-void SetStackSizeLimitInBytes(uptr limit) {
+void SetStackSizeLimitInBytes(usize limit) {
   UNIMPLEMENTED();
 }
 
@@ -632,7 +632,7 @@ void ListOfModules::init() {
   // Query the list of modules.  Start by assuming there are no more than 256
   // modules and retry if that's not sufficient.
   HMODULE *hmodules = 0;
-  uptr modules_buffer_size = sizeof(HMODULE) * 256;
+  usize modules_buffer_size = sizeof(HMODULE) * 256;
   DWORD bytes_required;
   while (!hmodules) {
     hmodules = (HMODULE *)MmapOrDie(modules_buffer_size, __FUNCTION__);
@@ -669,16 +669,16 @@ void ListOfModules::init() {
         kMaxPathLength, NULL, NULL);
     module_name[module_name_len] = '\0';
 
-    uptr base_address = (uptr)mi.lpBaseOfDll;
-    uptr end_address = (uptr)mi.lpBaseOfDll + mi.SizeOfImage;
+    vaddr base_address = (vaddr)mi.lpBaseOfDll;
+    vaddr end_address = (vaddr)mi.lpBaseOfDll + mi.SizeOfImage;
 
     // Adjust the base address of the module so that we get a VA instead of an
     // RVA when computing the module offset. This helps llvm-symbolizer find the
     // right DWARF CU. In the common case that the image is loaded at it's
     // preferred address, we will now print normal virtual addresses.
-    uptr preferred_base =
+    vaddr preferred_base =
         GetPreferredBase(&module_name[0], &buf[0], buf.size());
-    uptr adjusted_base = base_address - preferred_base;
+    vaddr adjusted_base = base_address - preferred_base;
 
     modules_.push_back(LoadedModule());
     LoadedModule &cur_module = modules_.back();
@@ -705,7 +705,7 @@ int Atexit(void (*function)(void)) {
 static int RunAtexit() {
   TraceLoggingUnregister(g_asan_provider);
   int ret = 0;
-  for (uptr i = 0; i < atexit_functions.size(); ++i) {
+  for (usize i = 0; i < atexit_functions.size(); ++i) {
     ret |= atexit(atexit_functions[i]);
   }
   return ret;
@@ -740,7 +740,7 @@ void CloseFile(fd_t fd) {
   CloseHandle(fd);
 }
 
-bool ReadFromFile(fd_t fd, void *buff, uptr buff_size, uptr *bytes_read,
+bool ReadFromFile(fd_t fd, void *buff, usize buff_size, usize *bytes_read,
                   error_t *error_p) {
   CHECK(fd != kInvalidFd);
 
@@ -761,14 +761,14 @@ bool SupportsColoredOutput(fd_t fd) {
   return false;
 }
 
-bool WriteToFile(fd_t fd, const void *buff, uptr buff_size, uptr *bytes_written,
+bool WriteToFile(fd_t fd, const void *buff, usize buff_size, usize *bytes_written,
                  error_t *error_p) {
   CHECK(fd != kInvalidFd);
 
   // Handle null optional parameters.
   error_t dummy_error;
   error_p = error_p ? error_p : &dummy_error;
-  uptr dummy_bytes_written;
+  usize dummy_bytes_written;
   bytes_written = bytes_written ? bytes_written : &dummy_bytes_written;
 
   // Initialize output parameters in case we fail.
@@ -795,7 +795,7 @@ bool WriteToFile(fd_t fd, const void *buff, uptr buff_size, uptr *bytes_written,
   }
 }
 
-uptr internal_sched_yield() {
+usize internal_sched_yield() {
   Sleep(0);
   return 0;
 }
@@ -811,11 +811,11 @@ void internal__exit(int exitcode) {
   BUILTIN_UNREACHABLE();
 }
 
-uptr internal_ftruncate(fd_t fd, usize size) {
+usize internal_ftruncate(fd_t fd, usize size) {
   UNIMPLEMENTED();
 }
 
-uptr GetRSS() {
+usize GetRSS() {
   PROCESS_MEMORY_COUNTERS counters;
   if (!GetProcessMemoryInfo(GetCurrentProcess(), &counters, sizeof(counters)))
     return 0;
@@ -836,22 +836,22 @@ void FutexWake(atomic_uint32_t *p, u32 count) {
     WakeByAddressAll(p);
 }
 
-uptr GetTlsSize() {
+usize GetTlsSize() {
   return 0;
 }
 
 void InitTlsSize() {
 }
 
-void GetThreadStackAndTls(bool main, uptr *stk_addr, usize *stk_size,
-                          uptr *tls_addr, usize *tls_size) {
+void GetThreadStackAndTls(bool main, vaddr *stk_addr, usize *stk_size,
+                          vaddr *tls_addr, usize *tls_size) {
 #if SANITIZER_GO
   *stk_addr = 0;
   *stk_size = 0;
   *tls_addr = 0;
   *tls_size = 0;
 #else
-  uptr stack_top, stack_bottom;
+  vaddr stack_top, stack_bottom;
   GetThreadStackTopAndBottom(main, &stack_top, &stack_bottom);
   *stk_addr = stack_bottom;
   *stk_size = stack_top - stack_bottom;
@@ -916,11 +916,11 @@ bool IsHandledDeadlyException(DWORD exceptionCode) {
   return false;
 }
 
-bool IsAccessibleMemoryRange(uptr beg, usize size) {
+bool IsAccessibleMemoryRange(vaddr beg, usize size) {
   SYSTEM_INFO si;
   GetNativeSystemInfo(&si);
-  uptr page_size = si.dwPageSize;
-  uptr page_mask = ~(page_size - 1);
+  usize page_size = si.dwPageSize;
+  usize page_mask = ~(page_size - 1);
 
   for (uptr page = beg & page_mask, end = (beg + size - 1) & page_mask;
        page <= end;) {

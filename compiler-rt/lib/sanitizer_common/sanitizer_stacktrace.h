@@ -65,7 +65,7 @@ struct StackTrace {
   // line. Returns the number of symbols that should have been written to buffer
   // (not including trailing '\0'). Thus, the string is truncated iff return
   // value is not less than "out_buf_size".
-  uptr PrintTo(char *out_buf, uptr out_buf_size) const;
+  usize PrintTo(char *out_buf, usize out_buf_size) const;
 
   static bool WillUseFastUnwind(bool request_fast_unwind) {
     if (!SANITIZER_CAN_FAST_UNWIND)
@@ -131,8 +131,8 @@ struct BufferedStackTrace : public StackTrace {
     UnwindImpl(pc, bp, context, request_fast, max_depth);
   }
 
-  void Unwind(u32 max_depth, uptr pc, uptr bp, void *context, uptr stack_top,
-              uptr stack_bottom, bool request_fast_unwind);
+  void Unwind(u32 max_depth, uptr pc, uptr bp, void *context, vaddr stack_top,
+              vaddr stack_bottom, bool request_fast_unwind);
 
   void Reset() {
     *static_cast<StackTrace *>(this) = StackTrace(trace_buffer, 0);
@@ -145,7 +145,7 @@ struct BufferedStackTrace : public StackTrace {
                   u32 max_depth);
 
   // UnwindFast/Slow have platform-specific implementations
-  void UnwindFast(uptr pc, uptr bp, uptr stack_top, uptr stack_bottom,
+  void UnwindFast(uptr pc, uptr bp, vaddr stack_top, vaddr stack_bottom,
                   u32 max_depth);
   void UnwindSlow(uptr pc, u32 max_depth);
   void UnwindSlow(uptr pc, void *context, u32 max_depth);
@@ -160,15 +160,15 @@ struct BufferedStackTrace : public StackTrace {
 };
 
 #if defined(__s390x__)
-static const uptr kFrameSize = 160;
+static const usize kFrameSize = 160;
 #elif defined(__s390__)
-static const uptr kFrameSize = 96;
+static const usize kFrameSize = 96;
 #else
-static const uptr kFrameSize = 2 * sizeof(uhwptr);
+static const usize kFrameSize = 2 * sizeof(uhwptr);
 #endif
 
 // Check if given pointer points into allocated stack area.
-static inline bool IsValidFrame(uptr frame, uptr stack_top, uptr stack_bottom) {
+static inline bool IsValidFrame(vaddr frame, vaddr stack_top, vaddr stack_bottom) {
   return frame > stack_bottom && frame < stack_top - kFrameSize;
 }
 
