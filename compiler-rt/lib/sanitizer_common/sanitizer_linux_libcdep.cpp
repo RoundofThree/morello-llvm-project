@@ -125,8 +125,8 @@ void GetThreadStackTopAndBottom(bool at_initialization, vaddr *stack_top,
     // Get stacksize from rlimit, but clip it so that it does not overlap
     // with other mappings.
     usize stacksize = rl.rlim_cur;
-    if (stacksize > (char *)segment.end - (char *)prev_end)
-      stacksize = (char *)segment.end - (char *)prev_end;
+    if (stacksize > (vaddr)segment.end - prev_end)
+      stacksize = (vaddr)segment.end - prev_end;
     // When running with unlimited stack size, we still want to set some limit.
     // The unlimited stack size is caused by 'ulimit -s unlimited'.
     // Also, for some reason, GNU make spawns subprocesses with unlimited stack.
@@ -391,7 +391,7 @@ __attribute__((unused)) static void GetStaticTlsBoundary(vaddr *addr, usize *siz
   *align = ranges[l].align;
   while (l != 0 && ranges[l].begin < ranges[l - 1].end + ranges[l - 1].align)
     *align = Max(*align, ranges[--l].align);
-  uszie r = one + 1;
+  usize r = one + 1;
   while (r != len && ranges[r].begin < ranges[r - 1].end + ranges[r - 1].align)
     *align = Max(*align, ranges[r++].align);
   *addr = ranges[l].begin;
@@ -563,7 +563,7 @@ void GetThreadStackAndTls(bool main, vaddr *stk_addr, usize *stk_size,
   vaddr stack_top, stack_bottom;
   GetThreadStackTopAndBottom(main, &stack_top, &stack_bottom);
   *stk_addr = stack_bottom;
-  *stk_size = (char *)stack_top - (char *)stack_bottom;
+  *stk_size = stack_top - stack_bottom;
 
   if (!main) {
     // If stack and tls intersect, make them non-intersecting.
@@ -628,8 +628,8 @@ static int AddModuleSegments(const char *module_name, dl_phdr_info *info,
             break;
           }
         }
-        off += sizeof(*nhdr) + RoundUpTo(nhdr->n_namesz, 4) +
-               RoundUpTo(nhdr->n_descsz, 4);
+        off += sizeof(*nhdr) + (usize)RoundUpTo(nhdr->n_namesz, 4) +
+               (usize)RoundUpTo(nhdr->n_descsz, 4);
       }
 #  endif
     }
@@ -958,13 +958,13 @@ uptr MapDynamicShadow(usize shadow_size_bytes, usize shadow_scale,
   return shadow_start;
 }
 
-static uptr MmapSharedNoReserve(vaddr addr, usize size) {
+static uptr MmapSharedNoReserve(uptr addr, usize size) {
   return internal_mmap(
       reinterpret_cast<void *>(addr), size, PROT_READ | PROT_WRITE,
       MAP_FIXED | MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
 }
 
-static uptr MremapCreateAlias(vaddr base_addr, vaddr alias_addr,
+static uptr MremapCreateAlias(uptr base_addr, uptr alias_addr,
                               usize alias_size) {
 #if SANITIZER_LINUX
   return internal_mremap(reinterpret_cast<void *>(base_addr), 0, alias_size,

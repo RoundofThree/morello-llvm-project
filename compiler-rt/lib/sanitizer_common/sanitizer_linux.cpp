@@ -1047,7 +1047,7 @@ vaddr GetMaxVirtualAddress() {
   // of the address space, so simply checking the stack address is not enough.
   // This should (does) work for both PowerPC64 Endian modes.
   // Similarly, aarch64 has multiple address space layouts: 39, 42 and 47-bit.
-  return (1ULL << (MostSignificantSetBitIndex(GET_CURRENT_FRAME()) + 1)) - 1;
+  return (1ULL << (MostSignificantSetBitIndex((usize)GET_CURRENT_FRAME()) + 1)) - 1;
 #elif SANITIZER_RISCV64
   return (1ULL << 38) - 1;
 # elif defined(__mips64)
@@ -2047,9 +2047,15 @@ static void GetPcSpBp(void *context, uptr *pc, uptr *sp, uptr *bp) {
 #elif defined(__aarch64__)
 # if SANITIZER_FREEBSD
   ucontext_t *ucontext = (ucontext_t*)context;
+#   ifdef __CHERI_PURE_CAPABILITY__
+  *pc = ucontext->uc_mcontext.mc_capregs.cap_elr;
+  *bp = ucontext->uc_mcontext.mc_capregs.cap_x[29];
+  *sp = ucontext->uc_mcontext.mc_capregs.cap_sp;
+#   else
   *pc = ucontext->uc_mcontext.mc_gpregs.gp_elr;
   *bp = ucontext->uc_mcontext.mc_gpregs.gp_x[29];
   *sp = ucontext->uc_mcontext.mc_gpregs.gp_sp;
+#   endif
 # else
   ucontext_t *ucontext = (ucontext_t*)context;
   *pc = ucontext->uc_mcontext.pc;

@@ -248,7 +248,7 @@ void DumpProcessMap() {
   MemoryMappedSegment segment(filename, kBufSize);
   Report("Process memory map follows:\n");
   while (proc_maps.Next(&segment)) {
-    Printf("\t%p-%p\t%s\n", (void *)segment.start, (void *)segment.end,
+    Printf("\t%p-%p\t%s\n", (void *)(uptr)segment.start, (void *)(uptr)segment.end,
            segment.filename);
   }
   Report("End of process memory map.\n");
@@ -289,9 +289,9 @@ bool GetCodeRangeForFile(const char *module, uptr *start, uptr *end) {
   return false;
 }
 
-vaddr SignalContext::GetAddress() const {
+uptr SignalContext::GetAddress() const {
   auto si = static_cast<const siginfo_t *>(siginfo);
-  return (vaddr)si->si_addr;
+  return (uptr)si->si_addr;
 }
 
 bool SignalContext::IsMemoryAccess() const {

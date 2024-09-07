@@ -84,10 +84,10 @@ vaddr GetMaxUserVirtualAddress();
 tid_t GetTid();
 int TgKill(pid_t pid, tid_t tid, int sig);
 uptr GetThreadSelf();
-void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
-                                uptr *stack_bottom);
-void GetThreadStackAndTls(bool main, uptr *stk_addr, usize *stk_size,
-                          uptr *tls_addr, usize *tls_size);
+void GetThreadStackTopAndBottom(bool at_initialization, vaddr *stack_top,
+                                vaddr *stack_bottom);
+void GetThreadStackAndTls(bool main, vaddr *stk_addr, usize *stk_size,
+                          vaddr *tls_addr, usize *tls_size);
 
 // Memory management
 void *MmapOrDie(usize size, const char *mem_type, bool raw_report = false);
@@ -178,8 +178,8 @@ class ReservedAddressRange {
  public:
   uptr Init(usize size, const char *name = nullptr, uptr fixed_addr = 0);
   uptr InitAligned(usize size, usize align, const char *name = nullptr);
-  uptr Map(vaddr fixed_addr, usize size, const char *name = nullptr);
-  uptr MapOrDie(vaddr fixed_addr, usize size, const char *name = nullptr);
+  uptr Map(uptr fixed_addr, usize size, const char *name = nullptr);
+  uptr MapOrDie(uptr fixed_addr, usize size, const char *name = nullptr);
   void Unmap(uptr addr, usize size);
   void *base() const { return base_; }
   usize size() const { return size_; }
@@ -396,6 +396,12 @@ inline usize MostSignificantSetBitIndex(usize x) {
 #endif
   return up;
 }
+inline u64 MostSignificantSetBitIndex(u64 x) {
+  return (u64)MostSignificantSetBitIndex((usize)x);
+}
+inline u32 MostSignificantSetBitIndex(u32 x) {
+  return (u32)MostSignificantSetBitIndex((usize)x);
+}
 // XXXR3: we really should get rid of this
 #ifdef __CHERI_PURE_CAPABILITY__
 usize MostSignificantSetBitIndex(uptr x) = delete;
@@ -417,6 +423,12 @@ inline usize LeastSignificantSetBitIndex(usize x) {
 #endif
   return up;
 }
+inline u64 LeastSignificantSetBitIndex(u64 x) {
+  return (u64)LeastSignificantSetBitIndex((usize)x);
+}
+inline u32 LeastSignificantSetBitIndex(u32 x) {
+  return (u32)LeastSignificantSetBitIndex((usize)x);
+}
 #ifdef __CHERI_PURE_CAPABILITY__
 usize LeastSignificantSetBitIndex(uptr x) = delete;
 #endif
@@ -431,6 +443,12 @@ inline usize RoundUpToPowerOfTwo(usize size) {
   CHECK_LT(size, (1ULL << (up + 1)));
   CHECK_GT(size, (1ULL << up));
   return 1ULL << (up + 1);
+}
+inline u64 RoundUpToPowerOfTwo(u64 size) {
+  return (u64)RoundUpToPowerOfTwo((usize)size);
+}
+inline u32 RoundUpToPowerOfTwo(u32 size) {
+  return (u32)RoundUpToPowerOfTwo((usize)size);
 }
 #ifdef __CHERI_PURE_CAPABILITY__
 uptr RoundUpToPowerOfTwo(uptr size) = delete;
@@ -486,6 +504,12 @@ inline bool IsAligned(const void *ptr, usize alignment) {
 inline usize Log2(usize x) {
   CHECK(IsPowerOfTwo(x));
   return LeastSignificantSetBitIndex(x);
+}
+inline u64 Log2(u64 x) {
+  return (u64)Log2((usize)x);
+}
+inline u32 Log2(u32 x) {
+  return (u32)Log2((usize)x);
 }
 #ifdef __CHERI_PURE_CAPABILITY__
 uptr Log2(uptr x) = delete;

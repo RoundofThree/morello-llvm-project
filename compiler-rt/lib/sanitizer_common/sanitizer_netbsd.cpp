@@ -100,7 +100,7 @@ uptr internal_mmap(void *addr, usize length, int prot, int flags, int fd,
   return (uptr)__mmap(addr, length, prot, flags, fd, 0, offset);
 }
 
-uptr internal_munmap(void *addr, usize length) {
+int internal_munmap(void *addr, usize length) {
   DEFINE__REAL(int, munmap, void *a, uptr b);
   return _REAL(munmap, addr, length);
 }

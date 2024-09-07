@@ -137,7 +137,7 @@ uptr internal_mmap(void *addr, usize length, int prot, int flags,
   return (uptr)mmap(addr, length, prot, flags, fd, offset);
 }
 
-usize internal_munmap(void *addr, usize length) {
+int internal_munmap(void *addr, usize length) {
   if (&__munmap) return __munmap(addr, length);
   return munmap(addr, length);
 }
@@ -398,8 +398,8 @@ tid_t GetTid() {
   return tid;
 }
 
-void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
-                                uptr *stack_bottom) {
+void GetThreadStackTopAndBottom(bool at_initialization, vaddr *stack_top,
+                                vaddr *stack_bottom) {
   CHECK(stack_top);
   CHECK(stack_bottom);
   usize stacksize = pthread_get_stacksize_np(pthread_self());
@@ -418,7 +418,7 @@ void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
     }
   }
   void *stackaddr = pthread_get_stackaddr_np(pthread_self());
-  *stack_top = (uptr)stackaddr;
+  *stack_top = (vaddr)stackaddr;
   *stack_bottom = *stack_top - stacksize;
 }
 

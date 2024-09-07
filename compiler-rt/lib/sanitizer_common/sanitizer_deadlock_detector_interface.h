@@ -33,7 +33,7 @@ struct DDLogicalThread;
 
 struct DDMutex {
 #if SANITIZER_DEADLOCK_DETECTOR_VERSION == 1
-  size_t id;
+  usize id;
   u32  stk;  // creation stack
 #elif SANITIZER_DEADLOCK_DETECTOR_VERSION == 2
   u32              id;

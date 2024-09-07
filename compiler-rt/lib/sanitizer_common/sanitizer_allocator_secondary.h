@@ -227,11 +227,11 @@ class LargeMmapAllocator {
                      AddressSpaceView::Load(chunks[n - 1])->map_size;
     if (p < min_mmap_ || p >= max_mmap_)
       return nullptr;
-    uptr beg = 0, end = n - 1;
+    usize beg = 0, end = n - 1;
     // This loop is a log(n) lower_bound. It does not check for the exact match
     // to avoid expensive cache-thrashing loads.
     while (end - beg >= 2) {
-      uptr mid = (beg + end) / 2;  // Invariant: mid >= beg + 1
+      usize mid = (beg + end) / 2;  // Invariant: mid >= beg + 1
       if (p < reinterpret_cast<uptr>(chunks[mid]))
         end = mid - 1;  // We are not interested in chunks[mid].
       else

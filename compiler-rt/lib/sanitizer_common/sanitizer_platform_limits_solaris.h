@@ -293,7 +293,7 @@ extern int af_inet6;
 usize __sanitizer_in_addr_sz(int af);
 
 struct __sanitizer_dl_phdr_info {
-  vaddr dlpi_addr;
+  uptr dlpi_addr;
   const char *dlpi_name;
   const void *dlpi_phdr;
   short dlpi_phnum;

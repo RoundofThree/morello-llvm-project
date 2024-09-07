@@ -348,7 +348,7 @@ class DeadlockDetector {
     return g_.hasEdge(nodeToIndex(l1), nodeToIndex(l2));
   }
   // idx1 and idx2 are raw indices to g_, not lock IDs.
-  bool testOnlyHasEdgeRaw(upusizetr idx1, usize idx2) {
+  bool testOnlyHasEdgeRaw(usize idx1, usize idx2) {
     return g_.hasEdge(idx1, idx2);
   }
 
