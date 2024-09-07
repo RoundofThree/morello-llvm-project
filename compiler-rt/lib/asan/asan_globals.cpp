@@ -61,7 +61,7 @@ ALWAYS_INLINE void PoisonShadowForGlobal(const Global *g, u8 value) {
 }
 
 ALWAYS_INLINE void PoisonRedZones(const Global &g) {
-  uptr aligned_size = RoundUpTo(g.size, ASAN_SHADOW_GRANULARITY);
+  usize aligned_size = RoundUpTo(g.size, ASAN_SHADOW_GRANULARITY);
   FastPoisonShadow(g.beg + aligned_size, g.size_with_redzone - aligned_size,
                    kAsanGlobalRedzoneMagic);
   if (g.size != aligned_size) {
@@ -72,9 +72,9 @@ ALWAYS_INLINE void PoisonRedZones(const Global &g) {
   }
 }
 
-const uptr kMinimalDistanceFromAnotherGlobal = 64;
+const usize kMinimalDistanceFromAnotherGlobal = 64;
 
-static bool IsAddressNearGlobal(uptr addr, const __asan_global &g) {
+static bool IsAddressNearGlobal(vaddr addr, const __asan_global &g) {
   if (addr <= g.beg - kMinimalDistanceFromAnotherGlobal) return false;
   if (addr >= g.beg + g.size_with_redzone) return false;
   return true;

@@ -77,8 +77,8 @@ class Thread {
   void Print(const char *prefix);
   void InitRandomState();
   uptr vfork_spill_;
-  uptr stack_top_;
-  uptr stack_bottom_;
+  vaddr stack_top_;
+  vaddr stack_bottom_;
   uptr tls_begin_;
   uptr tls_end_;
 

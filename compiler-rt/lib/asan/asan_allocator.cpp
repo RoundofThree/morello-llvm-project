@@ -101,14 +101,14 @@ class ChunkHeader {
   atomic_uint64_t alloc_context_id;
 
  public:
-  uptr UsedSize() const {
+  usize UsedSize() const {
     static_assert(sizeof(user_requested_size_lo) == 4,
                   "Expression below requires this");
     return FIRST_32_SECOND_64(0, ((uptr)user_requested_size_hi << 32)) +
            user_requested_size_lo;
   }
 
-  void SetUsedSize(uptr size) {
+  void SetUsedSize(usize size) {
     user_requested_size_lo = size;
     static_assert(sizeof(user_requested_size_lo) == 4,
                   "Expression below requires this");
@@ -138,8 +138,8 @@ class ChunkBase : public ChunkHeader {
   }
 };
 
-static const uptr kChunkHeaderSize = sizeof(ChunkHeader);
-static const uptr kChunkHeader2Size = sizeof(ChunkBase) - kChunkHeaderSize;
+static const usize kChunkHeaderSize = sizeof(ChunkHeader);
+static const usize kChunkHeader2Size = sizeof(ChunkBase) - kChunkHeaderSize;
 COMPILER_CHECK(kChunkHeaderSize == 16);
 COMPILER_CHECK(kChunkHeader2Size <= 16);
 
@@ -157,15 +157,15 @@ enum {
 class AsanChunk : public ChunkBase {
  public:
   uptr Beg() { return reinterpret_cast<uptr>(this) + kChunkHeaderSize; }
-  bool AddrIsInside(uptr addr) {
-    return (addr >= Beg()) && (addr < Beg() + UsedSize());
+  bool AddrIsInside(vaddr addr) {
+    return (addr >= (vaddr)Beg()) && (addr < (vaddr)Beg() + UsedSize());
   }
 };
 
 class LargeChunkHeader {
   static constexpr uptr kAllocBegMagic =
       FIRST_32_SECOND_64(0xCC6E96B9, 0xCC6E96B9CC6E96B9ULL);
-  atomic_uintptr_t magic;
+  atomic_size_t magic;
   AsanChunk *chunk_header;
 
  public:
@@ -182,7 +182,7 @@ class LargeChunkHeader {
       return;
     }
 
-    uptr old = kAllocBegMagic;
+    usize old = kAllocBegMagic;
     if (!atomic_compare_exchange_strong(&magic, &old, 0,
                                         memory_order_release)) {
       CHECK_EQ(old, kAllocBegMagic);
@@ -350,13 +350,13 @@ struct Allocator {
     uptr allocated_size = allocator.GetActuallyAllocatedSize((void *)chunk);
     if (ac && atomic_load(&ac->chunk_state, memory_order_acquire) ==
                   CHUNK_ALLOCATED) {
-      uptr beg = ac->Beg();
-      uptr end = ac->Beg() + ac->UsedSize();
-      uptr chunk_end = chunk + allocated_size;
+      vaddr beg = ac->Beg();
+      vaddr end = ac->Beg() + ac->UsedSize();
+      vaddr chunk_end = chunk + allocated_size;
       if (chunk < beg && beg < end && end <= chunk_end) {
         // Looks like a valid AsanChunk in use, poison redzones only.
         PoisonShadow(chunk, beg - chunk, kAsanHeapLeftRedzoneMagic);
-        uptr end_aligned_down = RoundDownTo(end, ASAN_SHADOW_GRANULARITY);
+        vaddr end_aligned_down = RoundDownTo(end, ASAN_SHADOW_GRANULARITY);
         FastPoisonShadowPartialRightRedzone(
             end_aligned_down, end - end_aligned_down,
             chunk_end - end_aligned_down, kAsanHeapLeftRedzoneMagic);
@@ -413,7 +413,7 @@ struct Allocator {
     return Min(Max(rz_log, Max(min_log, hdr_log)), Max(max_log, hdr_log));
   }
 
-  static uptr ComputeUserRequestedAlignmentLog(uptr user_requested_alignment) {
+  static usize ComputeUserRequestedAlignmentLog(usize user_requested_alignment) {
     if (user_requested_alignment < 8)
       return 0;
     if (user_requested_alignment > 512)
@@ -470,7 +470,7 @@ struct Allocator {
   }
 
   // -------------------- Allocation/Deallocation routines ---------------
-  void *Allocate(uptr size, uptr alignment, BufferedStackTrace *stack,
+  void *Allocate(usize size, usize alignment, BufferedStackTrace *stack,
                  AllocType alloc_type, bool can_fill) {
     if (UNLIKELY(!asan_inited))
       AsanInitFromRtl();
@@ -481,8 +481,8 @@ struct Allocator {
     }
     Flags &fl = *flags();
     CHECK(stack);
-    const uptr min_alignment = ASAN_SHADOW_GRANULARITY;
-    const uptr user_requested_alignment_log =
+    const usize min_alignment = ASAN_SHADOW_GRANULARITY;
+    const usize user_requested_alignment_log =
         ComputeUserRequestedAlignmentLog(alignment);
     if (alignment < min_alignment)
       alignment = min_alignment;
@@ -496,10 +496,10 @@ struct Allocator {
       size = 1;
     }
     CHECK(IsPowerOfTwo(alignment));
-    uptr rz_log = ComputeRZLog(size);
-    uptr rz_size = RZLog2Size(rz_log);
-    uptr rounded_size = RoundUpTo(Max(size, kChunkHeader2Size), alignment);
-    uptr needed_size = rounded_size + rz_size;
+    usize rz_log = ComputeRZLog(size);
+    usize rz_size = RZLog2Size(rz_log);
+    usize rounded_size = RoundUpTo(Max(size, kChunkHeader2Size), alignment);
+    usize needed_size = rounded_size + rz_size;
     if (alignment > min_alignment)
       needed_size += alignment;
     // If we are allocating from the secondary allocator, there will be no
@@ -561,7 +561,7 @@ struct Allocator {
 
     m->SetAllocContext(t ? t->tid() : kMainTid, StackDepotPut(*stack));
 
-    uptr size_rounded_down_to_granularity =
+    usize size_rounded_down_to_granularity =
         RoundDownTo(size, ASAN_SHADOW_GRANULARITY);
     // Unpoison the bulk of the memory region.
     if (size_rounded_down_to_granularity)
@@ -727,7 +727,7 @@ struct Allocator {
     return new_ptr;
   }
 
-  void *Calloc(uptr nmemb, uptr size, BufferedStackTrace *stack) {
+  void *Calloc(usize nmemb, usize size, BufferedStackTrace *stack) {
     if (UNLIKELY(CheckForCallocOverflow(size, nmemb))) {
       if (AllocatorMayReturnNull())
         return nullptr;
@@ -870,8 +870,8 @@ bool AsanChunkView::IsQuarantined() const {
                        CHUNK_QUARANTINE;
 }
 uptr AsanChunkView::Beg() const { return chunk_->Beg(); }
-uptr AsanChunkView::End() const { return Beg() + UsedSize(); }
-uptr AsanChunkView::UsedSize() const { return chunk_->UsedSize(); }
+usize AsanChunkView::End() const { return Beg() + UsedSize(); }
+usize AsanChunkView::UsedSize() const { return chunk_->UsedSize(); }
 u32 AsanChunkView::UserRequestedAlignment() const {
   return Allocator::ComputeUserAlignment(chunk_->user_requested_alignment_log);
 }
@@ -1196,7 +1196,7 @@ int __sanitizer_get_ownership(const void *p) {
   return instance.AllocationSize(ptr) > 0;
 }
 
-uptr __sanitizer_get_allocated_size(const void *p) {
+usize __sanitizer_get_allocated_size(const void *p) {
   if (!p) return 0;
   uptr ptr = reinterpret_cast<uptr>(p);
   uptr allocated_size = instance.AllocationSize(ptr);
@@ -1221,7 +1221,7 @@ int __asan_update_allocation_context(void* addr) {
 #if !SANITIZER_SUPPORTS_WEAK_HOOKS
 // Provide default (no-op) implementation of malloc hooks.
 SANITIZER_INTERFACE_WEAK_DEF(void, __sanitizer_malloc_hook,
-                             void *ptr, uptr size) {
+                             void *ptr, usize size) {
   (void)ptr;
   (void)size;
 }

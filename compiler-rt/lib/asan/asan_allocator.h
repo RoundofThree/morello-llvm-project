@@ -56,23 +56,23 @@ class AsanChunkView {
   bool IsAllocated() const;    // Checks if the memory is currently allocated.
   bool IsQuarantined() const;  // Checks if the memory is currently quarantined.
   uptr Beg() const;            // First byte of user memory.
-  uptr End() const;            // Last byte of user memory.
-  uptr UsedSize() const;       // Size requested by the user.
+  vaddr End() const;            // Last byte of user memory.
+  usize UsedSize() const;       // Size requested by the user.
   u32 UserRequestedAlignment() const;  // Originally requested alignment.
-  uptr AllocTid() const;
-  uptr FreeTid() const;
+  usize AllocTid() const;
+  usize FreeTid() const;
   bool Eq(const AsanChunkView &c) const { return chunk_ == c.chunk_; }
   u32 GetAllocStackId() const;
   u32 GetFreeStackId() const;
   AllocType GetAllocType() const;
-  bool AddrIsInside(uptr addr, uptr access_size, sptr *offset) const {
+  bool AddrIsInside(vaddr addr, usize access_size, ssize *offset) const {
     if (addr >= Beg() && (addr + access_size) <= End()) {
       *offset = addr - Beg();
       return true;
     }
     return false;
   }
-  bool AddrIsAtLeft(uptr addr, uptr access_size, sptr *offset) const {
+  bool AddrIsAtLeft(vaddr addr, usize access_size, ssize *offset) const {
     (void)access_size;
     if (addr < Beg()) {
       *offset = Beg() - addr;
@@ -80,7 +80,7 @@ class AsanChunkView {
     }
     return false;
   }
-  bool AddrIsAtRight(uptr addr, uptr access_size, sptr *offset) const {
+  bool AddrIsAtRight(vaddr addr, usize access_size, ssize *offset) const {
     if (addr + access_size > End()) {
       *offset = addr - End();
       return true;

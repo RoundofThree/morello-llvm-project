@@ -47,12 +47,12 @@ extern "C" {
   // This structure describes an instrumented global variable.
   struct __asan_global {
     uptr beg;                // The address of the global.
-    uptr size;               // The original size of the global.
-    uptr size_with_redzone;  // The size with the redzone.
+    usize size;               // The original size of the global.
+    usize size_with_redzone;  // The size with the redzone.
     const char *name;        // Name as a C string.
     const char *module_name; // Module name as a C string. This pointer is a
                              // unique identifier of a module.
-    uptr has_dynamic_init;   // Non-zero if the global has dynamic initializer.
+    usize has_dynamic_init;   // Non-zero if the global has dynamic initializer.
     __asan_global_source_location *location;  // Source location of a global,
                                               // or NULL if it is unknown.
     uptr odr_indicator;      // The address of the ODR indicator symbol.
@@ -74,9 +74,9 @@ extern "C" {
   // These two functions should be called by the instrumented code.
   // 'globals' is an array of structures describing 'n' globals.
   SANITIZER_INTERFACE_ATTRIBUTE
-  void __asan_register_globals(__asan_global *globals, uptr n);
+  void __asan_register_globals(__asan_global *globals, usize n);
   SANITIZER_INTERFACE_ATTRIBUTE
-  void __asan_unregister_globals(__asan_global *globals, uptr n);
+  void __asan_unregister_globals(__asan_global *globals, usize n);
 
   // These two functions should be called before and after dynamic initializers
   // of a single module run, respectively.

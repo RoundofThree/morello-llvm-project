@@ -69,7 +69,7 @@ usize StackStore::Allocated() const {
   return atomic_load_relaxed(&allocated_) + sizeof(*this);
 }
 
-usize *StackStore::Alloc(usize count, usize *idx, usize *pack) {
+uptr *StackStore::Alloc(usize count, usize *idx, usize *pack) {
   for (;;) {
     // Optimisic lock-free allocation, essentially try to bump the
     // total_frames_.

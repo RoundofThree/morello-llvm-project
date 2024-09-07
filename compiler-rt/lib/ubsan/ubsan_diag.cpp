@@ -34,8 +34,8 @@ using namespace __ubsan;
 // removed in the future.
 void ubsan_GetStackTrace(BufferedStackTrace *stack, uptr max_depth,
                          uptr pc, uptr bp, void *context, bool fast) {
-  uptr top = 0;
-  uptr bottom = 0;
+  vaddr top = 0;
+  vaddr bottom = 0;
   if (StackTrace::WillUseFastUnwind(fast)) {
     GetThreadStackTopAndBottom(false, &top, &bottom);
     stack->Unwind(max_depth, pc, bp, nullptr, top, bottom, true);
@@ -169,7 +169,7 @@ static void RenderLocation(InternalScopedString *Buffer, Location Loc) {
       RenderModuleLocation(Buffer, Info.module, Info.module_offset,
                            Info.module_arch, common_flags()->strip_path_prefix);
     else
-      Buffer->append("%p", reinterpret_cast<void *>(Info.address));
+      Buffer->append("%p", reinterpret_cast<void *>((uptr)Info.address));
     return;
   }
   case Location::LK_Null:

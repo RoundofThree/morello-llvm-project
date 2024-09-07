@@ -58,7 +58,8 @@ bool PlatformUnpoisonStacks() {
 
   // Since we're on the signal alternate stack, we cannot find the DEFAULT
   // stack bottom using a local variable.
-  uptr default_bottom, tls_addr, tls_size, stack_size;
+  vaddr default_bottom, tls_addr;
+  usize tls_size, stack_size;
   GetThreadStackAndTls(/*main=*/false, &default_bottom, &stack_size, &tls_addr,
                        &tls_size);
   UnpoisonStack(default_bottom, default_bottom + stack_size, "default");

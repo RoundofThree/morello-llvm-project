@@ -101,6 +101,26 @@ struct DenseMapInfo<T *> {
   }
 };
 
+// Provide DenseMapInfo for uintptr_t
+template <>
+struct DenseMapInfo<uptr> {
+  static constexpr uptr getEmptyKey() {
+    return (uptr)~0ULL;
+  }
+
+  static constexpr uptr getTombstoneKey() {
+    return (uptr)~0ULL - (uptr)1ULL;
+  }
+
+  static constexpr unsigned getHashValue(const uptr &Val) {
+    return (unsigned)(Val * 37ULL);
+  }
+
+  static constexpr bool isEqual(const uptr &LHS, const uptr &RHS) {
+    return LHS == RHS;
+  }
+};
+
 // Provide DenseMapInfo for chars.
 template <>
 struct DenseMapInfo<char> {

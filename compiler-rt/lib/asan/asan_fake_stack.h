@@ -54,30 +54,30 @@ struct FakeFrame {
 // frames in round robin fashion to maximize the delay between a deallocation
 // and the next allocation.
 class FakeStack {
-  static const uptr kMinStackFrameSizeLog = 6;  // Min frame is 64B.
-  static const uptr kMaxStackFrameSizeLog = 16;  // Max stack frame is 64K.
+  static const usize kMinStackFrameSizeLog = 6;  // Min frame is 64B.
+  static const usize kMaxStackFrameSizeLog = 16;  // Max stack frame is 64K.
 
  public:
-  static const uptr kNumberOfSizeClasses =
+  static const usize kNumberOfSizeClasses =
        kMaxStackFrameSizeLog - kMinStackFrameSizeLog + 1;
 
   // CTOR: create the FakeStack as a single mmap-ed object.
-  static FakeStack *Create(uptr stack_size_log);
+  static FakeStack *Create(usize stack_size_log);
 
   void Destroy(int tid);
 
   // stack_size_log is at least 15 (stack_size >= 32K).
-  static uptr SizeRequiredForFlags(uptr stack_size_log) {
-    return ((uptr)1) << (stack_size_log + 1 - kMinStackFrameSizeLog);
+  static usize SizeRequiredForFlags(usize stack_size_log) {
+    return ((usize)1) << (stack_size_log + 1 - kMinStackFrameSizeLog);
   }
 
   // Each size class occupies stack_size bytes.
-  static uptr SizeRequiredForFrames(uptr stack_size_log) {
-    return (((uptr)1) << stack_size_log) * kNumberOfSizeClasses;
+  static usize SizeRequiredForFrames(usize stack_size_log) {
+    return (((usize)1) << stack_size_log) * kNumberOfSizeClasses;
   }
 
   // Number of bytes requires for the whole object.
-  static uptr RequiredSize(uptr stack_size_log) {
+  static usize RequiredSize(usize stack_size_log) {
     return kFlagsOffset + SizeRequiredForFlags(stack_size_log) +
            SizeRequiredForFrames(stack_size_log);
   }
@@ -88,40 +88,40 @@ class FakeStack {
   // ....................2................  110000000
   // ....................3................  111000000
   // and so on.
-  static uptr FlagsOffset(uptr stack_size_log, uptr class_id) {
-    uptr t = kNumberOfSizeClasses - 1 - class_id;
-    const uptr all_ones = (((uptr)1) << (kNumberOfSizeClasses - 1)) - 1;
+  static usize FlagsOffset(usize stack_size_log, usize class_id) {
+    usize t = kNumberOfSizeClasses - 1 - class_id;
+    const usize all_ones = (((uptr)1) << (kNumberOfSizeClasses - 1)) - 1;
     return ((all_ones >> t) << t) << (stack_size_log - 15);
   }
 
-  static uptr NumberOfFrames(uptr stack_size_log, uptr class_id) {
-    return ((uptr)1) << (stack_size_log - kMinStackFrameSizeLog - class_id);
+  static usize NumberOfFrames(usize stack_size_log, usize class_id) {
+    return ((usize)1) << (stack_size_log - kMinStackFrameSizeLog - class_id);
   }
 
   // Divide n by the number of frames in size class.
-  static uptr ModuloNumberOfFrames(uptr stack_size_log, uptr class_id, uptr n) {
+  static usize ModuloNumberOfFrames(usize stack_size_log, usize class_id, usize n) {
     return n & (NumberOfFrames(stack_size_log, class_id) - 1);
   }
 
   // The pointer to the flags of the given class_id.
-  u8 *GetFlags(uptr stack_size_log, uptr class_id) {
+  u8 *GetFlags(usize stack_size_log, usize class_id) {
     return reinterpret_cast<u8 *>(this) + kFlagsOffset +
            FlagsOffset(stack_size_log, class_id);
   }
 
   // Get frame by class_id and pos.
-  u8 *GetFrame(uptr stack_size_log, uptr class_id, uptr pos) {
+  u8 *GetFrame(usize stack_size_log, usize class_id, usize pos) {
     return reinterpret_cast<u8 *>(this) + kFlagsOffset +
            SizeRequiredForFlags(stack_size_log) +
-           (((uptr)1) << stack_size_log) * class_id +
+           (((usize)1) << stack_size_log) * class_id +
            BytesInSizeClass(class_id) * pos;
   }
 
   // Allocate the fake frame.
-  FakeFrame *Allocate(uptr stack_size_log, uptr class_id, uptr real_stack);
+  FakeFrame *Allocate(usize stack_size_log, usize class_id, usize real_stack);
 
   // Deallocate the fake frame: read the saved flag address and write 0 there.
-  static void Deallocate(uptr x, uptr class_id) {
+  static void Deallocate(usize x, usize class_id) {
     **SavedFlagPtr(x, class_id) = 0;
   }
 
@@ -143,11 +143,11 @@ class FakeStack {
   // The fake frame is guaranteed to have a right redzone.
   // We use the last word of that redzone to store the address of the flag
   // that corresponds to the current frame to make faster deallocation.
-  static u8 **SavedFlagPtr(uptr x, uptr class_id) {
+  static u8 **SavedFlagPtr(uptr x, usize class_id) {
     return reinterpret_cast<u8 **>(x + BytesInSizeClass(class_id) - sizeof(x));
   }
 
-  uptr stack_size_log() const { return stack_size_log_; }
+  usize stack_size_log() const { return stack_size_log_; }
 
   void HandleNoReturn();
   void GC(uptr real_stack);
@@ -156,13 +156,13 @@ class FakeStack {
 
  private:
   FakeStack() { }
-  static const uptr kFlagsOffset = 4096;  // This is were the flags begin.
+  static const usize kFlagsOffset = 4096;  // This is were the flags begin.
   // Must match the number of uses of DEFINE_STACK_MALLOC_FREE_WITH_CLASS_ID
   COMPILER_CHECK(kNumberOfSizeClasses == 11);
-  static const uptr kMaxStackMallocSize = ((uptr)1) << kMaxStackFrameSizeLog;
+  static const usize kMaxStackMallocSize = ((usize)1) << kMaxStackFrameSizeLog;
 
-  uptr hint_position_[kNumberOfSizeClasses];
-  uptr stack_size_log_;
+  usize hint_position_[kNumberOfSizeClasses];
+  usize stack_size_log_;
   // a bit is set if something was allocated from the corresponding size class.
   bool needs_gc_;
 };

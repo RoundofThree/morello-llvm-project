@@ -135,36 +135,36 @@ static void PrintAccumulatedStats() {
 // ---------------------- Interface ---------------- {{{1
 using namespace __asan;
 
-uptr __sanitizer_get_current_allocated_bytes() {
+usize __sanitizer_get_current_allocated_bytes() {
   AsanStats stats;
   GetAccumulatedStats(&stats);
-  uptr malloced = stats.malloced;
-  uptr freed = stats.freed;
+  usize malloced = stats.malloced;
+  usize freed = stats.freed;
   // Return sane value if malloced < freed due to racy
   // way we update accumulated stats.
   return (malloced > freed) ? malloced - freed : 1;
 }
 
-uptr __sanitizer_get_heap_size() {
+usize __sanitizer_get_heap_size() {
   AsanStats stats;
   GetAccumulatedStats(&stats);
   return stats.mmaped - stats.munmaped;
 }
 
-uptr __sanitizer_get_free_bytes() {
+usize __sanitizer_get_free_bytes() {
   AsanStats stats;
   GetAccumulatedStats(&stats);
-  uptr total_free = stats.mmaped
+  usize total_free = stats.mmaped
                   - stats.munmaped
                   + stats.really_freed;
-  uptr total_used = stats.malloced
+  usize total_used = stats.malloced
                   + stats.malloced_redzones;
   // Return sane value if total_free < total_used due to racy
   // way we update accumulated stats.
   return (total_free > total_used) ? total_free - total_used : 1;
 }
 
-uptr __sanitizer_get_unmapped_bytes() {
+usize __sanitizer_get_unmapped_bytes() {
   return 0;
 }
 

@@ -199,7 +199,7 @@ uptr AsanThread::stack_size() {
 // We want to create the FakeStack lazily on the first use, but not earlier
 // than the stack size is known and the procedure has to be async-signal safe.
 FakeStack *AsanThread::AsyncSignalSafeLazyInitFakeStack() {
-  uptr stack_size = this->stack_size();
+  usize stack_size = this->stack_size();
   if (stack_size == 0)  // stack_size is not yet available, don't use FakeStack.
     return nullptr;
   uptr old_val = 0;
@@ -212,7 +212,7 @@ FakeStack *AsanThread::AsyncSignalSafeLazyInitFakeStack() {
   if (atomic_compare_exchange_strong(
       reinterpret_cast<atomic_uintptr_t *>(&fake_stack_), &old_val, 1UL,
       memory_order_relaxed)) {
-    uptr stack_size_log = Log2(RoundUpToPowerOfTwo(stack_size));
+    usize stack_size_log = Log2(RoundUpToPowerOfTwo(stack_size));
     CHECK_LE(flags()->min_uar_stack_size_log, flags()->max_uar_stack_size_log);
     stack_size_log =
         Min(stack_size_log, static_cast<uptr>(flags()->max_uar_stack_size_log));
@@ -301,8 +301,8 @@ AsanThread *CreateMainThread() {
 // OS-specific implementations that need more information passed through.
 void AsanThread::SetThreadStackAndTls(const InitOptions *options) {
   DCHECK_EQ(options, nullptr);
-  uptr tls_size = 0;
-  uptr stack_size = 0;
+  usize tls_size = 0;
+  usize stack_size = 0;
   GetThreadStackAndTls(tid() == kMainTid, &stack_bottom_, &stack_size,
                        &tls_begin_, &tls_size);
   stack_top_ = RoundDownTo(stack_bottom_ + stack_size, ASAN_SHADOW_GRANULARITY);

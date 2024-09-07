@@ -59,18 +59,18 @@ namespace __hwasan {
 
 // With the zero shadow base we can not actually map pages starting from 0.
 // This constant is somewhat arbitrary.
-constexpr uptr kZeroBaseShadowStart = 0;
-constexpr uptr kZeroBaseMaxShadowStart = 1 << 18;
+constexpr vaddr kZeroBaseShadowStart = 0;
+constexpr vaddr kZeroBaseMaxShadowStart = 1 << 18;
 
-static void ProtectGap(uptr addr, uptr size) {
+static void ProtectGap(vaddr addr, usize size) {
   __sanitizer::ProtectGap(addr, size, kZeroBaseShadowStart,
                           kZeroBaseMaxShadowStart);
 }
 
-uptr kLowMemStart;
-uptr kLowMemEnd;
-uptr kHighMemStart;
-uptr kHighMemEnd;
+vaddr kLowMemStart;
+vaddr kLowMemEnd;
+vaddr kHighMemStart;
+vaddr kHighMemEnd;
 
 static void PrintRange(uptr start, uptr end, const char *name) {
   Printf("|| [%p, %p] || %.*s ||\n", (void *)start, (void *)end, 10, name);

@@ -249,11 +249,11 @@ extern uptr AsanMappingProfile[];
 // Fixed mapping for 64-bit Linux. Mostly used for performance comparison
 // with non-fixed mapping. As of r175253 (Feb 2013) the performance
 // difference between fixed and non-fixed mapping is below the noise level.
-static uptr kHighMemEnd = 0x7fffffffffffULL;
-static uptr kMidMemBeg = 0x3000000000ULL;
-static uptr kMidMemEnd = 0x4fffffffffULL;
+static vaddr kHighMemEnd = 0x7fffffffffffULL;
+static vaddr kMidMemBeg = 0x3000000000ULL;
+static vaddr kMidMemEnd = 0x4fffffffffULL;
 #  else
-extern uptr kHighMemEnd, kMidMemBeg, kMidMemEnd;  // Initialized in __asan_init.
+extern vaddr kHighMemEnd, kMidMemBeg, kMidMemEnd;  // Initialized in __asan_init.
 #  endif
 
 }  // namespace __asan
@@ -262,7 +262,7 @@ extern uptr kHighMemEnd, kMidMemBeg, kMidMemEnd;  // Initialized in __asan_init.
 #    include "asan_mapping_sparc64.h"
 #  else
 #    define MEM_TO_SHADOW(mem) \
-      (((mem) >> ASAN_SHADOW_SCALE) + (ASAN_SHADOW_OFFSET))
+      ((ASAN_SHADOW_OFFSET) + ((mem) >> ASAN_SHADOW_SCALE))
 
 #    define kLowMemBeg 0
 #    define kLowMemEnd (ASAN_SHADOW_OFFSET ? ASAN_SHADOW_OFFSET - 1 : 0)
@@ -372,9 +372,9 @@ static inline bool AddrIsAlignedByGranularity(uptr a) {
   return (a & (ASAN_SHADOW_GRANULARITY - 1)) == 0;
 }
 
-static inline bool AddressIsPoisoned(uptr a) {
+static inline bool AddressIsPoisoned(vaddr a) {
   PROFILE_ASAN_MAPPING();
-  const uptr kAccessSize = 1;
+  const usize kAccessSize = 1;
   u8 *shadow_address = (u8 *)MEM_TO_SHADOW(a);
   s8 shadow_value = *shadow_address;
   if (shadow_value) {

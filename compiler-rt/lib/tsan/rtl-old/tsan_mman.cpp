@@ -393,27 +393,27 @@ void FreeImpl(void *p) {
 using namespace __tsan;
 
 extern "C" {
-uptr __sanitizer_get_current_allocated_bytes() {
-  uptr stats[AllocatorStatCount];
+usize __sanitizer_get_current_allocated_bytes() {
+  usize stats[AllocatorStatCount];
   allocator()->GetStats(stats);
   return stats[AllocatorStatAllocated];
 }
 
-uptr __sanitizer_get_heap_size() {
-  uptr stats[AllocatorStatCount];
+usize __sanitizer_get_heap_size() {
+  usize stats[AllocatorStatCount];
   allocator()->GetStats(stats);
   return stats[AllocatorStatMapped];
 }
 
-uptr __sanitizer_get_free_bytes() {
+usize __sanitizer_get_free_bytes() {
   return 1;
 }
 
-uptr __sanitizer_get_unmapped_bytes() {
+usize __sanitizer_get_unmapped_bytes() {
   return 1;
 }
 
-uptr __sanitizer_get_estimated_allocated_size(uptr size) {
+usize __sanitizer_get_estimated_allocated_size(usize size) {
   return size;
 }
 
@@ -421,7 +421,7 @@ int __sanitizer_get_ownership(const void *p) {
   return allocator()->GetBlockBegin(p) != 0;
 }
 
-uptr __sanitizer_get_allocated_size(const void *p) {
+usize __sanitizer_get_allocated_size(const void *p) {
   return user_alloc_usable_size(p);
 }
 

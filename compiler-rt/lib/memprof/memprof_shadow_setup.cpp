@@ -18,7 +18,7 @@
 
 namespace __memprof {
 
-static void ProtectGap(uptr addr, uptr size) {
+static void ProtectGap(vaddr addr, usize size) {
   if (!flags()->protect_shadow_gap) {
     // The shadow gap is unprotected, so there is a chance that someone
     // is actually using this memory. Which means it needs a shadow...

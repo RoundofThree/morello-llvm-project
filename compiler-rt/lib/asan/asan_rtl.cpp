@@ -90,7 +90,7 @@ static void ReportGenericErrorWrapper(uptr addr, bool is_write, int size,
 }
 
 // --------------- LowLevelAllocateCallbac ---------- {{{1
-static void OnLowLevelAllocate(uptr ptr, uptr size) {
+static void OnLowLevelAllocate(uptr ptr, usize size) {
   PoisonShadow(ptr, size, kAsanInternalHeapMagic);
 }
 

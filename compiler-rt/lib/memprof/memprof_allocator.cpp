@@ -682,7 +682,7 @@ int memprof_posix_memalign(void **memptr, uptr alignment, uptr size,
   return 0;
 }
 
-uptr memprof_malloc_usable_size(const void *ptr, uptr pc, uptr bp) {
+usize memprof_malloc_usable_size(const void *ptr, uptr pc, uptr bp) {
   if (!ptr)
     return 0;
   uptr usable_size = instance.AllocationSize(reinterpret_cast<uptr>(ptr));
@@ -697,7 +697,7 @@ using namespace __memprof;
 #if !SANITIZER_SUPPORTS_WEAK_HOOKS
 // Provide default (no-op) implementation of malloc hooks.
 SANITIZER_INTERFACE_WEAK_DEF(void, __sanitizer_malloc_hook, void *ptr,
-                             uptr size) {
+                             usize size) {
   (void)ptr;
   (void)size;
 }
@@ -707,13 +707,13 @@ SANITIZER_INTERFACE_WEAK_DEF(void, __sanitizer_free_hook, void *ptr) {
 }
 #endif
 
-uptr __sanitizer_get_estimated_allocated_size(uptr size) { return size; }
+usize __sanitizer_get_estimated_allocated_size(uptr size) { return size; }
 
 int __sanitizer_get_ownership(const void *p) {
   return memprof_malloc_usable_size(p, 0, 0) != 0;
 }
 
-uptr __sanitizer_get_allocated_size(const void *p) {
+usize __sanitizer_get_allocated_size(const void *p) {
   return memprof_malloc_usable_size(p, 0, 0);
 }
 

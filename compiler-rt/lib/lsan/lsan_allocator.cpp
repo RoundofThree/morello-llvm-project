@@ -334,33 +334,33 @@ using namespace __lsan;
 
 extern "C" {
 SANITIZER_INTERFACE_ATTRIBUTE
-uptr __sanitizer_get_current_allocated_bytes() {
-  uptr stats[AllocatorStatCount];
+usize __sanitizer_get_current_allocated_bytes() {
+  usize stats[AllocatorStatCount];
   allocator.GetStats(stats);
   return stats[AllocatorStatAllocated];
 }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-uptr __sanitizer_get_heap_size() {
-  uptr stats[AllocatorStatCount];
+usize __sanitizer_get_heap_size() {
+  usize stats[AllocatorStatCount];
   allocator.GetStats(stats);
   return stats[AllocatorStatMapped];
 }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-uptr __sanitizer_get_free_bytes() { return 0; }
+usize __sanitizer_get_free_bytes() { return 0; }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-uptr __sanitizer_get_unmapped_bytes() { return 0; }
+usize __sanitizer_get_unmapped_bytes() { return 0; }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-uptr __sanitizer_get_estimated_allocated_size(uptr size) { return size; }
+usize __sanitizer_get_estimated_allocated_size(uptr size) { return size; }
 
 SANITIZER_INTERFACE_ATTRIBUTE
 int __sanitizer_get_ownership(const void *p) { return Metadata(p) != nullptr; }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-uptr __sanitizer_get_allocated_size(const void *p) {
+usize __sanitizer_get_allocated_size(const void *p) {
   return GetMallocUsableSize(p);
 }
 

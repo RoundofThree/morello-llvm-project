@@ -79,7 +79,7 @@ class AsanThread {
   void set_context(AsanThreadContext *context) { context_ = context; }
 
   struct StackFrameAccess {
-    uptr offset;
+    usize offset;
     uptr frame_pc;
     const char *frame_descr;
   };
@@ -150,11 +150,11 @@ class AsanThread {
   thread_callback_t start_routine_;
   void *arg_;
 
-  uptr stack_top_;
-  uptr stack_bottom_;
+  vaddr stack_top_;
+  vaddr stack_bottom_;
   // these variables are used when the thread is about to switch stack
-  uptr next_stack_top_;
-  uptr next_stack_bottom_;
+  vaddr next_stack_top_;
+  vaddr next_stack_bottom_;
   // true if switching is in progress
   atomic_uint8_t stack_switching_;
 
