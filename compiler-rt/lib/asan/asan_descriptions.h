@@ -109,9 +109,9 @@ enum AccessType {
 
 struct ChunkAccess {
   uptr bad_addr;
-  sptr offset;
+  ssize offset;
   uptr chunk_begin;
-  uptr chunk_size;
+  usize chunk_size;
   u32 user_requested_alignment : 12;
   u32 access_type : 2;
   u32 alloc_type : 2;

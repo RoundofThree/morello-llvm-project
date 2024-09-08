@@ -68,11 +68,11 @@ class AsanThread {
 
   thread_return_t ThreadStart(tid_t os_id);
 
-  uptr stack_top();
-  uptr stack_bottom();
+  vaddr stack_top();
+  vaddr stack_bottom();
   usize stack_size();
-  uptr tls_begin() { return tls_begin_; }
-  uptr tls_end() { return tls_end_; }
+  vaddr tls_begin() { return tls_begin_; }
+  vaddr tls_end() { return tls_end_; }
   DTLS *dtls() { return dtls_; }
   u32 tid() { return context_->tid; }
   AsanThreadContext *context() { return context_; }
@@ -141,8 +141,8 @@ class AsanThread {
   FakeStack *AsyncSignalSafeLazyInitFakeStack();
 
   struct StackBounds {
-    uptr bottom;
-    uptr top;
+    vaddr bottom;
+    vaddr top;
   };
   StackBounds GetStackBounds() const;
 
@@ -158,8 +158,8 @@ class AsanThread {
   // true if switching is in progress
   atomic_uint8_t stack_switching_;
 
-  uptr tls_begin_;
-  uptr tls_end_;
+  vaddr tls_begin_;
+  vaddr tls_end_;
   DTLS *dtls_;
 
   FakeStack *fake_stack_;

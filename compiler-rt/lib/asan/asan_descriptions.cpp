@@ -469,8 +469,8 @@ AddressDescription::AddressDescription(uptr addr, usize access_size,
 }
 
 void WildAddressDescription::Print() const {
-  Printf("Address %p is a wild pointer inside of access range of size %p.\n",
-         (void *)addr, (void *)access_size);
+  Printf("Address %p is a wild pointer inside of access range of size 0x%zx.\n",
+         (void *)(uptr)addr, access_size);
 }
 
 void PrintAddressDescription(uptr addr, usize access_size,

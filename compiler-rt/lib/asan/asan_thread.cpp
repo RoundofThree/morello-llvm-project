@@ -122,7 +122,7 @@ void AsanThread::Destroy() {
     DTLS_Destroy();
 }
 
-void AsanThread::StartSwitchFiber(FakeStack **fake_stack_save, uptr bottom,
+void AsanThread::StartSwitchFiber(FakeStack **fake_stack_save, vaddr bottom,
                                   usize size) {
   if (atomic_load(&stack_switching_, memory_order_relaxed)) {
     Report("ERROR: starting fiber switch while in fiber switch\n");
@@ -144,7 +144,7 @@ void AsanThread::StartSwitchFiber(FakeStack **fake_stack_save, uptr bottom,
 }
 
 void AsanThread::FinishSwitchFiber(FakeStack *fake_stack_save,
-                                   uptr *bottom_old,
+                                   vaddr *bottom_old,
                                    usize *size_old) {
   if (!atomic_load(&stack_switching_, memory_order_relaxed)) {
     Report("ERROR: finishing a fiber switch that has not started\n");
@@ -183,15 +183,15 @@ inline AsanThread::StackBounds AsanThread::GetStackBounds() const {
   return {stack_bottom_, stack_top_};
 }
 
-uptr AsanThread::stack_top() {
+vaddr AsanThread::stack_top() {
   return GetStackBounds().top;
 }
 
-uptr AsanThread::stack_bottom() {
+vaddr AsanThread::stack_bottom() {
   return GetStackBounds().bottom;
 }
 
-uptr AsanThread::stack_size() {
+usize AsanThread::stack_size() {
   const auto bounds = GetStackBounds();
   return bounds.top - bounds.bottom;
 }
@@ -252,7 +252,7 @@ void AsanThread::Init(const InitOptions *options) {
   }
   int local = 0;
   VReport(1, "T%d: stack [%p,%p) size 0x%zx; local=%p\n", tid(),
-          (void *)stack_bottom_, (void *)stack_top_, stack_top_ - stack_bottom_,
+          (void *)(uptr)stack_bottom_, (void *)(uptr)stack_top_, stack_top_ - stack_bottom_,
           (void *)&local);
 }
 

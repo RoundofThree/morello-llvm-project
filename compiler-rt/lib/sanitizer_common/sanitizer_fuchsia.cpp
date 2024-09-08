@@ -73,7 +73,7 @@ void Abort() { abort(); }
 
 int Atexit(void (*function)(void)) { return atexit(function); }
 
-void GetThreadStackTopAndBottom(bool, uptr *stack_top, uptr *stack_bottom) {
+void GetThreadStackTopAndBottom(bool, vaddr *stack_top, vaddr *stack_bottom) {
   pthread_attr_t attr;
   CHECK_EQ(pthread_getattr_np(pthread_self(), &attr), 0);
   void *base;

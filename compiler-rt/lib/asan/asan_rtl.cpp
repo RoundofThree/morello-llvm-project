@@ -55,7 +55,7 @@ static void AsanDie() {
   if (flags()->unmap_shadow_on_exit) {
     if (kMidMemBeg) {
       UnmapOrDie((void*)kLowShadowBeg, kMidMemBeg - kLowShadowBeg);
-      UnmapOrDie((void*)kMidMemEnd, kHighShadowEnd - kMidMemEnd);
+      UnmapOrDie((void*)(uptr)kMidMemEnd, kHighShadowEnd - kMidMemEnd);
     } else {
       if (kHighShadowEnd)
         UnmapOrDie((void*)kLowShadowBeg, kHighShadowEnd - kLowShadowBeg);
@@ -73,7 +73,7 @@ int asan_inited;
 bool asan_init_is_running;
 
 #if !ASAN_FIXED_MAPPING
-uptr kHighMemEnd, kMidMemBeg, kMidMemEnd;
+vaddr kHighMemEnd, kMidMemBeg, kMidMemEnd;
 #endif
 
 // -------------------------- Misc ---------------- {{{1
@@ -317,27 +317,27 @@ static void InitializeHighMemEnd() {
 void PrintAddressSpaceLayout() {
   if (kHighMemBeg) {
     Printf("|| `[%p, %p]` || HighMem    ||\n",
-           (void*)kHighMemBeg, (void*)kHighMemEnd);
+           (void*)(uptr)kHighMemBeg, (void*)(uptr)kHighMemEnd);
     Printf("|| `[%p, %p]` || HighShadow ||\n",
-           (void*)kHighShadowBeg, (void*)kHighShadowEnd);
+           (void*)(uptr)kHighShadowBeg, (void*)(uptr)kHighShadowEnd);
   }
   if (kMidMemBeg) {
     Printf("|| `[%p, %p]` || ShadowGap3 ||\n",
-           (void*)kShadowGap3Beg, (void*)kShadowGap3End);
+           (void*)(uptr)kShadowGap3Beg, (void*)(uptr)kShadowGap3End);
     Printf("|| `[%p, %p]` || MidMem     ||\n",
-           (void*)kMidMemBeg, (void*)kMidMemEnd);
+           (void*)(uptr)kMidMemBeg, (void*)(uptr)kMidMemEnd);
     Printf("|| `[%p, %p]` || ShadowGap2 ||\n",
-           (void*)kShadowGap2Beg, (void*)kShadowGap2End);
+           (void*)(uptr)kShadowGap2Beg, (void*)(uptr)kShadowGap2End);
     Printf("|| `[%p, %p]` || MidShadow  ||\n",
-           (void*)kMidShadowBeg, (void*)kMidShadowEnd);
+           (void*)(uptr)kMidShadowBeg, (void*)(uptr)kMidShadowEnd);
   }
   Printf("|| `[%p, %p]` || ShadowGap  ||\n",
-         (void*)kShadowGapBeg, (void*)kShadowGapEnd);
+         (void*)(uptr)kShadowGapBeg, (void*)(uptr)kShadowGapEnd);
   if (kLowShadowBeg) {
     Printf("|| `[%p, %p]` || LowShadow  ||\n",
-           (void*)kLowShadowBeg, (void*)kLowShadowEnd);
+           (void*)(uptr)kLowShadowBeg, (void*)(uptr)kLowShadowEnd);
     Printf("|| `[%p, %p]` || LowMem     ||\n",
-           (void*)kLowMemBeg, (void*)kLowMemEnd);
+           (void*)(uptr)kLowMemBeg, (void*)(uptr)kLowMemEnd);
   }
   Printf("MemToShadow(shadow): %p %p",
          (void*)MEM_TO_SHADOW(kLowShadowBeg),

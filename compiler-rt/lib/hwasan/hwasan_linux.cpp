@@ -398,24 +398,24 @@ void HwasanOnDeadlySignal(int signo, void *info, void *context) {
 }
 
 void Thread::InitStackAndTls(const InitState *) {
-  uptr tls_size;
-  uptr stack_size;
+  usize tls_size;
+  usize stack_size;
   GetThreadStackAndTls(IsMainThread(), &stack_bottom_, &stack_size, &tls_begin_,
                        &tls_size);
   stack_top_ = stack_bottom_ + stack_size;
   tls_end_ = tls_begin_ + tls_size;
 }
 
-uptr TagMemoryAligned(uptr p, uptr size, tag_t tag) {
+uptr TagMemoryAligned(uptr p, usize size, tag_t tag) {
   CHECK(IsAligned(p, kShadowAlignment));
   CHECK(IsAligned(size, kShadowAlignment));
   uptr shadow_start = MemToShadow(p);
-  uptr shadow_size = MemToShadowSize(size);
+  usize shadow_size = MemToShadowSize(size);
 
-  uptr page_size = GetPageSizeCached();
+  usize page_size = GetPageSizeCached();
   uptr page_start = RoundUpTo(shadow_start, page_size);
   uptr page_end = RoundDownTo(shadow_start + shadow_size, page_size);
-  uptr threshold = common_flags()->clear_shadow_mmap_threshold;
+  usize threshold = common_flags()->clear_shadow_mmap_threshold;
   if (SANITIZER_LINUX &&
       UNLIKELY(page_end >= page_start + threshold && tag == 0)) {
     internal_memset((void *)shadow_start, tag, page_start - shadow_start);

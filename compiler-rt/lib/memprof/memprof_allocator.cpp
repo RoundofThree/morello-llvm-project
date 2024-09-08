@@ -154,7 +154,7 @@ struct MemprofChunk : ChunkHeader {
 class LargeChunkHeader {
   static constexpr uptr kAllocBegMagic =
       FIRST_32_SECOND_64(0xCC6E96B9, 0xCC6E96B9CC6E96B9ULL);
-  atomic_uintptr_t magic;
+  atomic_size_t magic;
   MemprofChunk *chunk_header;
 
 public:
@@ -171,7 +171,7 @@ public:
       return;
     }
 
-    uptr old = kAllocBegMagic;
+    size_t old = kAllocBegMagic;
     if (!atomic_compare_exchange_strong(&magic, &old, 0,
                                         memory_order_release)) {
       CHECK_EQ(old, kAllocBegMagic);

@@ -372,6 +372,7 @@ void __asan_register_globals(__asan_global *globals, usize n) {
            (void *)&globals[n - 1]);
   }
   for (usize i = 0; i < n; i++) {
+#if SANITIZER_WINDOWS
     if (SANITIZER_WINDOWS && globals[i].beg == 0) {
       // The MSVC incremental linker may pad globals out to 256 bytes. As long
       // as __asan_global is less than 256 bytes large and its size is a power
@@ -386,6 +387,7 @@ void __asan_register_globals(__asan_global *globals, usize n) {
             globals[i].odr_indicator == 0);
       continue;
     }
+#endif // SANITIZER_WINDOWS
     RegisterGlobal(&globals[i]);
   }
 

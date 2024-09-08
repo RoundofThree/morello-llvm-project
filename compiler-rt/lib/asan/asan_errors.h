@@ -273,7 +273,7 @@ struct ErrorOutOfMemory : ErrorBase {
 
 struct ErrorStringFunctionMemoryRangesOverlap : ErrorBase {
   const BufferedStackTrace *stack;
-  uptr length1, length2;
+  usize length1, length2;
   AddressDescription addr1_description;
   AddressDescription addr2_description;
   const char *function;

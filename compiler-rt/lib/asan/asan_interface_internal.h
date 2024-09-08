@@ -47,6 +47,7 @@ extern "C" {
   };
 
   // This structure describes an instrumented global variable.
+  // Its size must be at most 256 bytes and a power of two.
   struct __asan_global {
     uptr beg;                // The address of the global.
     usize size;              // The original size of the global.
@@ -142,7 +143,7 @@ extern "C" {
   SANITIZER_INTERFACE_ATTRIBUTE
   int __asan_get_report_access_type();
   SANITIZER_INTERFACE_ATTRIBUTE
-  uptr __asan_get_report_access_size();
+  usize __asan_get_report_access_size();
   SANITIZER_INTERFACE_ATTRIBUTE
   const char * __asan_get_report_description();
 

@@ -41,14 +41,14 @@ class Thread {
 
   void Destroy();
 
-  uptr stack_top() { return stack_top_; }
-  uptr stack_bottom() { return stack_bottom_; }
-  uptr stack_size() { return stack_top() - stack_bottom(); }
-  uptr tls_begin() { return tls_begin_; }
-  uptr tls_end() { return tls_end_; }
+  vaddr stack_top() { return stack_top_; }
+  vaddr stack_bottom() { return stack_bottom_; }
+  usize stack_size() { return stack_top() - stack_bottom(); }
+  vaddr tls_begin() { return tls_begin_; }
+  vaddr tls_end() { return tls_end_; }
   bool IsMainThread() { return unique_id_ == 0; }
 
-  bool AddrIsInStack(uptr addr) {
+  bool AddrIsInStack(vaddr addr) {
     return addr >= stack_bottom_ && addr < stack_top_;
   }
 

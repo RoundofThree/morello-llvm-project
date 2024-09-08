@@ -182,7 +182,7 @@ class LargeChunkHeader {
       return;
     }
 
-    usize old = kAllocBegMagic;
+    size_t old = kAllocBegMagic;
     if (!atomic_compare_exchange_strong(&magic, &old, 0,
                                         memory_order_release)) {
       CHECK_EQ(old, kAllocBegMagic);
@@ -450,7 +450,7 @@ struct Allocator {
         return right_chunk;
     }
     // Same chunk_state: choose based on offset.
-    sptr l_offset = 0, r_offset = 0;
+    ssize l_offset = 0, r_offset = 0;
     CHECK(AsanChunkView(left_chunk).AddrIsAtRight(addr, 1, &l_offset));
     CHECK(AsanChunkView(right_chunk).AddrIsAtLeft(addr, 1, &r_offset));
     if (l_offset < r_offset)
@@ -800,7 +800,7 @@ struct Allocator {
 
   AsanChunkView FindHeapChunkByAddress(uptr addr) {
     AsanChunk *m1 = GetAsanChunkByAddr(addr);
-    sptr offset = 0;
+    ssize offset = 0;
     if (!m1 || AsanChunkView(m1).AddrIsAtLeft(addr, 1, &offset)) {
       // The address is in the chunk's left redzone, so maybe it is actually
       // a right buffer overflow from the other chunk to the left.

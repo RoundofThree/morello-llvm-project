@@ -35,7 +35,7 @@ void Thread::InitRandomState() {
     stack_allocations_->push(0);
 }
 
-void Thread::Init(uptr stack_buffer_start, uptr stack_buffer_size,
+void Thread::Init(uptr stack_buffer_start, usize stack_buffer_size,
                   const InitState *state) {
   CHECK_EQ(0, unique_id_);  // try to catch bad stack reuse
   CHECK_EQ(0, stack_top_);

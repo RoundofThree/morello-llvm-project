@@ -351,7 +351,7 @@ void __sanitizer_annotate_contiguous_container(const void *beg_p,
   uptr end = reinterpret_cast<uptr>(end_p);
   uptr old_mid = reinterpret_cast<uptr>(old_mid_p);
   uptr new_mid = reinterpret_cast<uptr>(new_mid_p);
-  uptr granularity = ASAN_SHADOW_GRANULARITY;
+  usize granularity = ASAN_SHADOW_GRANULARITY;
   if (!(beg <= old_mid && beg <= new_mid && old_mid <= end && new_mid <= end &&
         IsAligned(beg, granularity))) {
     GET_STACK_TRACE_FATAL_HERE;

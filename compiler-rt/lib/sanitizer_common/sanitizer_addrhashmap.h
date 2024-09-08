@@ -107,7 +107,7 @@ class AddrHashMap {
 
   void acquire(Handle *h);
   void release(Handle *h);
-  usize calcHash(uptr addr);
+  usize calcHash(vaddr addr);
 };
 
 template <typename T, usize kSize>
@@ -383,11 +383,10 @@ void AddrHashMap<T, kSize>::acquire(Handle *h)
  }
 
 template<typename T, usize kSize>
-usize AddrHashMap<T, kSize>::calcHash(uptr addr) {
-  usize val = (usize)val;
-  val += val << 10;
-  val ^= val >> 6;
-  return val % kSize;
+usize AddrHashMap<T, kSize>::calcHash(vaddr addr) {
+  addr += addr << 10;
+  addr ^= addr >> 6;
+  return addr % kSize;
 }
 
 } // namespace __sanitizer

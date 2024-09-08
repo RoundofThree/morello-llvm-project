@@ -253,7 +253,8 @@ static vaddr kHighMemEnd = 0x7fffffffffffULL;
 static vaddr kMidMemBeg = 0x3000000000ULL;
 static vaddr kMidMemEnd = 0x4fffffffffULL;
 #  else
-extern vaddr kHighMemEnd, kMidMemBeg, kMidMemEnd;  // Initialized in __asan_init.
+// Initialized in __asan_init.
+extern vaddr kHighMemEnd, kMidMemBeg, kMidMemEnd;
 #  endif
 
 }  // namespace __asan
