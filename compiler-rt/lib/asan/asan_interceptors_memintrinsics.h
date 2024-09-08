@@ -128,8 +128,8 @@ struct AsanInterceptorContext {
 // Behavior of functions like "memcpy" or "strcpy" is undefined
 // if memory intervals overlap. We report error in this case.
 // Macro is used to avoid creation of new frames.
-static inline bool RangesOverlap(const char *offset1, uptr length1,
-                                 const char *offset2, uptr length2) {
+static inline bool RangesOverlap(const char *offset1, usize length1,
+                                 const char *offset2, usize length2) {
   return !((offset1 + length1 <= offset2) || (offset2 + length2 <= offset1));
 }
 #define CHECK_RANGES_OVERLAP(name, _offset1, length1, _offset2, length2)   \

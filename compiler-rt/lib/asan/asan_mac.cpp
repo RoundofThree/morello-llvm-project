@@ -95,7 +95,7 @@ void FlushUnneededASanShadowMemory(vaddr p, usize size) {
   ReleaseMemoryPagesToOS(MemToShadow(p), MemToShadow(p + size));
 }
 
-void ReadContextStack(void *context, uptr *stack, uptr *ssize) {
+void ReadContextStack(void *context, uptr *stack, usize *ssize) {
   UNIMPLEMENTED();
 }
 

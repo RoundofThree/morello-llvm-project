@@ -24,8 +24,8 @@ namespace __asan {
 // access any external symbol, including its own non-hidden globals.
 
 // Conservative upper limit.
-uptr PremapShadowSize() {
-  uptr granularity = GetMmapGranularity();
+usize PremapShadowSize() {
+  usize granularity = GetMmapGranularity();
   return RoundUpTo(GetMaxVirtualAddress() >> ASAN_SHADOW_SCALE, granularity);
 }
 

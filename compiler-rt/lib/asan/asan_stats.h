@@ -22,8 +22,8 @@ namespace __asan {
 // Each AsanThread has its own AsanStats, which are sometimes flushed
 // to the accumulated AsanStats.
 struct AsanStats {
-  // AsanStats must be a struct consisting of uptr fields only.
-  // When merging two AsanStats structs, we treat them as arrays of uptr.
+  // AsanStats must be a struct consisting of usize fields only.
+  // When merging two AsanStats structs, we treat them as arrays of usize.
   usize mallocs;
   usize malloced;
   usize malloced_redzones;

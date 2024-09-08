@@ -148,7 +148,7 @@ void InitializeFlags() {
   if (f->strict_init_order) {
     f->check_initialization_order = true;
   }
-  CHECK_LE((uptr)common_flags()->malloc_context_size, kStackTraceMax);
+  CHECK_LE((usize)common_flags()->malloc_context_size, kStackTraceMax);
   CHECK_LE(f->min_uar_stack_size_log, f->max_uar_stack_size_log);
   CHECK_GE(f->redzone, 16);
   CHECK_GE(f->max_redzone, f->redzone);

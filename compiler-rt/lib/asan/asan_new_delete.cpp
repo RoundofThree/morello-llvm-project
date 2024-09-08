@@ -77,7 +77,7 @@ enum class align_val_t: size_t {};
   return res;
 #define OPERATOR_NEW_BODY_ALIGN(type, nothrow)                \
   GET_STACK_TRACE_MALLOC;                                     \
-  void *res = asan_memalign((uptr)align, size, &stack, type); \
+  void *res = asan_memalign((usize)align, size, &stack, type); \
   if (!nothrow && UNLIKELY(!res))                             \
     ReportOutOfMemory(size, &stack);                          \
   return res;
@@ -140,11 +140,11 @@ INTERCEPTOR(void *, _ZnamRKSt9nothrow_t, size_t size, std::nothrow_t const&) {
 
 #define OPERATOR_DELETE_BODY_ALIGN(type) \
   GET_STACK_TRACE_FREE;                  \
-  asan_delete(ptr, 0, static_cast<uptr>(align), &stack, type);
+  asan_delete(ptr, 0, static_cast<usize>(align), &stack, type);
 
 #define OPERATOR_DELETE_BODY_SIZE_ALIGN(type) \
   GET_STACK_TRACE_FREE;                       \
-  asan_delete(ptr, size, static_cast<uptr>(align), &stack, type);
+  asan_delete(ptr, size, static_cast<usize>(align), &stack, type);
 
 #if !SANITIZER_MAC
 CXX_OPERATOR_ATTRIBUTE

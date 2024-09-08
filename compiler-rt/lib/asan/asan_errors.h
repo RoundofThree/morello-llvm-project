@@ -81,12 +81,12 @@ struct ErrorDoubleFree : ErrorBase {
 struct ErrorNewDeleteTypeMismatch : ErrorBase {
   const BufferedStackTrace *free_stack;
   HeapAddressDescription addr_description;
-  uptr delete_size;
-  uptr delete_alignment;
+  usize delete_size;
+  usize delete_alignment;
 
   ErrorNewDeleteTypeMismatch() = default;  // (*)
   ErrorNewDeleteTypeMismatch(u32 tid, BufferedStackTrace *stack, uptr addr,
-                             uptr delete_size_, uptr delete_alignment_)
+                             usize delete_size_, usize delete_alignment_)
       : ErrorBase(tid, 10, "new-delete-type-mismatch"),
         free_stack(stack),
         delete_size(delete_size_),
@@ -151,12 +151,12 @@ struct ErrorSanitizerGetAllocatedSizeNotOwned : ErrorBase {
 
 struct ErrorCallocOverflow : ErrorBase {
   const BufferedStackTrace *stack;
-  uptr count;
-  uptr size;
+  usize count;
+  usize size;
 
   ErrorCallocOverflow() = default;  // (*)
-  ErrorCallocOverflow(u32 tid, BufferedStackTrace *stack_, uptr count_,
-                      uptr size_)
+  ErrorCallocOverflow(u32 tid, BufferedStackTrace *stack_, usize count_,
+                      usize size_)
       : ErrorBase(tid, 10, "calloc-overflow"),
         stack(stack_),
         count(count_),
@@ -166,12 +166,12 @@ struct ErrorCallocOverflow : ErrorBase {
 
 struct ErrorReallocArrayOverflow : ErrorBase {
   const BufferedStackTrace *stack;
-  uptr count;
-  uptr size;
+  usize count;
+  usize size;
 
   ErrorReallocArrayOverflow() = default;  // (*)
-  ErrorReallocArrayOverflow(u32 tid, BufferedStackTrace *stack_, uptr count_,
-                            uptr size_)
+  ErrorReallocArrayOverflow(u32 tid, BufferedStackTrace *stack_, usize count_,
+                            usize size_)
       : ErrorBase(tid, 10, "reallocarray-overflow"),
         stack(stack_),
         count(count_),
@@ -181,7 +181,7 @@ struct ErrorReallocArrayOverflow : ErrorBase {
 
 struct ErrorPvallocOverflow : ErrorBase {
   const BufferedStackTrace *stack;
-  uptr size;
+  usize size;
 
   ErrorPvallocOverflow() = default;  // (*)
   ErrorPvallocOverflow(u32 tid, BufferedStackTrace *stack_, uptr size_)
@@ -193,11 +193,11 @@ struct ErrorPvallocOverflow : ErrorBase {
 
 struct ErrorInvalidAllocationAlignment : ErrorBase {
   const BufferedStackTrace *stack;
-  uptr alignment;
+  usize alignment;
 
   ErrorInvalidAllocationAlignment() = default;  // (*)
   ErrorInvalidAllocationAlignment(u32 tid, BufferedStackTrace *stack_,
-                                  uptr alignment_)
+                                  usize alignment_)
       : ErrorBase(tid, 10, "invalid-allocation-alignment"),
         stack(stack_),
         alignment(alignment_) {}
@@ -206,12 +206,12 @@ struct ErrorInvalidAllocationAlignment : ErrorBase {
 
 struct ErrorInvalidAlignedAllocAlignment : ErrorBase {
   const BufferedStackTrace *stack;
-  uptr size;
-  uptr alignment;
+  usize size;
+  usize alignment;
 
   ErrorInvalidAlignedAllocAlignment() = default;  // (*)
   ErrorInvalidAlignedAllocAlignment(u32 tid, BufferedStackTrace *stack_,
-                                    uptr size_, uptr alignment_)
+                                    usize size_, usize alignment_)
       : ErrorBase(tid, 10, "invalid-aligned-alloc-alignment"),
         stack(stack_),
         size(size_),
@@ -221,11 +221,11 @@ struct ErrorInvalidAlignedAllocAlignment : ErrorBase {
 
 struct ErrorInvalidPosixMemalignAlignment : ErrorBase {
   const BufferedStackTrace *stack;
-  uptr alignment;
+  usize alignment;
 
   ErrorInvalidPosixMemalignAlignment() = default;  // (*)
   ErrorInvalidPosixMemalignAlignment(u32 tid, BufferedStackTrace *stack_,
-                                     uptr alignment_)
+                                     usize alignment_)
       : ErrorBase(tid, 10, "invalid-posix-memalign-alignment"),
         stack(stack_),
         alignment(alignment_) {}
@@ -234,13 +234,13 @@ struct ErrorInvalidPosixMemalignAlignment : ErrorBase {
 
 struct ErrorAllocationSizeTooBig : ErrorBase {
   const BufferedStackTrace *stack;
-  uptr user_size;
-  uptr total_size;
-  uptr max_size;
+  usize user_size;
+  usize total_size;
+  usize max_size;
 
   ErrorAllocationSizeTooBig() = default;  // (*)
   ErrorAllocationSizeTooBig(u32 tid, BufferedStackTrace *stack_,
-                            uptr user_size_, uptr total_size_, uptr max_size_)
+                            usize user_size_, usize total_size_, usize max_size_)
       : ErrorBase(tid, 10, "allocation-size-too-big"),
         stack(stack_),
         user_size(user_size_),
@@ -261,10 +261,10 @@ struct ErrorRssLimitExceeded : ErrorBase {
 
 struct ErrorOutOfMemory : ErrorBase {
   const BufferedStackTrace *stack;
-  uptr requested_size;
+  usize requested_size;
 
   ErrorOutOfMemory() = default;  // (*)
-  ErrorOutOfMemory(u32 tid, BufferedStackTrace *stack_, uptr requested_size_)
+  ErrorOutOfMemory(u32 tid, BufferedStackTrace *stack_, usize requested_size_)
       : ErrorBase(tid, 10, "out-of-memory"),
         stack(stack_),
         requested_size(requested_size_) {}
@@ -280,8 +280,8 @@ struct ErrorStringFunctionMemoryRangesOverlap : ErrorBase {
 
   ErrorStringFunctionMemoryRangesOverlap() = default;  // (*)
   ErrorStringFunctionMemoryRangesOverlap(u32 tid, BufferedStackTrace *stack_,
-                                         uptr addr1, uptr length1_, uptr addr2,
-                                         uptr length2_, const char *function_)
+                                         uptr addr1, usize length1_, uptr addr2,
+                                         usize length2_, const char *function_)
       : ErrorBase(tid),
         stack(stack_),
         length1(length1_),
@@ -300,11 +300,11 @@ struct ErrorStringFunctionMemoryRangesOverlap : ErrorBase {
 struct ErrorStringFunctionSizeOverflow : ErrorBase {
   const BufferedStackTrace *stack;
   AddressDescription addr_description;
-  uptr size;
+  usize size;
 
   ErrorStringFunctionSizeOverflow() = default;  // (*)
   ErrorStringFunctionSizeOverflow(u32 tid, BufferedStackTrace *stack_,
-                                  uptr addr, uptr size_)
+                                  uptr addr, usize size_)
       : ErrorBase(tid, 10, "negative-size-param"),
         stack(stack_),
         addr_description(addr, /*shouldLockThreadRegistry=*/false),
@@ -366,14 +366,14 @@ struct ErrorInvalidPointerPair : ErrorBase {
 struct ErrorGeneric : ErrorBase {
   AddressDescription addr_description;
   uptr pc, bp, sp;
-  uptr access_size;
+  usize access_size;
   const char *bug_descr;
   bool is_write;
   u8 shadow_val;
 
   ErrorGeneric() = default;  // (*)
   ErrorGeneric(u32 tid, uptr addr, uptr pc_, uptr bp_, uptr sp_, bool is_write_,
-               uptr access_size_);
+               usize access_size_);
   void Print();
 };
 

@@ -70,7 +70,7 @@ bool IsStackTraceSuppressed(const StackTrace *stack) {
   CHECK(suppression_ctx);
   Symbolizer *symbolizer = Symbolizer::GetOrInit();
   Suppression *s;
-  for (uptr i = 0; i < stack->size && stack->trace[i]; i++) {
+  for (usize i = 0; i < stack->size && stack->trace[i]; i++) {
     uptr addr = stack->trace[i];
 
     if (suppression_ctx->HasSuppressionType(kInterceptorViaLibrary)) {

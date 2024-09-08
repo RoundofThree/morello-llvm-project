@@ -78,7 +78,7 @@ ALWAYS_INLINE void FastPoisonShadowPartialRightRedzone(
   DCHECK(CanPoisonMemory());
   bool poison_partial = flags()->poison_partial;
   u8 *shadow = (u8*)MEM_TO_SHADOW(aligned_addr);
-  for (uptr i = 0; i < redzone_size; i += ASAN_SHADOW_GRANULARITY, shadow++) {
+  for (usize i = 0; i < redzone_size; i += ASAN_SHADOW_GRANULARITY, shadow++) {
     if (i + ASAN_SHADOW_GRANULARITY <= size) {
       *shadow = 0;  // fully addressable
     } else if (i >= size) {
@@ -93,6 +93,6 @@ ALWAYS_INLINE void FastPoisonShadowPartialRightRedzone(
 
 // Calls __sanitizer::ReleaseMemoryPagesToOS() on
 // [MemToShadow(p), MemToShadow(p+size)].
-void FlushUnneededASanShadowMemory(uptr p, usize size);
+void FlushUnneededASanShadowMemory(vaddr p, usize size);
 
 }  // namespace __asan

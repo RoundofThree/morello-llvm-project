@@ -48,7 +48,7 @@ using namespace __asan;
   GET_STACK_TRACE_FREE; \
   asan_free(ptr, &stack, FROM_MALLOC);
 #define COMMON_MALLOC_SIZE(ptr) \
-  uptr size = asan_mz_size(ptr);
+  usize size = asan_mz_size(ptr);
 #define COMMON_MALLOC_FILL_STATS(zone, stats) \
   AsanMallocStats malloc_stats; \
   FillMallocStatistics(&malloc_stats); \

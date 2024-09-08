@@ -25,7 +25,7 @@ struct StackVarDescr {
   usize size;
   const char *name_pos;
   usize name_len;
-  uptr line;
+  usize line;
 };
 
 // Returns the number of globals close to the provided address and copies
@@ -47,10 +47,10 @@ bool ParseFrameDescription(const char *frame_descr,
 
 // Different kinds of error reports.
 void ReportGenericError(uptr pc, uptr bp, uptr sp, uptr addr, bool is_write,
-                        uptr access_size, u32 exp, bool fatal);
+                        usize access_size, u32 exp, bool fatal);
 void ReportDeadlySignal(const SignalContext &sig);
-void ReportNewDeleteTypeMismatch(uptr addr, uptr delete_size,
-                                 uptr delete_alignment,
+void ReportNewDeleteTypeMismatch(uptr addr, usize delete_size,
+                                 usize delete_alignment,
                                  BufferedStackTrace *free_stack);
 void ReportDoubleFree(uptr addr, BufferedStackTrace *free_stack);
 void ReportFreeNotMalloced(uptr addr, BufferedStackTrace *free_stack);
@@ -60,25 +60,25 @@ void ReportAllocTypeMismatch(uptr addr, BufferedStackTrace *free_stack,
 void ReportMallocUsableSizeNotOwned(uptr addr, BufferedStackTrace *stack);
 void ReportSanitizerGetAllocatedSizeNotOwned(uptr addr,
                                              BufferedStackTrace *stack);
-void ReportCallocOverflow(uptr count, uptr size, BufferedStackTrace *stack);
-void ReportReallocArrayOverflow(uptr count, uptr size,
+void ReportCallocOverflow(usize count, usize size, BufferedStackTrace *stack);
+void ReportReallocArrayOverflow(usize count, usize size,
                                 BufferedStackTrace *stack);
-void ReportPvallocOverflow(uptr size, BufferedStackTrace *stack);
-void ReportInvalidAllocationAlignment(uptr alignment,
+void ReportPvallocOverflow(usize size, BufferedStackTrace *stack);
+void ReportInvalidAllocationAlignment(usize alignment,
                                       BufferedStackTrace *stack);
-void ReportInvalidAlignedAllocAlignment(uptr size, uptr alignment,
+void ReportInvalidAlignedAllocAlignment(usize size, usize alignment,
                                         BufferedStackTrace *stack);
-void ReportInvalidPosixMemalignAlignment(uptr alignment,
+void ReportInvalidPosixMemalignAlignment(usize alignment,
                                          BufferedStackTrace *stack);
-void ReportAllocationSizeTooBig(uptr user_size, uptr total_size, uptr max_size,
+void ReportAllocationSizeTooBig(usize user_size, usize total_size, usize max_size,
                                 BufferedStackTrace *stack);
 void ReportRssLimitExceeded(BufferedStackTrace *stack);
-void ReportOutOfMemory(uptr requested_size, BufferedStackTrace *stack);
+void ReportOutOfMemory(usize requested_size, BufferedStackTrace *stack);
 void ReportStringFunctionMemoryRangesOverlap(const char *function,
-                                             const char *offset1, uptr length1,
-                                             const char *offset2, uptr length2,
+                                             const char *offset1, usize length1,
+                                             const char *offset2, usize length2,
                                              BufferedStackTrace *stack);
-void ReportStringFunctionSizeOverflow(uptr offset, uptr size,
+void ReportStringFunctionSizeOverflow(uptr offset, usize size,
                                       BufferedStackTrace *stack);
 void ReportBadParamsToAnnotateContiguousContainer(uptr beg, uptr end,
                                                   uptr old_mid, uptr new_mid,

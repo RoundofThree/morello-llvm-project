@@ -65,7 +65,7 @@ uptr AsanGetStack(uptr addr, uptr *trace, u32 size, u32 *thread_id,
 
   if (trace && size) {
     size = Min(size, Min(stack.size, kStackTraceMax));
-    for (uptr i = 0; i < size; i++)
+    for (usize i = 0; i < size; i++)
       trace[i] = StackTrace::GetPreviousInstructionPc(stack.trace[i]);
 
     return size;
@@ -77,12 +77,12 @@ uptr AsanGetStack(uptr addr, uptr *trace, u32 size, u32 *thread_id,
 }  // namespace
 
 SANITIZER_INTERFACE_ATTRIBUTE
-const char *__asan_locate_address(uptr addr, char *name, uptr name_size,
+const char *__asan_locate_address(uptr addr, char *name, usize name_size,
                                   uptr *region_address_ptr,
-                                  uptr *region_size_ptr) {
+                                  usize *region_size_ptr) {
   AddressDescription descr(addr);
   uptr region_address = 0;
-  uptr region_size = 0;
+  usize region_size = 0;
   const char *region_kind = nullptr;
   if (name && name_size > 0) name[0] = 0;
 
@@ -129,17 +129,17 @@ const char *__asan_locate_address(uptr addr, char *name, uptr name_size,
 }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-uptr __asan_get_alloc_stack(uptr addr, uptr *trace, uptr size, u32 *thread_id) {
+uptr __asan_get_alloc_stack(uptr addr, uptr *trace, usize size, u32 *thread_id) {
   return AsanGetStack(addr, trace, size, thread_id, /* alloc_stack */ true);
 }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-uptr __asan_get_free_stack(uptr addr, uptr *trace, uptr size, u32 *thread_id) {
+uptr __asan_get_free_stack(uptr addr, uptr *trace, usize size, u32 *thread_id) {
   return AsanGetStack(addr, trace, size, thread_id, /* alloc_stack */ false);
 }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-void __asan_get_shadow_mapping(uptr *shadow_scale, uptr *shadow_offset) {
+void __asan_get_shadow_mapping(usize *shadow_scale, usize *shadow_offset) {
   if (shadow_scale)
     *shadow_scale = ASAN_SHADOW_SCALE;
   if (shadow_offset)

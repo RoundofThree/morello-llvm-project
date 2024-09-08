@@ -71,7 +71,7 @@ void ErrorNewDeleteTypeMismatch::Print() {
         "  size of the deallocated type: %zd bytes.\n",
         addr_description.chunk_access.chunk_size, delete_size);
   }
-  const uptr user_alignment =
+  const usize user_alignment =
       addr_description.chunk_access.user_requested_alignment;
   if (delete_alignment != user_alignment) {
     char user_alignment_str[32];
@@ -329,7 +329,7 @@ void ErrorBadParamsToAnnotateContiguousContainer::Print() {
       "      old_mid : %p\n"
       "      new_mid : %p\n",
       (void *)beg, (void *)end, (void *)old_mid, (void *)new_mid);
-  uptr granularity = ASAN_SHADOW_GRANULARITY;
+  usize granularity = ASAN_SHADOW_GRANULARITY;
   if (!IsAligned(beg, granularity))
     Report("ERROR: beg is not aligned by %zu\n", granularity);
   stack->Print();
@@ -385,7 +385,7 @@ static bool AdjacentShadowValuesAreFullyPoisoned(u8 *s) {
 }
 
 ErrorGeneric::ErrorGeneric(u32 tid, uptr pc_, uptr bp_, uptr sp_, uptr addr,
-                           bool is_write_, uptr access_size_)
+                           bool is_write_, usize access_size_)
     : ErrorBase(tid),
       addr_description(addr, access_size_, /*shouldLockThreadRegistry=*/false),
       pc(pc_),
@@ -538,7 +538,7 @@ static void PrintLegend(InternalScopedString *str) {
 }
 
 static void PrintShadowBytes(InternalScopedString *str, const char *before,
-                             u8 *bytes, u8 *guilty, uptr n) {
+                             u8 *bytes, u8 *guilty, usize n) {
   Decorator d;
   if (before)
     str->append("%s%p:", before, (void *)bytes);
@@ -555,7 +555,7 @@ static void PrintShadowBytes(InternalScopedString *str, const char *before,
 static void PrintShadowMemoryForAddress(uptr addr) {
   if (!AddrIsInMem(addr)) return;
   uptr shadow_addr = MemToShadow(addr);
-  const uptr n_bytes_per_row = 16;
+  const usize n_bytes_per_row = 16;
   uptr aligned_shadow = shadow_addr & ~(n_bytes_per_row - 1);
   InternalScopedString str;
   str.append("Shadow bytes around the buggy address:\n");

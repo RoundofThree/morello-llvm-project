@@ -30,9 +30,9 @@ void AsanStats::Clear() {
 }
 
 static void PrintMallocStatsArray(const char *prefix,
-                                  uptr (&array)[kNumberOfSizeClasses]) {
+                                  usize (&array)[kNumberOfSizeClasses]) {
   Printf("%s", prefix);
-  for (uptr i = 0; i < kNumberOfSizeClasses; i++) {
+  for (usize i = 0; i < kNumberOfSizeClasses; i++) {
     if (!array[i]) continue;
     Printf("%zu:%zu; ", i, array[i]);
   }
@@ -55,10 +55,10 @@ void AsanStats::Print() {
 }
 
 void AsanStats::MergeFrom(const AsanStats *stats) {
-  uptr *dst_ptr = reinterpret_cast<uptr*>(this);
-  const uptr *src_ptr = reinterpret_cast<const uptr*>(stats);
-  uptr num_fields = sizeof(*this) / sizeof(uptr);
-  for (uptr i = 0; i < num_fields; i++)
+  usize *dst_ptr = reinterpret_cast<usize*>(this);
+  const usize *src_ptr = reinterpret_cast<const usize*>(stats);
+  usize num_fields = sizeof(*this) / sizeof(usize);
+  for (usize i = 0; i < num_fields; i++)
     dst_ptr[i] += src_ptr[i];
 }
 
@@ -69,7 +69,7 @@ static AsanStats dead_threads_stats(LINKER_INITIALIZED);
 static Mutex dead_threads_stats_lock;
 // Required for malloc_zone_statistics() on OS X. This can't be stored in
 // per-thread AsanStats.
-static uptr max_malloced_memory;
+static usize max_malloced_memory;
 
 static void MergeThreadStats(ThreadContextBase *tctx_base, void *arg) {
   AsanStats *accumulated_stats = reinterpret_cast<AsanStats*>(arg);

@@ -113,7 +113,8 @@ static inline size_t AsanThreadMmapSize() {
 }
 
 struct AsanThread::InitOptions {
-  uptr stack_bottom, stack_size;
+  uptr stack_bottom;
+  usize stack_size;
 };
 
 // Shared setup between thread creation and startup for the initial thread.
@@ -169,9 +170,9 @@ AsanThread *CreateMainThread() {
 
 // This is called before each thread creation is attempted.  So, in
 // its first call, the calling thread is the initial and sole thread.
-static void *BeforeThreadCreateHook(uptr user_id, bool detached,
+static void *BeforeThreadCreateHook(usize user_id, bool detached,
                                     const char *name, uptr stack_bottom,
-                                    uptr stack_size) {
+                                    usize stack_size) {
   EnsureMainThreadIDIsCorrect();
   // Strict init-order checking is thread-hostile.
   if (flags()->strict_init_order)
@@ -208,7 +209,7 @@ static void ThreadCreateHook(void *hook, bool aborted) {
 // This is called in the newly-created thread before it runs anything else,
 // with the pointer returned by BeforeThreadCreateHook (above).
 // cf. asan_interceptors.cpp:asan_thread_start
-static void ThreadStartHook(void *hook, uptr os_id) {
+static void ThreadStartHook(void *hook, usize os_id) {
   AsanThread *thread = static_cast<AsanThread *>(hook);
   SetCurrentThread(thread);
 
@@ -220,7 +221,7 @@ static void ThreadStartHook(void *hook, uptr os_id) {
 // Each thread runs this just before it exits,
 // with the pointer returned by BeforeThreadCreateHook (above).
 // All per-thread destructors have already been called.
-static void ThreadExitHook(void *hook, uptr os_id) {
+static void ThreadExitHook(void *hook, usize os_id) {
   AsanThread::TSDDtor(per_thread);
 }
 
@@ -231,7 +232,7 @@ bool HandleDlopenInit() {
   return false;
 }
 
-void FlushUnneededASanShadowMemory(uptr p, uptr size) {
+void FlushUnneededASanShadowMemory(uptr p, usize size) {
   __sanitizer_fill_shadow(p, size, 0, 0);
 }
 

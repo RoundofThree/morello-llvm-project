@@ -20,7 +20,7 @@ namespace __asan {
 
 // Fake stack frame contains local variables of one function.
 struct FakeFrame {
-  uptr magic;  // Modified by the instrumented code.
+  usize magic;  // Modified by the instrumented code.
   uptr descr;  // Modified by the instrumented code.
   uptr pc;     // Modified by the instrumented code.
   uptr real_stack;
@@ -90,7 +90,7 @@ class FakeStack {
   // and so on.
   static usize FlagsOffset(usize stack_size_log, usize class_id) {
     usize t = kNumberOfSizeClasses - 1 - class_id;
-    const usize all_ones = (((uptr)1) << (kNumberOfSizeClasses - 1)) - 1;
+    const usize all_ones = (((usize)1) << (kNumberOfSizeClasses - 1)) - 1;
     return ((all_ones >> t) << t) << (stack_size_log - 15);
   }
 

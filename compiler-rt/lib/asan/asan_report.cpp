@@ -31,7 +31,7 @@ namespace __asan {
 // -------------------- User-specified callbacks ----------------- {{{1
 static void (*error_report_callback)(const char*);
 static char *error_message_buffer = nullptr;
-static uptr error_message_buffer_pos = 0;
+static usize error_message_buffer_pos = 0;
 static Mutex error_message_buf_mutex;
 static const unsigned kAsanBuggyPcPoolSize = 25;
 static __sanitizer::atomic_uintptr_t AsanBuggyPcPool[kAsanBuggyPcPoolSize];
@@ -43,9 +43,9 @@ void AppendToErrorMessageBuffer(const char *buffer) {
       (char*)MmapOrDieQuietly(kErrorMessageBufferSize, __func__);
     error_message_buffer_pos = 0;
   }
-  uptr length = internal_strlen(buffer);
+  usize length = internal_strlen(buffer);
   RAW_CHECK(kErrorMessageBufferSize >= error_message_buffer_pos);
-  uptr remaining = kErrorMessageBufferSize - error_message_buffer_pos;
+  usize remaining = kErrorMessageBufferSize - error_message_buffer_pos;
   internal_strncpy(error_message_buffer + error_message_buffer_pos,
                    buffer, remaining);
   error_message_buffer[kErrorMessageBufferSize - 1] = '\0';
@@ -88,24 +88,24 @@ bool ParseFrameDescription(const char *frame_descr,
   // "n alloc_1 alloc_2 ... alloc_n"
   // where alloc_i looks like "offset size len ObjectName"
   // or                       "offset size len ObjectName:line".
-  uptr n_objects = (uptr)internal_simple_strtoll(frame_descr, &p, 10);
+  usize n_objects = (usize)internal_simple_strtoll(frame_descr, &p, 10);
   if (n_objects == 0)
     return false;
 
-  for (uptr i = 0; i < n_objects; i++) {
+  for (usize i = 0; i < n_objects; i++) {
     uptr beg  = (uptr)internal_simple_strtoll(p, &p, 10);
-    uptr size = (uptr)internal_simple_strtoll(p, &p, 10);
-    uptr len  = (uptr)internal_simple_strtoll(p, &p, 10);
+    usize size = (usize)internal_simple_strtoll(p, &p, 10);
+    usize len  = (usize)internal_simple_strtoll(p, &p, 10);
     if (beg == 0 || size == 0 || *p != ' ') {
       return false;
     }
     p++;
     char *colon_pos = internal_strchr(p, ':');
-    uptr line = 0;
-    uptr name_len = len;
+    usize line = 0;
+    usize name_len = len;
     if (colon_pos != nullptr && colon_pos < p + len) {
       name_len = colon_pos - p;
-      line = (uptr)internal_simple_strtoll(colon_pos + 1, nullptr, 10);
+      line = (usize)internal_simple_strtoll(colon_pos + 1, nullptr, 10);
     }
     StackVarDescr var = {beg, size, p, name_len, line};
     vars->push_back(var);
@@ -223,8 +223,8 @@ void ReportDoubleFree(uptr addr, BufferedStackTrace *free_stack) {
   in_report.ReportError(error);
 }
 
-void ReportNewDeleteTypeMismatch(uptr addr, uptr delete_size,
-                                 uptr delete_alignment,
+void ReportNewDeleteTypeMismatch(uptr addr, usize delete_size,
+                                 usize delete_alignment,
                                  BufferedStackTrace *free_stack) {
   ScopedInErrorReport in_report;
   ErrorNewDeleteTypeMismatch error(GetCurrentTidOrInvalid(), free_stack, addr,
@@ -261,26 +261,26 @@ void ReportSanitizerGetAllocatedSizeNotOwned(uptr addr,
   in_report.ReportError(error);
 }
 
-void ReportCallocOverflow(uptr count, uptr size, BufferedStackTrace *stack) {
+void ReportCallocOverflow(usize count, usize size, BufferedStackTrace *stack) {
   ScopedInErrorReport in_report(/*fatal*/ true);
   ErrorCallocOverflow error(GetCurrentTidOrInvalid(), stack, count, size);
   in_report.ReportError(error);
 }
 
-void ReportReallocArrayOverflow(uptr count, uptr size,
+void ReportReallocArrayOverflow(usize count, usize size,
                                 BufferedStackTrace *stack) {
   ScopedInErrorReport in_report(/*fatal*/ true);
   ErrorReallocArrayOverflow error(GetCurrentTidOrInvalid(), stack, count, size);
   in_report.ReportError(error);
 }
 
-void ReportPvallocOverflow(uptr size, BufferedStackTrace *stack) {
+void ReportPvallocOverflow(usize size, BufferedStackTrace *stack) {
   ScopedInErrorReport in_report(/*fatal*/ true);
   ErrorPvallocOverflow error(GetCurrentTidOrInvalid(), stack, size);
   in_report.ReportError(error);
 }
 
-void ReportInvalidAllocationAlignment(uptr alignment,
+void ReportInvalidAllocationAlignment(usize alignment,
                                       BufferedStackTrace *stack) {
   ScopedInErrorReport in_report(/*fatal*/ true);
   ErrorInvalidAllocationAlignment error(GetCurrentTidOrInvalid(), stack,
@@ -288,7 +288,7 @@ void ReportInvalidAllocationAlignment(uptr alignment,
   in_report.ReportError(error);
 }
 
-void ReportInvalidAlignedAllocAlignment(uptr size, uptr alignment,
+void ReportInvalidAlignedAllocAlignment(usize size, usize alignment,
                                         BufferedStackTrace *stack) {
   ScopedInErrorReport in_report(/*fatal*/ true);
   ErrorInvalidAlignedAllocAlignment error(GetCurrentTidOrInvalid(), stack,
@@ -296,7 +296,7 @@ void ReportInvalidAlignedAllocAlignment(uptr size, uptr alignment,
   in_report.ReportError(error);
 }
 
-void ReportInvalidPosixMemalignAlignment(uptr alignment,
+void ReportInvalidPosixMemalignAlignment(usize alignment,
                                          BufferedStackTrace *stack) {
   ScopedInErrorReport in_report(/*fatal*/ true);
   ErrorInvalidPosixMemalignAlignment error(GetCurrentTidOrInvalid(), stack,
@@ -304,7 +304,7 @@ void ReportInvalidPosixMemalignAlignment(uptr alignment,
   in_report.ReportError(error);
 }
 
-void ReportAllocationSizeTooBig(uptr user_size, uptr total_size, uptr max_size,
+void ReportAllocationSizeTooBig(usize user_size, usize total_size, usize max_size,
                                 BufferedStackTrace *stack) {
   ScopedInErrorReport in_report(/*fatal*/ true);
   ErrorAllocationSizeTooBig error(GetCurrentTidOrInvalid(), stack, user_size,
@@ -318,15 +318,15 @@ void ReportRssLimitExceeded(BufferedStackTrace *stack) {
   in_report.ReportError(error);
 }
 
-void ReportOutOfMemory(uptr requested_size, BufferedStackTrace *stack) {
+void ReportOutOfMemory(usize requested_size, BufferedStackTrace *stack) {
   ScopedInErrorReport in_report(/*fatal*/ true);
   ErrorOutOfMemory error(GetCurrentTidOrInvalid(), stack, requested_size);
   in_report.ReportError(error);
 }
 
 void ReportStringFunctionMemoryRangesOverlap(const char *function,
-                                             const char *offset1, uptr length1,
-                                             const char *offset2, uptr length2,
+                                             const char *offset1, usize length1,
+                                             const char *offset2, usize length2,
                                              BufferedStackTrace *stack) {
   ScopedInErrorReport in_report;
   ErrorStringFunctionMemoryRangesOverlap error(
@@ -335,7 +335,7 @@ void ReportStringFunctionMemoryRangesOverlap(const char *function,
   in_report.ReportError(error);
 }
 
-void ReportStringFunctionSizeOverflow(uptr offset, uptr size,
+void ReportStringFunctionSizeOverflow(uptr offset, usize size,
                                       BufferedStackTrace *stack) {
   ScopedInErrorReport in_report;
   ErrorStringFunctionSizeOverflow error(GetCurrentTidOrInvalid(), stack, offset,
@@ -459,7 +459,7 @@ static bool SuppressErrorReport(uptr pc) {
 }
 
 void ReportGenericError(uptr pc, uptr bp, uptr sp, uptr addr, bool is_write,
-                        uptr access_size, u32 exp, bool fatal) {
+                        usize access_size, u32 exp, bool fatal) {
   if (__asan_test_only_reported_buggy_pointer) {
     *__asan_test_only_reported_buggy_pointer = addr;
     return;
@@ -488,7 +488,7 @@ void ReportGenericError(uptr pc, uptr bp, uptr sp, uptr addr, bool is_write,
 using namespace __asan;
 
 void __asan_report_error(uptr pc, uptr bp, uptr sp, uptr addr, int is_write,
-                         uptr access_size, u32 exp) {
+                         usize access_size, u32 exp) {
   ENABLE_FRAME_POINTER;
   bool fatal = flags()->halt_on_error;
   ReportGenericError(pc, bp, sp, addr, is_write, access_size, exp, fatal);
@@ -543,7 +543,7 @@ int __asan_get_report_access_type() {
   return 0;
 }
 
-uptr __asan_get_report_access_size() {
+usize __asan_get_report_access_size() {
   if (ScopedInErrorReport::CurrentError().kind == kErrorKindGeneric)
     return ScopedInErrorReport::CurrentError().Generic.access_size;
   return 0;

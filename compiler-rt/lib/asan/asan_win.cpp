@@ -261,7 +261,7 @@ void AsanCheckDynamicRTPrereqs() {}
 
 void AsanCheckIncompatibleRT() {}
 
-void ReadContextStack(void *context, uptr *stack, uptr *ssize) {
+void ReadContextStack(void *context, uptr *stack, usize *ssize) {
   UNIMPLEMENTED();
 }
 
@@ -273,7 +273,7 @@ bool PlatformUnpoisonStacks() { return false; }
 // Exception handler for dealing with shadow memory.
 static LONG CALLBACK
 ShadowExceptionHandler(PEXCEPTION_POINTERS exception_pointers) {
-  uptr page_size = GetPageSizeCached();
+  usize page_size = GetPageSizeCached();
   // Only handle access violations.
   if (exception_pointers->ExceptionRecord->ExceptionCode !=
           EXCEPTION_ACCESS_VIOLATION ||
@@ -385,7 +385,7 @@ static void NTAPI asan_thread_exit(void *module, DWORD reason, void *reserved) {
   if (reason == DLL_THREAD_DETACH) {
     // Unpoison the thread's stack because the memory may be re-used.
     NT_TIB *tib = (NT_TIB *)NtCurrentTeb();
-    uptr stackSize = (uptr)tib->StackBase - (uptr)tib->StackLimit;
+    usize stackSize = (usize)tib->StackBase - (usize)tib->StackLimit;
     __asan_unpoison_memory_region(tib->StackLimit, stackSize);
   }
 }

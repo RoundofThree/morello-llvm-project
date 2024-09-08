@@ -210,7 +210,7 @@
 #if defined(__cplusplus)
 #  include "asan_internal.h"
 
-static const u64 kDefaultShadowSentinel = ~(uptr)0;
+static const u64 kDefaultShadowSentinel = ~(usize)0;
 
 #  if defined(ASAN_SHADOW_OFFSET_CONST)
 static const u64 kConstShadowOffset = ASAN_SHADOW_OFFSET_CONST;
@@ -295,37 +295,37 @@ extern vaddr kHighMemEnd, kMidMemBeg, kMidMemEnd;  // Initialized in __asan_init
 
 namespace __asan {
 
-static inline bool AddrIsInLowMem(uptr a) {
+static inline bool AddrIsInLowMem(vaddr a) {
   PROFILE_ASAN_MAPPING();
   return a <= kLowMemEnd;
 }
 
-static inline bool AddrIsInLowShadow(uptr a) {
+static inline bool AddrIsInLowShadow(vaddr a) {
   PROFILE_ASAN_MAPPING();
   return a >= kLowShadowBeg && a <= kLowShadowEnd;
 }
 
-static inline bool AddrIsInMidMem(uptr a) {
+static inline bool AddrIsInMidMem(vaddr a) {
   PROFILE_ASAN_MAPPING();
   return kMidMemBeg && a >= kMidMemBeg && a <= kMidMemEnd;
 }
 
-static inline bool AddrIsInMidShadow(uptr a) {
+static inline bool AddrIsInMidShadow(vaddr a) {
   PROFILE_ASAN_MAPPING();
   return kMidMemBeg && a >= kMidShadowBeg && a <= kMidShadowEnd;
 }
 
-static inline bool AddrIsInHighMem(uptr a) {
+static inline bool AddrIsInHighMem(vaddr a) {
   PROFILE_ASAN_MAPPING();
   return kHighMemBeg && a >= kHighMemBeg && a <= kHighMemEnd;
 }
 
-static inline bool AddrIsInHighShadow(uptr a) {
+static inline bool AddrIsInHighShadow(vaddr a) {
   PROFILE_ASAN_MAPPING();
   return kHighMemBeg && a >= kHighShadowBeg && a <= kHighShadowEnd;
 }
 
-static inline bool AddrIsInShadowGap(uptr a) {
+static inline bool AddrIsInShadowGap(vaddr a) {
   PROFILE_ASAN_MAPPING();
   if (kMidMemBeg) {
     if (a <= kShadowGapEnd)
@@ -346,28 +346,28 @@ static inline bool AddrIsInShadowGap(uptr a) {
 
 namespace __asan {
 
-static inline uptr MemToShadowSize(uptr size) {
+static inline usize MemToShadowSize(usize size) {
   return size >> ASAN_SHADOW_SCALE;
 }
 
-static inline bool AddrIsInMem(uptr a) {
+static inline bool AddrIsInMem(vaddr a) {
   PROFILE_ASAN_MAPPING();
   return AddrIsInLowMem(a) || AddrIsInMidMem(a) || AddrIsInHighMem(a) ||
          (flags()->protect_shadow_gap == 0 && AddrIsInShadowGap(a));
 }
 
-static inline uptr MemToShadow(uptr p) {
+static inline uptr MemToShadow(vaddr p) {
   PROFILE_ASAN_MAPPING();
   CHECK(AddrIsInMem(p));
   return MEM_TO_SHADOW(p);
 }
 
-static inline bool AddrIsInShadow(uptr a) {
+static inline bool AddrIsInShadow(usize a) {
   PROFILE_ASAN_MAPPING();
   return AddrIsInLowShadow(a) || AddrIsInMidShadow(a) || AddrIsInHighShadow(a);
 }
 
-static inline bool AddrIsAlignedByGranularity(uptr a) {
+static inline bool AddrIsAlignedByGranularity(vaddr a) {
   PROFILE_ASAN_MAPPING();
   return (a & (ASAN_SHADOW_GRANULARITY - 1)) == 0;
 }
@@ -386,7 +386,7 @@ static inline bool AddressIsPoisoned(vaddr a) {
 }
 
 // Must be after all calls to PROFILE_ASAN_MAPPING().
-static const uptr kAsanMappingProfileSize = __LINE__;
+static const usize kAsanMappingProfileSize = __LINE__;
 
 }  // namespace __asan
 

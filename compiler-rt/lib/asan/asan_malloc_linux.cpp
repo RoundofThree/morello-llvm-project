@@ -32,14 +32,14 @@ using namespace __asan;
 
 struct DlsymAlloc : public DlSymAllocator<DlsymAlloc> {
   static bool UseImpl() { return asan_init_is_running; }
-  static void OnAllocate(const void *ptr, uptr size) {
+  static void OnAllocate(const void *ptr, usize size) {
 #  if CAN_SANITIZE_LEAKS
     // Suppress leaks from dlerror(). Previously dlsym hack on global array was
     // used by leak sanitizer as a root region.
     __lsan_register_root_region(ptr, size);
 #  endif
   }
-  static void OnFree(const void *ptr, uptr size) {
+  static void OnFree(const void *ptr, usize size) {
 #  if CAN_SANITIZE_LEAKS
     __lsan_unregister_root_region(ptr, size);
 #  endif
@@ -62,7 +62,7 @@ INTERCEPTOR(void, cfree, void *ptr) {
 }
 #endif // SANITIZER_INTERCEPT_CFREE
 
-INTERCEPTOR(void*, malloc, uptr size) {
+INTERCEPTOR(void*, malloc, usize size) {
   if (DlsymAlloc::Use())
     return DlsymAlloc::Allocate(size);
   ENSURE_ASAN_INITED();
@@ -70,7 +70,7 @@ INTERCEPTOR(void*, malloc, uptr size) {
   return asan_malloc(size, &stack);
 }
 
-INTERCEPTOR(void*, calloc, uptr nmemb, uptr size) {
+INTERCEPTOR(void*, calloc, usize nmemb, usize size) {
   if (DlsymAlloc::Use())
     return DlsymAlloc::Callocate(nmemb, size);
   ENSURE_ASAN_INITED();
@@ -78,7 +78,7 @@ INTERCEPTOR(void*, calloc, uptr nmemb, uptr size) {
   return asan_calloc(nmemb, size, &stack);
 }
 
-INTERCEPTOR(void*, realloc, void *ptr, uptr size) {
+INTERCEPTOR(void*, realloc, void *ptr, usize size) {
   if (DlsymAlloc::Use() || DlsymAlloc::PointerIsMine(ptr))
     return DlsymAlloc::Realloc(ptr, size);
   ENSURE_ASAN_INITED();
@@ -87,7 +87,7 @@ INTERCEPTOR(void*, realloc, void *ptr, uptr size) {
 }
 
 #if SANITIZER_INTERCEPT_REALLOCARRAY
-INTERCEPTOR(void*, reallocarray, void *ptr, uptr nmemb, uptr size) {
+INTERCEPTOR(void*, reallocarray, void *ptr, usize nmemb, usize size) {
   ENSURE_ASAN_INITED();
   GET_STACK_TRACE_MALLOC;
   return asan_reallocarray(ptr, nmemb, size, &stack);
@@ -95,12 +95,12 @@ INTERCEPTOR(void*, reallocarray, void *ptr, uptr nmemb, uptr size) {
 #endif  // SANITIZER_INTERCEPT_REALLOCARRAY
 
 #if SANITIZER_INTERCEPT_MEMALIGN
-INTERCEPTOR(void*, memalign, uptr boundary, uptr size) {
+INTERCEPTOR(void*, memalign, usize boundary, usize size) {
   GET_STACK_TRACE_MALLOC;
   return asan_memalign(boundary, size, &stack, FROM_MALLOC);
 }
 
-INTERCEPTOR(void*, __libc_memalign, uptr boundary, uptr size) {
+INTERCEPTOR(void*, __libc_memalign, usize boundary, usize size) {
   GET_STACK_TRACE_MALLOC;
   void *res = asan_memalign(boundary, size, &stack, FROM_MALLOC);
   DTLS_on_libc_memalign(res, size);
@@ -109,13 +109,13 @@ INTERCEPTOR(void*, __libc_memalign, uptr boundary, uptr size) {
 #endif // SANITIZER_INTERCEPT_MEMALIGN
 
 #if SANITIZER_INTERCEPT_ALIGNED_ALLOC
-INTERCEPTOR(void*, aligned_alloc, uptr boundary, uptr size) {
+INTERCEPTOR(void*, aligned_alloc, usize boundary, usize size) {
   GET_STACK_TRACE_MALLOC;
   return asan_aligned_alloc(boundary, size, &stack);
 }
 #endif // SANITIZER_INTERCEPT_ALIGNED_ALLOC
 
-INTERCEPTOR(uptr, malloc_usable_size, void *ptr) {
+INTERCEPTOR(usize, malloc_usable_size, void *ptr) {
   GET_CURRENT_PC_BP_SP;
   (void)sp;
   return asan_malloc_usable_size(ptr, pc, bp);
@@ -141,18 +141,18 @@ INTERCEPTOR(int, mallopt, int cmd, int value) {
 }
 #endif // SANITIZER_INTERCEPT_MALLOPT_AND_MALLINFO
 
-INTERCEPTOR(int, posix_memalign, void **memptr, uptr alignment, uptr size) {
+INTERCEPTOR(int, posix_memalign, void **memptr, usize alignment, usize size) {
   GET_STACK_TRACE_MALLOC;
   return asan_posix_memalign(memptr, alignment, size, &stack);
 }
 
-INTERCEPTOR(void*, valloc, uptr size) {
+INTERCEPTOR(void*, valloc, usize size) {
   GET_STACK_TRACE_MALLOC;
   return asan_valloc(size, &stack);
 }
 
 #if SANITIZER_INTERCEPT_PVALLOC
-INTERCEPTOR(void*, pvalloc, uptr size) {
+INTERCEPTOR(void*, pvalloc, usize size) {
   GET_STACK_TRACE_MALLOC;
   return asan_pvalloc(size, &stack);
 }
@@ -167,25 +167,25 @@ INTERCEPTOR(void, malloc_stats, void) {
 // While we are moving towards a solution that does not depend on bionic
 // internals, here is something to support both K* and L releases.
 struct MallocDebugK {
-  void *(*malloc)(uptr bytes);
+  void *(*malloc)(usize bytes);
   void (*free)(void *mem);
-  void *(*calloc)(uptr n_elements, uptr elem_size);
-  void *(*realloc)(void *oldMem, uptr bytes);
-  void *(*memalign)(uptr alignment, uptr bytes);
-  uptr (*malloc_usable_size)(void *mem);
+  void *(*calloc)(usize n_elements, usize elem_size);
+  void *(*realloc)(void *oldMem, usize bytes);
+  void *(*memalign)(usize alignment, usize bytes);
+  usize (*malloc_usable_size)(void *mem);
 };
 
 struct MallocDebugL {
-  void *(*calloc)(uptr n_elements, uptr elem_size);
+  void *(*calloc)(usize n_elements, usize elem_size);
   void (*free)(void *mem);
   fake_mallinfo (*mallinfo)(void);
-  void *(*malloc)(uptr bytes);
-  uptr (*malloc_usable_size)(void *mem);
-  void *(*memalign)(uptr alignment, uptr bytes);
-  int (*posix_memalign)(void **memptr, uptr alignment, uptr size);
-  void* (*pvalloc)(uptr size);
-  void *(*realloc)(void *oldMem, uptr bytes);
-  void* (*valloc)(uptr size);
+  void *(*malloc)(usize bytes);
+  usize (*malloc_usable_size)(void *mem);
+  void *(*memalign)(usize alignment, usize bytes);
+  int (*posix_memalign)(void **memptr, usize alignment, usize size);
+  void* (*pvalloc)(usize size);
+  void *(*realloc)(void *oldMem, usize bytes);
+  void* (*valloc)(usize size);
 };
 
 ALIGNED(32) const MallocDebugK asan_malloc_dispatch_k = {

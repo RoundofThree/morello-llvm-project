@@ -89,11 +89,11 @@ void *AsanDoesNotSupportStaticLinkage() {
 }
 
 #if ASAN_PREMAP_SHADOW
-uptr FindPremappedShadowStart(uptr shadow_size_bytes) {
-  uptr granularity = GetMmapGranularity();
+uptr FindPremappedShadowStart(usize shadow_size_bytes) {
+  usize granularity = GetMmapGranularity();
   uptr shadow_start = reinterpret_cast<uptr>(&__asan_shadow);
-  uptr premap_shadow_size = PremapShadowSize();
-  uptr shadow_size = RoundUpTo(shadow_size_bytes, granularity);
+  usize premap_shadow_size = PremapShadowSize();
+  usize shadow_size = RoundUpTo(shadow_size_bytes, granularity);
   // We may have mapped too much. Release extra memory.
   UnmapFromTo(shadow_start + shadow_size, shadow_start + premap_shadow_size);
   return shadow_start;
@@ -101,7 +101,7 @@ uptr FindPremappedShadowStart(uptr shadow_size_bytes) {
 #endif
 
 uptr FindDynamicShadowStart() {
-  uptr shadow_size_bytes = MemToShadowSize(kHighMemEnd);
+  usize shadow_size_bytes = MemToShadowSize(kHighMemEnd);
 #if ASAN_PREMAP_SHADOW
   if (!PremapShadowFailed())
     return FindPremappedShadowStart(shadow_size_bytes);
@@ -215,13 +215,13 @@ void AsanCheckIncompatibleRT() {
 #endif // SANITIZER_ANDROID
 
 #if !SANITIZER_ANDROID
-void ReadContextStack(void *context, uptr *stack, uptr *ssize) {
+void ReadContextStack(void *context, uptr *stack, usize *ssize) {
   ucontext_t *ucp = (ucontext_t*)context;
   *stack = (uptr)ucp->uc_stack.ss_sp;
   *ssize = ucp->uc_stack.ss_size;
 }
 #else
-void ReadContextStack(void *context, uptr *stack, uptr *ssize) {
+void ReadContextStack(void *context, uptr *stack, usize *ssize) {
   UNIMPLEMENTED();
 }
 #endif

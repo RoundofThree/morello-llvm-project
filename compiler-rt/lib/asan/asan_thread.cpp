@@ -77,8 +77,8 @@ AsanThreadContext *GetThreadContextByTidLocked(u32 tid) {
 AsanThread *AsanThread::Create(thread_callback_t start_routine, void *arg,
                                u32 parent_tid, StackTrace *stack,
                                bool detached) {
-  uptr PageSize = GetPageSizeCached();
-  uptr size = RoundUpTo(sizeof(AsanThread), PageSize);
+  usize PageSize = GetPageSizeCached();
+  usize size = RoundUpTo(sizeof(AsanThread), PageSize);
   AsanThread *thread = (AsanThread*)MmapOrDie(size, __func__);
   thread->start_routine_ = start_routine;
   thread->arg_ = arg;
@@ -116,14 +116,14 @@ void AsanThread::Destroy() {
   } else {
     CHECK_NE(this, GetCurrentThread());
   }
-  uptr size = RoundUpTo(sizeof(AsanThread), GetPageSizeCached());
+  usize size = RoundUpTo(sizeof(AsanThread), GetPageSizeCached());
   UnmapOrDie(this, size);
   if (was_running)
     DTLS_Destroy();
 }
 
 void AsanThread::StartSwitchFiber(FakeStack **fake_stack_save, uptr bottom,
-                                  uptr size) {
+                                  usize size) {
   if (atomic_load(&stack_switching_, memory_order_relaxed)) {
     Report("ERROR: starting fiber switch while in fiber switch\n");
     Die();
@@ -145,7 +145,7 @@ void AsanThread::StartSwitchFiber(FakeStack **fake_stack_save, uptr bottom,
 
 void AsanThread::FinishSwitchFiber(FakeStack *fake_stack_save,
                                    uptr *bottom_old,
-                                   uptr *size_old) {
+                                   usize *size_old) {
   if (!atomic_load(&stack_switching_, memory_order_relaxed)) {
     Report("ERROR: finishing a fiber switch that has not started\n");
     Die();
@@ -215,9 +215,9 @@ FakeStack *AsanThread::AsyncSignalSafeLazyInitFakeStack() {
     usize stack_size_log = Log2(RoundUpToPowerOfTwo(stack_size));
     CHECK_LE(flags()->min_uar_stack_size_log, flags()->max_uar_stack_size_log);
     stack_size_log =
-        Min(stack_size_log, static_cast<uptr>(flags()->max_uar_stack_size_log));
+        Min(stack_size_log, static_cast<usize>(flags()->max_uar_stack_size_log));
     stack_size_log =
-        Max(stack_size_log, static_cast<uptr>(flags()->min_uar_stack_size_log));
+        Max(stack_size_log, static_cast<usize>(flags()->min_uar_stack_size_log));
     fake_stack_ = FakeStack::Create(stack_size_log);
     DCHECK_EQ(GetCurrentThread(), this);
     SetTLSFakeStack(fake_stack_);
@@ -480,9 +480,9 @@ __asan::AsanThread *GetAsanThreadByOsIDLocked(tid_t os_id) {
 
 // --- Implementation of LSan-specific functions --- {{{1
 namespace __lsan {
-bool GetThreadRangesLocked(tid_t os_id, uptr *stack_begin, uptr *stack_end,
-                           uptr *tls_begin, uptr *tls_end, uptr *cache_begin,
-                           uptr *cache_end, DTLS **dtls) {
+bool GetThreadRangesLocked(tid_t os_id, vaddr *stack_begin, vaddr *stack_end,
+                           vaddr *tls_begin, vaddr *tls_end, vaddr *cache_begin,
+                           vaddr *cache_end, DTLS **dtls) {
   __asan::AsanThread *t = __asan::GetAsanThreadByOsIDLocked(os_id);
   if (!t) return false;
   *stack_begin = t->stack_bottom();
@@ -533,7 +533,7 @@ using namespace __asan;
 extern "C" {
 SANITIZER_INTERFACE_ATTRIBUTE
 void __sanitizer_start_switch_fiber(void **fakestacksave, const void *bottom,
-                                    uptr size) {
+                                    usize size) {
   AsanThread *t = GetCurrentThread();
   if (!t) {
     VReport(1, "__asan_start_switch_fiber called from unknown thread\n");
@@ -545,7 +545,7 @@ void __sanitizer_start_switch_fiber(void **fakestacksave, const void *bottom,
 SANITIZER_INTERFACE_ATTRIBUTE
 void __sanitizer_finish_switch_fiber(void* fakestack,
                                      const void **bottom_old,
-                                     uptr *size_old) {
+                                     usize *size_old) {
   AsanThread *t = GetCurrentThread();
   if (!t) {
     VReport(1, "__asan_finish_switch_fiber called from unknown thread\n");
@@ -553,6 +553,6 @@ void __sanitizer_finish_switch_fiber(void* fakestack,
   }
   t->FinishSwitchFiber((FakeStack*)fakestack,
                        (uptr*)bottom_old,
-                       (uptr*)size_old);
+                       (usize*)size_old);
 }
 }

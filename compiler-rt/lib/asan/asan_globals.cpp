@@ -96,7 +96,7 @@ static void ReportGlobal(const Global &g, const char *prefix) {
 static u32 FindRegistrationSite(const Global *g) {
   mu_for_globals.CheckLocked();
   CHECK(global_registration_site_vector);
-  for (uptr i = 0, n = global_registration_site_vector->size(); i < n; i++) {
+  for (usize i = 0, n = global_registration_site_vector->size(); i < n; i++) {
     GlobalRegistrationSite &grs = (*global_registration_site_vector)[i];
     if (g >= grs.g_first && g <= grs.g_last)
       return grs.stack_id;
@@ -260,7 +260,7 @@ void StopInitOrderChecking() {
   if (!flags()->check_initialization_order || !dynamic_init_globals)
     return;
   flags()->check_initialization_order = false;
-  for (uptr i = 0, n = dynamic_init_globals->size(); i < n; ++i) {
+  for (usize i = 0, n = dynamic_init_globals->size(); i < n; ++i) {
     DynInitGlobal &dyn_g = (*dynamic_init_globals)[i];
     const Global *g = &dyn_g.g;
     // Unpoison the whole global.
@@ -354,7 +354,7 @@ void __asan_unregister_elf_globals(uptr *flag, void *start, void *stop) {
 }
 
 // Register an array of globals.
-void __asan_register_globals(__asan_global *globals, uptr n) {
+void __asan_register_globals(__asan_global *globals, usize n) {
   if (!flags()->report_globals) return;
   GET_STACK_TRACE_MALLOC;
   u32 stack_id = StackDepotPut(stack);
@@ -371,7 +371,7 @@ void __asan_register_globals(__asan_global *globals, uptr n) {
     Printf("=== ID %d; %p %p\n", stack_id, (void *)&globals[0],
            (void *)&globals[n - 1]);
   }
-  for (uptr i = 0; i < n; i++) {
+  for (usize i = 0; i < n; i++) {
     if (SANITIZER_WINDOWS && globals[i].beg == 0) {
       // The MSVC incremental linker may pad globals out to 256 bytes. As long
       // as __asan_global is less than 256 bytes large and its size is a power
@@ -396,10 +396,10 @@ void __asan_register_globals(__asan_global *globals, uptr n) {
 
 // Unregister an array of globals.
 // We must do this when a shared objects gets dlclosed.
-void __asan_unregister_globals(__asan_global *globals, uptr n) {
+void __asan_unregister_globals(__asan_global *globals, usize n) {
   if (!flags()->report_globals) return;
   Lock lock(&mu_for_globals);
-  for (uptr i = 0; i < n; i++) {
+  for (usize i = 0; i < n; i++) {
     if (SANITIZER_WINDOWS && globals[i].beg == 0) {
       // Skip globals that look like padding from the MSVC incremental linker.
       // See comment in __asan_register_globals.
@@ -427,7 +427,7 @@ void __asan_before_dynamic_init(const char *module_name) {
   Lock lock(&mu_for_globals);
   if (flags()->report_globals >= 3)
     Printf("DynInitPoison module: %s\n", module_name);
-  for (uptr i = 0, n = dynamic_init_globals->size(); i < n; ++i) {
+  for (usize i = 0, n = dynamic_init_globals->size(); i < n; ++i) {
     DynInitGlobal &dyn_g = (*dynamic_init_globals)[i];
     const Global *g = &dyn_g.g;
     if (dyn_g.initialized)
@@ -450,7 +450,7 @@ void __asan_after_dynamic_init() {
   CHECK(asan_inited);
   Lock lock(&mu_for_globals);
   // FIXME: Optionally report that we're unpoisoning globals from a module.
-  for (uptr i = 0, n = dynamic_init_globals->size(); i < n; ++i) {
+  for (usize i = 0, n = dynamic_init_globals->size(); i < n; ++i) {
     DynInitGlobal &dyn_g = (*dynamic_init_globals)[i];
     const Global *g = &dyn_g.g;
     if (!dyn_g.initialized) {

@@ -26,7 +26,7 @@ extern "C" __declspec(allocate(".ASAN$GZ"))
 static void call_on_globals(void (*hook)(__asan_global *, uptr)) {
   __asan_global *start = &__asan_globals_start + 1;
   __asan_global *end = &__asan_globals_end;
-  uptr bytediff = (uptr)end - (uptr)start;
+  usize bytediff = (uptr)end - (uptr)start;
   if (bytediff % sizeof(__asan_global) != 0) {
 #if defined(SANITIZER_DLL_THUNK) || defined(SANITIZER_DYNAMIC_RUNTIME_THUNK)
     __debugbreak();
@@ -36,7 +36,7 @@ static void call_on_globals(void (*hook)(__asan_global *, uptr)) {
   }
   // We know end >= start because the linker sorts the portion after the dollar
   // sign alphabetically.
-  uptr n = end - start;
+  usize n = end - start;
   hook(start, n);
 }
 

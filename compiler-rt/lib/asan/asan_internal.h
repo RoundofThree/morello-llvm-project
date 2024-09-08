@@ -105,7 +105,7 @@ void AsanApplyToGlobals(globals_op_fptr op, const void *needle);
 
 void AsanOnDeadlySignal(int, void *siginfo, void *context);
 
-void ReadContextStack(void *context, uptr *stack, uptr *ssize);
+void ReadContextStack(void *context, uptr *stack, usize *ssize);
 void StopInitOrderChecking();
 
 // Wrapper for TLS/TSD.
@@ -160,8 +160,8 @@ const int kAsanIntraObjectRedzone = 0xbb;
 const int kAsanAllocaLeftMagic = 0xca;
 const int kAsanAllocaRightMagic = 0xcb;
 
-static const uptr kCurrentStackFrameMagic = 0x41B58AB3;
-static const uptr kRetiredStackFrameMagic = 0x45E0360E;
+static const usize kCurrentStackFrameMagic = 0x41B58AB3;
+static const usize kRetiredStackFrameMagic = 0x45E0360E;
 
 }  // namespace __asan
 

@@ -70,7 +70,7 @@ class AsanThread {
 
   uptr stack_top();
   uptr stack_bottom();
-  uptr stack_size();
+  usize stack_size();
   uptr tls_begin() { return tls_begin_; }
   uptr tls_end() { return tls_end_; }
   DTLS *dtls() { return dtls_; }
@@ -98,9 +98,9 @@ class AsanThread {
     t->Destroy(tid);
   }
 
-  void StartSwitchFiber(FakeStack **fake_stack_save, uptr bottom, uptr size);
+  void StartSwitchFiber(FakeStack **fake_stack_save, uptr bottom, usize size);
   void FinishSwitchFiber(FakeStack *fake_stack_save, uptr *bottom_old,
-                         uptr *size_old);
+                         usize *size_old);
 
   FakeStack *get_fake_stack() {
     if (atomic_load(&stack_switching_, memory_order_relaxed))

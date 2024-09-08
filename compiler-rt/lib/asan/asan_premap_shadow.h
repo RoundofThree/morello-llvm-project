@@ -18,7 +18,7 @@
 #if ASAN_PREMAP_SHADOW
 namespace __asan {
 // Conservative upper limit.
-uptr PremapShadowSize();
+usize PremapShadowSize();
 bool PremapShadowFailed();
 }
 #endif

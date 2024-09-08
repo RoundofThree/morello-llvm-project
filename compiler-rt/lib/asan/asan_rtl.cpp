@@ -126,17 +126,17 @@ ASAN_REPORT_ERROR(store, true, 16)
 
 #define ASAN_REPORT_ERROR_N(type, is_write)                                 \
 extern "C" NOINLINE INTERFACE_ATTRIBUTE                                     \
-void __asan_report_ ## type ## _n(uptr addr, uptr size) {                   \
+void __asan_report_ ## type ## _n(uptr addr, usize size) {                   \
   GET_CALLER_PC_BP_SP;                                                      \
   ReportGenericError(pc, bp, sp, addr, is_write, size, 0, true);            \
 }                                                                           \
 extern "C" NOINLINE INTERFACE_ATTRIBUTE                                     \
-void __asan_report_exp_ ## type ## _n(uptr addr, uptr size, u32 exp) {      \
+void __asan_report_exp_ ## type ## _n(uptr addr, usize size, u32 exp) {      \
   GET_CALLER_PC_BP_SP;                                                      \
   ReportGenericError(pc, bp, sp, addr, is_write, size, exp, true);          \
 }                                                                           \
 extern "C" NOINLINE INTERFACE_ATTRIBUTE                                     \
-void __asan_report_ ## type ## _n_noabort(uptr addr, uptr size) {           \
+void __asan_report_ ## type ## _n_noabort(uptr addr, usize size) {           \
   GET_CALLER_PC_BP_SP;                                                      \
   ReportGenericError(pc, bp, sp, addr, is_write, size, 0, false);           \
 }                                                                           \
@@ -183,7 +183,7 @@ ASAN_MEMORY_ACCESS_CALLBACK(store, true, 16)
 
 extern "C"
 NOINLINE INTERFACE_ATTRIBUTE
-void __asan_loadN(uptr addr, uptr size) {
+void __asan_loadN(uptr addr, usize size) {
   if (__asan_region_is_poisoned(addr, size)) {
     GET_CALLER_PC_BP_SP;
     ReportGenericError(pc, bp, sp, addr, false, size, 0, true);
@@ -192,7 +192,7 @@ void __asan_loadN(uptr addr, uptr size) {
 
 extern "C"
 NOINLINE INTERFACE_ATTRIBUTE
-void __asan_exp_loadN(uptr addr, uptr size, u32 exp) {
+void __asan_exp_loadN(uptr addr, usize size, u32 exp) {
   if (__asan_region_is_poisoned(addr, size)) {
     GET_CALLER_PC_BP_SP;
     ReportGenericError(pc, bp, sp, addr, false, size, exp, true);
@@ -201,7 +201,7 @@ void __asan_exp_loadN(uptr addr, uptr size, u32 exp) {
 
 extern "C"
 NOINLINE INTERFACE_ATTRIBUTE
-void __asan_loadN_noabort(uptr addr, uptr size) {
+void __asan_loadN_noabort(uptr addr, usize size) {
   if (__asan_region_is_poisoned(addr, size)) {
     GET_CALLER_PC_BP_SP;
     ReportGenericError(pc, bp, sp, addr, false, size, 0, false);
@@ -210,7 +210,7 @@ void __asan_loadN_noabort(uptr addr, uptr size) {
 
 extern "C"
 NOINLINE INTERFACE_ATTRIBUTE
-void __asan_storeN(uptr addr, uptr size) {
+void __asan_storeN(uptr addr, usize size) {
   if (__asan_region_is_poisoned(addr, size)) {
     GET_CALLER_PC_BP_SP;
     ReportGenericError(pc, bp, sp, addr, true, size, 0, true);
@@ -219,7 +219,7 @@ void __asan_storeN(uptr addr, uptr size) {
 
 extern "C"
 NOINLINE INTERFACE_ATTRIBUTE
-void __asan_exp_storeN(uptr addr, uptr size, u32 exp) {
+void __asan_exp_storeN(uptr addr, usize size, u32 exp) {
   if (__asan_region_is_poisoned(addr, size)) {
     GET_CALLER_PC_BP_SP;
     ReportGenericError(pc, bp, sp, addr, true, size, exp, true);
@@ -228,7 +228,7 @@ void __asan_exp_storeN(uptr addr, uptr size, u32 exp) {
 
 extern "C"
 NOINLINE INTERFACE_ATTRIBUTE
-void __asan_storeN_noabort(uptr addr, uptr size) {
+void __asan_storeN_noabort(uptr addr, usize size) {
   if (__asan_region_is_poisoned(addr, size)) {
     GET_CALLER_PC_BP_SP;
     ReportGenericError(pc, bp, sp, addr, true, size, 0, false);
@@ -298,7 +298,7 @@ static void asan_atexit() {
   Printf("AddressSanitizer exit stats:\n");
   __asan_print_accumulated_stats();
   // Print AsanMappingProfile.
-  for (uptr i = 0; i < kAsanMappingProfileSize; i++) {
+  for (usize i = 0; i < kAsanMappingProfileSize; i++) {
     if (AsanMappingProfile[i] == 0) continue;
     Printf("asan_mapping.h:%zd -- %zd\n", i, AsanMappingProfile[i]);
   }
@@ -353,17 +353,17 @@ void PrintAddressSpaceLayout() {
            (void*)MEM_TO_SHADOW(kMidShadowEnd));
   }
   Printf("\n");
-  Printf("redzone=%zu\n", (uptr)flags()->redzone);
-  Printf("max_redzone=%zu\n", (uptr)flags()->max_redzone);
-  Printf("quarantine_size_mb=%zuM\n", (uptr)flags()->quarantine_size_mb);
+  Printf("redzone=%zu\n", (usize)flags()->redzone);
+  Printf("max_redzone=%zu\n", (usize)flags()->max_redzone);
+  Printf("quarantine_size_mb=%zuM\n", (usize)flags()->quarantine_size_mb);
   Printf("thread_local_quarantine_size_kb=%zuK\n",
-         (uptr)flags()->thread_local_quarantine_size_kb);
+         (usize)flags()->thread_local_quarantine_size_kb);
   Printf("malloc_context_size=%zu\n",
-         (uptr)common_flags()->malloc_context_size);
+         (usize)common_flags()->malloc_context_size);
 
   Printf("SHADOW_SCALE: %d\n", (int)ASAN_SHADOW_SCALE);
   Printf("SHADOW_GRANULARITY: %d\n", (int)ASAN_SHADOW_GRANULARITY);
-  Printf("SHADOW_OFFSET: 0x%zx\n", (uptr)ASAN_SHADOW_OFFSET);
+  Printf("SHADOW_OFFSET: 0x%zx\n", (usize)ASAN_SHADOW_OFFSET);
   CHECK(ASAN_SHADOW_SCALE >= 3 && ASAN_SHADOW_SCALE <= 7);
   if (kMidMemBeg)
     CHECK(kMidShadowBeg > kLowShadowEnd &&
@@ -550,13 +550,13 @@ static void UnpoisonDefaultStack() {
 
   if (AsanThread *curr_thread = GetCurrentThread()) {
     int local_stack;
-    const uptr page_size = GetPageSizeCached();
+    const usize page_size = GetPageSizeCached();
     top = curr_thread->stack_top();
     bottom = ((uptr)&local_stack - page_size) & ~(page_size - 1);
   } else {
     CHECK(!SANITIZER_FUCHSIA);
     // If we haven't seen this thread, try asking the OS for stack bounds.
-    uptr tls_addr, tls_size, stack_size;
+    usize tls_addr, tls_size, stack_size;
     GetThreadStackAndTls(/*main=*/false, &bottom, &stack_size, &tls_addr,
                          &tls_size);
     top = bottom + stack_size;

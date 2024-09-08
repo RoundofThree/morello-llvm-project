@@ -102,7 +102,7 @@ bool GetShadowAddressInformation(uptr addr, ShadowAddressDescription *descr) {
 // Heap descriptions
 static void GetAccessToHeapChunkInformation(ChunkAccess *descr,
                                             AsanChunkView chunk, uptr addr,
-                                            uptr access_size) {
+                                            usize access_size) {
   descr->bad_addr = addr;
   if (chunk.AddrIsAtLeft(addr, access_size, &descr->offset)) {
     descr->access_type = kAccessTypeLeft;
@@ -152,7 +152,7 @@ static void PrintHeapChunkAccess(uptr addr, const ChunkAccess &descr) {
   Printf("%s", str.data());
 }
 
-bool GetHeapAddressInformation(uptr addr, uptr access_size,
+bool GetHeapAddressInformation(uptr addr, usize access_size,
                                HeapAddressDescription *descr) {
   AsanChunkView chunk = FindHeapChunkByAddress(addr);
   if (!chunk.IsValid()) {
@@ -177,7 +177,7 @@ static StackTrace GetStackTraceFromId(u32 id) {
   return res;
 }
 
-bool DescribeAddressIfHeap(uptr addr, uptr access_size) {
+bool DescribeAddressIfHeap(uptr addr, usize access_size) {
   HeapAddressDescription descr;
   if (!GetHeapAddressInformation(addr, access_size, &descr)) {
     Printf(
@@ -190,7 +190,7 @@ bool DescribeAddressIfHeap(uptr addr, uptr access_size) {
 }
 
 // Stack descriptions
-bool GetStackAddressInformation(uptr addr, uptr access_size,
+bool GetStackAddressInformation(uptr addr, usize access_size,
                                 StackAddressDescription *descr) {
   AsanThread *t = FindThreadByStackAddress(addr);
   if (!t) return false;
@@ -221,7 +221,7 @@ bool GetStackAddressInformation(uptr addr, uptr access_size,
 }
 
 static void PrintAccessAndVarIntersection(const StackVarDescr &var, uptr addr,
-                                          uptr access_size, uptr prev_var_end,
+                                          usize access_size, uptr prev_var_end,
                                           uptr next_var_beg) {
   uptr var_end = var.beg + var.size;
   uptr addr_end = addr + access_size;
@@ -246,7 +246,7 @@ static void PrintAccessAndVarIntersection(const StackVarDescr &var, uptr addr,
   str.append("    [%zd, %zd)", var.beg, var_end);
   // Render variable name.
   str.append(" '");
-  for (uptr i = 0; i < var.name_len; ++i) {
+  for (usize i = 0; i < var.name_len; ++i) {
     str.append("%c", var.name_pos[i]);
   }
   str.append("'");
@@ -265,7 +265,7 @@ static void PrintAccessAndVarIntersection(const StackVarDescr &var, uptr addr,
   Printf("%s", str.data());
 }
 
-bool DescribeAddressIfStack(uptr addr, uptr access_size) {
+bool DescribeAddressIfStack(uptr addr, usize access_size) {
   StackAddressDescription descr;
   if (!GetStackAddressInformation(addr, access_size, &descr)) return false;
   descr.Print();
@@ -273,7 +273,7 @@ bool DescribeAddressIfStack(uptr addr, uptr access_size) {
 }
 
 // Global descriptions
-static void DescribeAddressRelativeToGlobal(uptr addr, uptr access_size,
+static void DescribeAddressRelativeToGlobal(uptr addr, usize access_size,
                                             const __asan_global &g) {
   InternalScopedString str;
   Decorator d;
@@ -298,7 +298,7 @@ static void DescribeAddressRelativeToGlobal(uptr addr, uptr access_size,
   Printf("%s", str.data());
 }
 
-bool GetGlobalAddressInformation(uptr addr, uptr access_size,
+bool GetGlobalAddressInformation(uptr addr, usize access_size,
                                  GlobalAddressDescription *descr) {
   descr->addr = addr;
   int globals_num = GetGlobalsForAddress(addr, descr->globals, descr->reg_sites,
@@ -308,7 +308,7 @@ bool GetGlobalAddressInformation(uptr addr, uptr access_size,
   return globals_num != 0;
 }
 
-bool DescribeAddressIfGlobal(uptr addr, uptr access_size,
+bool DescribeAddressIfGlobal(uptr addr, usize access_size,
                              const char *bug_type) {
   GlobalAddressDescription descr;
   if (!GetGlobalAddressInformation(addr, access_size, &descr)) return false;
@@ -338,9 +338,9 @@ bool GlobalAddressDescription::PointsInsideTheSameVariable(
     const GlobalAddressDescription &other) const {
   if (size == 0 || other.size == 0) return false;
 
-  for (uptr i = 0; i < size; i++) {
+  for (usize i = 0; i < size; i++) {
     const __asan_global &a = globals[i];
-    for (uptr j = 0; j < other.size; j++) {
+    for (usize j = 0; j < other.size; j++) {
       const __asan_global &b = other.globals[j];
       if (a.beg == b.beg &&
           a.beg <= addr &&
@@ -387,12 +387,12 @@ void StackAddressDescription::Print() const {
     // 'addr' is a stack address, so return true even if we can't parse frame
     return;
   }
-  uptr n_objects = vars.size();
+  usize n_objects = vars.size();
   // Report the number of stack objects.
   Printf("  This frame has %zu object(s):\n", n_objects);
 
   // Report all objects in this frame.
-  for (uptr i = 0; i < n_objects; i++) {
+  for (usize i = 0; i < n_objects; i++) {
     uptr prev_var_end = i ? vars[i - 1].beg + vars[i - 1].size : 0;
     uptr next_var_beg = i + 1 < n_objects ? vars[i + 1].beg : ~(0UL);
     PrintAccessAndVarIntersection(vars[i], offset, access_size, prev_var_end,
@@ -436,7 +436,7 @@ void HeapAddressDescription::Print() const {
   DescribeThread(alloc_thread);
 }
 
-AddressDescription::AddressDescription(uptr addr, uptr access_size,
+AddressDescription::AddressDescription(uptr addr, usize access_size,
                                        bool shouldLockThreadRegistry) {
   if (GetShadowAddressInformation(addr, &data.shadow)) {
     data.kind = kAddressKindShadow;
@@ -473,7 +473,7 @@ void WildAddressDescription::Print() const {
          (void *)addr, (void *)access_size);
 }
 
-void PrintAddressDescription(uptr addr, uptr access_size,
+void PrintAddressDescription(uptr addr, usize access_size,
                              const char *bug_type) {
   ShadowAddressDescription shadow_descr;
   if (GetShadowAddressInformation(addr, &shadow_descr)) {
