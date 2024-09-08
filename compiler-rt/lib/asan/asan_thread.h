@@ -98,8 +98,8 @@ class AsanThread {
     t->Destroy(tid);
   }
 
-  void StartSwitchFiber(FakeStack **fake_stack_save, uptr bottom, usize size);
-  void FinishSwitchFiber(FakeStack *fake_stack_save, uptr *bottom_old,
+  void StartSwitchFiber(FakeStack **fake_stack_save, vaddr bottom, usize size);
+  void FinishSwitchFiber(FakeStack *fake_stack_save, vaddr *bottom_old,
                          usize *size_old);
 
   FakeStack *get_fake_stack() {

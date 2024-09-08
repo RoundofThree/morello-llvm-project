@@ -171,7 +171,7 @@ public:
       return;
     }
 
-    size_t old = kAllocBegMagic;
+    unsigned long long old = kAllocBegMagic;
     if (!atomic_compare_exchange_strong(&magic, &old, 0,
                                         memory_order_release)) {
       CHECK_EQ(old, kAllocBegMagic);

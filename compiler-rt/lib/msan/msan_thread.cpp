@@ -99,14 +99,14 @@ bool MsanThread::AddrIsInStack(uptr addr) {
   return addr >= bounds.bottom && addr < bounds.top;
 }
 
-void MsanThread::StartSwitchFiber(uptr bottom, uptr size) {
+void MsanThread::StartSwitchFiber(vaddr bottom, usize size) {
   CHECK(!stack_switching_);
   next_stack_.bottom = bottom;
   next_stack_.top = bottom + size;
   stack_switching_ = true;
 }
 
-void MsanThread::FinishSwitchFiber(uptr *bottom_old, uptr *size_old) {
+void MsanThread::FinishSwitchFiber(vaddr *bottom_old, usize *size_old) {
   CHECK(stack_switching_);
   if (bottom_old)
     *bottom_old = stack_.bottom;

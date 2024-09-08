@@ -39,8 +39,8 @@ class MsanThread {
   void EnterSignalHandler() { in_signal_handler_++; }
   void LeaveSignalHandler() { in_signal_handler_--; }
 
-  void StartSwitchFiber(uptr bottom, uptr size);
-  void FinishSwitchFiber(uptr *bottom_old, uptr *size_old);
+  void StartSwitchFiber(vaddr bottom, usize size);
+  void FinishSwitchFiber(vaddr *bottom_old, usize *size_old);
 
   MsanThreadLocalMallocStorage &malloc_storage() { return malloc_storage_; }
 

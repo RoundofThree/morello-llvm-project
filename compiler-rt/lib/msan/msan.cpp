@@ -692,7 +692,7 @@ void __msan_set_death_callback(void (*callback)(void)) {
   SetUserDieCallback(callback);
 }
 
-void __msan_start_switch_fiber(const void *bottom, uptr size) {
+void __msan_start_switch_fiber(const void *bottom, usize size) {
   MsanThread *t = GetCurrentThread();
   if (!t) {
     VReport(1, "__msan_start_switch_fiber called from unknown thread\n");
@@ -701,13 +701,13 @@ void __msan_start_switch_fiber(const void *bottom, uptr size) {
   t->StartSwitchFiber((uptr)bottom, size);
 }
 
-void __msan_finish_switch_fiber(const void **bottom_old, uptr *size_old) {
+void __msan_finish_switch_fiber(const void **bottom_old, usize *size_old) {
   MsanThread *t = GetCurrentThread();
   if (!t) {
     VReport(1, "__msan_finish_switch_fiber called from unknown thread\n");
     return;
   }
-  t->FinishSwitchFiber((uptr *)bottom_old, (uptr *)size_old);
+  t->FinishSwitchFiber((vaddr *)bottom_old, (usize *)size_old);
 
   internal_memset(__msan_param_tls, 0, sizeof(__msan_param_tls));
   internal_memset(__msan_retval_tls, 0, sizeof(__msan_retval_tls));
