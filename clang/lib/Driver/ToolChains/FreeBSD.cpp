@@ -543,10 +543,7 @@ SanitizerMask FreeBSD::getSupportedSanitizers() const {
   const bool IsX86_64 = getTriple().getArch() == llvm::Triple::x86_64;
   const bool IsMIPS64 = getTriple().isMIPS64();
   SanitizerMask Res = ToolChain::getSupportedSanitizers();
-  if (getTriple().getEnvironment() != llvm::Triple::CheriPurecap) {
-    // ASAN currently crashes when enabled for purecap
-    Res |= SanitizerKind::Address;
-  }
+  Res |= SanitizerKind::Address;
   Res |= SanitizerKind::PointerCompare;
   Res |= SanitizerKind::PointerSubtract;
   Res |= SanitizerKind::Vptr;
