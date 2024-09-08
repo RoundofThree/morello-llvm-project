@@ -552,7 +552,7 @@ void __sanitizer_finish_switch_fiber(void* fakestack,
     return;
   }
   t->FinishSwitchFiber((FakeStack*)fakestack,
-                       (uptr*)bottom_old,
+                       (vaddr*)bottom_old,
                        (usize*)size_old);
 }
 }

@@ -9,8 +9,8 @@ namespace __msan {
 
 MsanThread *MsanThread::Create(thread_callback_t start_routine,
                                void *arg) {
-  uptr PageSize = GetPageSizeCached();
-  uptr size = RoundUpTo(sizeof(MsanThread), PageSize);
+  usize PageSize = GetPageSizeCached();
+  usize size = RoundUpTo(sizeof(MsanThread), PageSize);
   MsanThread *thread = (MsanThread*)MmapOrDie(size, __func__);
   thread->start_routine_ = start_routine;
   thread->arg_ = arg;
@@ -20,8 +20,8 @@ MsanThread *MsanThread::Create(thread_callback_t start_routine,
 }
 
 void MsanThread::SetThreadStackAndTls() {
-  uptr tls_size = 0;
-  uptr stack_size = 0;
+  usize tls_size = 0;
+  usize stack_size = 0;
   GetThreadStackAndTls(IsMainThread(), &stack_.bottom, &stack_size, &tls_begin_,
                        &tls_size);
   stack_.top = stack_.bottom + stack_size;

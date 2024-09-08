@@ -546,7 +546,7 @@ void UnpoisonStack(uptr bottom, uptr top, const char *type) {
 }
 
 static void UnpoisonDefaultStack() {
-  uptr bottom, top;
+  vaddr bottom, top;
 
   if (AsanThread *curr_thread = GetCurrentThread()) {
     int local_stack;

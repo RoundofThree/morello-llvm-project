@@ -52,12 +52,12 @@ class DFsanThread {
   void SetThreadStackAndTls();
   void ClearShadowForThreadStackAndTLS();
   struct StackBounds {
-    uptr bottom;
-    uptr top;
+    vaddr bottom;
+    vaddr top;
   };
   StackBounds GetStackBounds() const;
 
-  bool AddrIsInStack(uptr addr);
+  bool AddrIsInStack(vaddr addr);
 
   void *start_routine_trampoline_;
   thread_callback_t start_routine_;
@@ -66,8 +66,8 @@ class DFsanThread {
 
   StackBounds stack_;
 
-  uptr tls_begin_;
-  uptr tls_end_;
+  vaddr tls_begin_;
+  vaddr tls_end_;
 
   unsigned in_signal_handler_;
 

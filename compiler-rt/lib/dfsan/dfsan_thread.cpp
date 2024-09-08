@@ -23,8 +23,8 @@ DFsanThread *DFsanThread::Create(void *start_routine_trampoline,
 }
 
 void DFsanThread::SetThreadStackAndTls() {
-  uptr tls_size = 0;
-  uptr stack_size = 0;
+  usize tls_size = 0;
+  usize stack_size = 0;
   GetThreadStackAndTls(IsMainThread(), &stack_.bottom, &stack_size, &tls_begin_,
                        &tls_size);
   stack_.top = stack_.bottom + stack_size;

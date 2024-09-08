@@ -15,6 +15,7 @@
 #include "error.h"
 #include "wrapper_function_utils.h"
 
+#include <cstdint>
 #include <map>
 #include <mutex>
 #include <sstream>
@@ -439,9 +440,9 @@ void destroyELFNixTLVMgr(void *ELFNixTLVMgr) {
 
 ORC_RT_INTERFACE __orc_rt_CWrapperFunctionResult
 __orc_rt_elfnix_platform_bootstrap(char *ArgData, size_t ArgSize) {
-  return WrapperFunction<void(uint64_t)>::handle(
+  return WrapperFunction<void(uintptr_t)>::handle(
              ArgData, ArgSize,
-             [](uint64_t &DSOHandle) {
+             [](uintptr_t &DSOHandle) {
                ELFNixPlatformRuntimeState::initialize(
                    reinterpret_cast<void *>(DSOHandle));
              })

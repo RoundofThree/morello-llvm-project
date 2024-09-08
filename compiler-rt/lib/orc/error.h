@@ -108,7 +108,7 @@ private:
   }
 
   void setPtr(ErrorInfoBase *Ptr) {
-    ErrPtr = (reinterpret_cast<uintptr_t>(Ptr) & ~uintptr_t(1)) | (ErrPtr & 1);
+    ErrPtr = (reinterpret_cast<uintptr_t>(Ptr) & ~uintptr_t(1)) | (size_t)(ErrPtr & 1);
   }
 
   bool isChecked() const { return ErrPtr & 0x1; }
