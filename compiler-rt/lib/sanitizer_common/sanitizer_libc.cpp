@@ -14,6 +14,10 @@
 #include "sanitizer_common.h"
 #include "sanitizer_libc.h"
 
+#ifdef __CHERI_PURE_CAPABILITY__
+#include <cheriintrin.h>
+#endif
+
 namespace __sanitizer {
 
 s64 internal_atoll(const char *nptr) {
@@ -47,15 +51,112 @@ int internal_memcmp(const void* s1, const void* s2, usize n) {
 }
 
 #ifdef __CHERI_PURE_CAPABILITY__
-extern "C" void *memcpy(void *dest, const void *src, unsigned long n);
-extern "C" void *memmove(void *dest, const void *src, unsigned long n);
-// For purecap we need to maintain tags in memcpy()/memmove() -> for now
-// just use the libc versions (since we only use libfuzzer and that can link libc)
-void *internal_memcpy(void *dest, const void *src, usize n) {
-  return memcpy(dest, src, n);
+/*
+ * sizeof(word) MUST BE A POWER OF TWO
+ * SO THAT wmask BELOW IS ALL ONES
+ */
+#define	wsize	sizeof(uptr)
+#define wmask	(wsize - 1)
+
+/*
+ * Copy a block of memory, handling overlap.
+ * This is the routine that actually implements
+ * (the portable versions of) bcopy, memcpy, and memmove.
+ */
+static void *
+_memcpy(void *dst0, const void *src0, usize length, bool keeptags)
+{
+	char		*dst;
+	const char	*src;
+	usize		t;
+
+	dst = (char *)dst0;
+	src = (const char*)src0;
+
+	if (length == 0 || dst == src) {	/* nothing to do */
+		goto done;
+	}
+
+	/*
+	 * Macros: loop-t-times; and loop-t-times, t>0
+	 */
+#define	TLOOP(s) if (t) TLOOP1(s)
+#define	TLOOP1(s) do { s; } while (--t)
+
+	if ((vaddr)dst < (vaddr)src) {
+		/*
+		 * Copy forward.
+		 */
+		t = (vaddr)src;	/* only need low bits */
+
+		if ((t | (vaddr)dst) & wmask) {
+			/*
+			 * Try to align operands.  This cannot be done
+			 * unless the low bits match.
+			 */
+			if ((t ^ (vaddr)dst) & wmask || length < wsize) {
+				t = length;
+			} else {
+				t = wsize - (t & wmask);
+			}
+
+			length -= t;
+			TLOOP1(*dst++ = *src++);
+		}
+		/*
+		 * Copy whole words, then mop up any trailing bytes.
+		 */
+		t = length / wsize;
+		if (!keeptags) {
+			TLOOP(*(uptr *)dst = (uptr)cheri_tag_clear(
+			        (void *)*(const uptr *)src);
+			    src += wsize; dst += wsize);
+		} else
+			TLOOP(*(uptr *)dst = *(const uptr *)src; src += wsize;
+			    dst += wsize);
+		t = length & wmask;
+		TLOOP(*dst++ = *src++);
+	} else {
+		/*
+		 * Copy backwards.  Otherwise essentially the same.
+		 * Alignment works as before, except that it takes
+		 * (t&wmask) bytes to align, not wsize-(t&wmask).
+		 */
+		src += length;
+		dst += length;
+		t = (vaddr)src;
+
+		if ((t | (vaddr)dst) & wmask) {
+			if ((t ^ (vaddr)dst) & wmask || length <= wsize) {
+				t = length;
+			} else {
+				t &= wmask;
+			}
+
+			length -= t;
+			TLOOP1(*--dst = *--src);
+		}
+		t = length / wsize;
+		if (!keeptags) {
+			TLOOP(src -= wsize; dst -= wsize;
+			    *(uptr *)dst = (uptr)cheri_tag_clear(
+			        (void *)*(const uptr *)src));
+		} else
+			TLOOP(src -= wsize; dst -= wsize;
+			    *(uptr *)dst = *(const uptr *)src);
+		t = length & wmask;
+		TLOOP(*--dst = *--src);
+	}
+done:
+	return (dst0);
 }
+
+void *internal_memcpy(void *dest, const void *src, usize n) {
+  return _memcpy(dest, src, n, true);
+}
+// XXXR3: rework this?
 void *internal_memmove(void *dest, const void *src, usize n) {
-  return memmove(dest, src, n);
+  return _memcpy(dest, src, n, true);
 }
 #else
 void *internal_memcpy(void *dest, const void *src, usize n) {
