@@ -404,7 +404,7 @@ uptr MapDynamicShadowAndAliases(usize shadow_size, usize alias_size,
   return 0;
 }
 
-bool MemoryRangeIsAvailable(vaddr range_start, vaddr range_end) {
+bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
   MEMORY_BASIC_INFORMATION mbi;
   CHECK(VirtualQuery((void *)range_start, &mbi, sizeof(mbi)));
   return mbi.Protect == PAGE_NOACCESS &&

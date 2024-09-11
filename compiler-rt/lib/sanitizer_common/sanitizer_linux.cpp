@@ -1099,7 +1099,7 @@ usize GetPageSize() {
 }
 #endif // !SANITIZER_ANDROID
 
-uptr ReadBinaryName(/*out*/char *buf, uptr buf_len) {
+usize ReadBinaryName(/*out*/char *buf, usize buf_len) {
 #if SANITIZER_SOLARIS
   const char *default_module_name = getexecname();
   CHECK_NE(default_module_name, NULL);

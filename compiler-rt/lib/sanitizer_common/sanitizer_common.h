@@ -98,17 +98,17 @@ void UnmapOrDie(void *addr, usize size);
 // Behaves just like MmapOrDie, but tolerates out of memory condition, in that
 // case returns nullptr.
 void *MmapOrDieOnFatalError(usize size, const char *mem_type);
-bool MmapFixedNoReserve(vaddr fixed_addr, usize size, const char *name = nullptr)
+bool MmapFixedNoReserve(uptr fixed_addr, usize size, const char *name = nullptr)
      WARN_UNUSED_RESULT;
-bool MmapFixedSuperNoReserve(vaddr fixed_addr, usize size,
+bool MmapFixedSuperNoReserve(uptr fixed_addr, usize size,
                              const char *name = nullptr) WARN_UNUSED_RESULT;
 void *MmapNoReserveOrDie(usize size, const char *mem_type);
-void *MmapFixedOrDie(vaddr fixed_addr, usize size, const char *name = nullptr);
+void *MmapFixedOrDie(uptr fixed_addr, usize size, const char *name = nullptr);
 // Behaves just like MmapFixedOrDie, but tolerates out of memory condition, in
 // that case returns nullptr.
-void *MmapFixedOrDieOnFatalError(vaddr fixed_addr, usize size,
+void *MmapFixedOrDieOnFatalError(uptr fixed_addr, usize size,
                                  const char *name = nullptr);
-void *MmapFixedNoAccess(vaddr fixed_addr, usize size, const char *name = nullptr);
+void *MmapFixedNoAccess(uptr fixed_addr, usize size, const char *name = nullptr);
 void *MmapNoAccess(usize size);
 // Map aligned chunk of address space; size and alignment are powers of two.
 // Dies on all but out of memory errors, in the latter case returns nullptr.
@@ -146,7 +146,7 @@ uptr MapDynamicShadowAndAliases(usize shadow_size, usize alias_size,
 
 // Reserve memory range [beg, end]. If madvise_shadow is true then apply
 // madvise (e.g. hugepages, core dumping) requested by options.
-void ReserveShadowMemoryRange(vaddr beg, vaddr end, const char *name,
+void ReserveShadowMemoryRange(uptr beg, uptr end, const char *name,
                               bool madvise_shadow = true);
 
 // Protect size bytes of memory starting at addr. Also try to protect
@@ -454,7 +454,8 @@ inline u32 RoundUpToPowerOfTwo(u32 size) {
 uptr RoundUpToPowerOfTwo(uptr size) = delete;
 #endif
 
-inline constexpr uptr RoundUpTo(uptr p, usize boundary) {
+template <typename T>
+inline constexpr T RoundUpTo(T p, usize boundary) {
   RAW_CHECK(IsPowerOfTwo(boundary));
 #if __has_builtin(__builtin_align_up)
   return __builtin_align_up(p, boundary);
@@ -472,7 +473,8 @@ inline constexpr T *RoundUpTo(T *p, usize boundary) {
 #endif
 }
 
-inline constexpr uptr RoundDownTo(uptr x, usize boundary) {
+template <typename T>
+inline constexpr T RoundDownTo(T x, usize boundary) {
 #if __has_builtin(__builtin_align_down)
   return __builtin_align_down(x, boundary);
 #else

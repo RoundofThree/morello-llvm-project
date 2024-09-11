@@ -30,7 +30,7 @@ bool CanPoisonMemory() {
   return atomic_load(&can_poison_memory, memory_order_acquire);
 }
 
-void PoisonShadow(uptr addr, usize size, u8 value) {
+void PoisonShadow(vaddr addr, usize size, u8 value) {
   if (value && !CanPoisonMemory()) return;
   CHECK(AddrIsAlignedByGranularity(addr));
   CHECK(AddrIsInMem(addr));
@@ -40,7 +40,7 @@ void PoisonShadow(uptr addr, usize size, u8 value) {
   FastPoisonShadow(addr, size, value);
 }
 
-void PoisonShadowPartialRightRedzone(uptr addr,
+void PoisonShadowPartialRightRedzone(vaddr addr,
                                      usize size,
                                      usize redzone_size,
                                      u8 value) {
@@ -55,18 +55,18 @@ struct ShadowSegmentEndpoint {
   s8 offset;  // in [0, ASAN_SHADOW_GRANULARITY)
   s8 value;  // = *chunk;
 
-  explicit ShadowSegmentEndpoint(uptr address) {
+  explicit ShadowSegmentEndpoint(vaddr address) {
     chunk = (u8*)MemToShadow(address);
     offset = address & (ASAN_SHADOW_GRANULARITY - 1);
     value = *chunk;
   }
 };
 
-void AsanPoisonOrUnpoisonIntraObjectRedzone(uptr ptr, usize size, bool poison) {
-  uptr end = ptr + size;
+void AsanPoisonOrUnpoisonIntraObjectRedzone(vaddr ptr, usize size, bool poison) {
+  vaddr end = ptr + size;
   if (Verbosity()) {
     Printf("__asan_%spoison_intra_object_redzone [%p,%p) %zd\n",
-           poison ? "" : "un", (void *)ptr, (void *)end, size);
+           poison ? "" : "un", (void *)(uptr)ptr, (void *)(uptr)end, size);
     if (Verbosity() >= 2)
       PRINT_CURRENT_STACK();
   }
@@ -283,7 +283,7 @@ uptr __asan_load_cxx_array_cookie(uptr *p) {
 
 // This is a simplified version of __asan_(un)poison_memory_region, which
 // assumes that left border of region to be poisoned is properly aligned.
-static void PoisonAlignedStackMemory(uptr addr, usize size, bool do_poison) {
+static void PoisonAlignedStackMemory(vaddr addr, usize size, bool do_poison) {
   if (size == 0) return;
   usize aligned_size = size & ~(ASAN_SHADOW_GRANULARITY - 1);
   PoisonShadow(addr, aligned_size,

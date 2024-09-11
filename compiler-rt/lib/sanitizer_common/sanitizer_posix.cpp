@@ -225,7 +225,7 @@ static inline bool IntervalsAreSeparate(vaddr start1, vaddr end1,
 // When the shadow is mapped only a single thread usually exists (plus maybe
 // several worker threads on Mac, which aren't expected to map big chunks of
 // memory).
-bool MemoryRangeIsAvailable(vaddr range_start, vaddr range_end) {
+bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
   MemoryMappingLayout proc_maps(/*cache_enabled*/true);
   if (proc_maps.Error())
     return true; // and hope for the best
