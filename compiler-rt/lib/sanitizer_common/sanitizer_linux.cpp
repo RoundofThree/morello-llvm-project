@@ -197,12 +197,33 @@ ScopedBlockSignals::~ScopedBlockSignals() { SetSigProcMask(&saved_, nullptr); }
 uptr internal_mmap(void *addr, usize length, int prot, int flags, int fd,
                    u64 offset) {
 #if SANITIZER_FREEBSD || SANITIZER_LINUX_USES_64BIT_SYSCALLS
+#if defined(__aarch64__) && __has_feature(capabilities)
+  // __syscall truncates the returned capability to 64-bits
+  // so we write ASM
+  uptr result;
+  register void* c0 asm("c0") = addr;
+  register usize x1 asm("x1") = length;
+  register int x2 asm("x2") = prot;
+  register int x3 asm("x3") = flags;
+  register int x4 asm("x4") = fd;
+  register u64 x5 asm("x5") = offset;
+  register uint64_t x8 asm("x8") = SYSCALL(mmap);
+  asm volatile(
+    "svc #0"          // Make the syscall
+    : "+C" (c0)     // Output result in register
+    : "r" (x1), "r" (x2), "r" (x3), "r" (x4), "r" (x5), "r" (x8)  // Input arguments
+    : "memory"  // Clobbered registers
+  );
+  result = (uptr)c0;
+  return result;
+#else
   return internal_syscall(SYSCALL(mmap), (uptr)addr, length, prot, flags, fd,
                           offset);
+#endif // defined(__aarch64__) && __has_feature(capabilities)
 #else
   // mmap2 specifies file offset in 4096-byte units.
   CHECK(IsAligned(offset, 4096));
-  return internal_syscall(SYSCALL(mmap2), (uptr)addr, length, prot, flags, fd,
+  return (uptr)internal_syscall(SYSCALL(mmap2), (uptr)addr, length, prot, flags, fd,
                           offset / 4096);
 #endif
 }
