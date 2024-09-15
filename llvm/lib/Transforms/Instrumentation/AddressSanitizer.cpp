@@ -1493,9 +1493,11 @@ bool AddressSanitizer::isInterestingAlloca(const AllocaInst &AI) {
 
 bool AddressSanitizer::ignoreAccess(Instruction *Inst, Value *Ptr) {
   // Instrument acesses from different address spaces only for AMDGPU.
+  // And also CHERI, assuming AS200 is only used for CHERI.
   Type *PtrTy = cast<PointerType>(Ptr->getType()->getScalarType());
   if (PtrTy->getPointerAddressSpace() != 0 &&
-      !(TargetTriple.isAMDGPU() && !isUnsupportedAMDGPUAddrspace(Ptr)))
+      !(TargetTriple.isAMDGPU() && !isUnsupportedAMDGPUAddrspace(Ptr)) &&
+      !(PtrTy->getPointerAddressSpace() == 200))
     return true;
 
   // Ignore swifterror addresses.
@@ -1986,8 +1988,10 @@ bool ModuleAddressSanitizer::shouldInstrumentGlobal(GlobalVariable *G) const {
   if (!Ty->isSized()) return false;
   if (!G->hasInitializer()) return false;
   // Globals in address space 1 and 4 are supported for AMDGPU.
+  // Globals in address space 200 are supported for CHERI.
   if (G->getAddressSpace() &&
-      !(TargetTriple.isAMDGPU() && !isUnsupportedAMDGPUAddrspace(G)))
+      !(TargetTriple.isAMDGPU() && !isUnsupportedAMDGPUAddrspace(G)) &&
+      !(G->getAddressSpace() == 200))
     return false;
   if (GlobalWasGeneratedByCompiler(G)) return false; // Our own globals.
   // Two problems with thread-locals:
