@@ -14,7 +14,7 @@
 #include "sanitizer_common.h"
 #include "sanitizer_libc.h"
 
-#ifdef __has_feature(capabilities)
+#if __has_feature(capabilities)
 #include <cheriintrin.h>
 #endif
 
