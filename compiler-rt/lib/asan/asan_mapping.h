@@ -251,12 +251,12 @@ extern uptr AsanMappingProfile[];
 // Fixed mapping for 64-bit Linux. Mostly used for performance comparison
 // with non-fixed mapping. As of r175253 (Feb 2013) the performance
 // difference between fixed and non-fixed mapping is below the noise level.
-static vaddr kHighMemEnd = 0x7fffffffffffULL;
-static vaddr kMidMemBeg = 0x3000000000ULL;
-static vaddr kMidMemEnd = 0x4fffffffffULL;
+static uptr kHighMemEnd = 0x7fffffffffffULL;
+static uptr kMidMemBeg = 0x3000000000ULL;
+static uptr kMidMemEnd = 0x4fffffffffULL;
 #  else
 // Initialized in __asan_init.
-extern vaddr kHighMemEnd, kMidMemBeg, kMidMemEnd;
+extern uptr kHighMemEnd, kMidMemBeg, kMidMemEnd;
 #  endif
 
 }  // namespace __asan
@@ -265,82 +265,82 @@ extern vaddr kHighMemEnd, kMidMemBeg, kMidMemEnd;
 #    include "asan_mapping_sparc64.h"
 #  else
 #    define MEM_TO_SHADOW(mem) \
-      ((uptr)(ASAN_SHADOW_OFFSET) + ((mem) >> ASAN_SHADOW_SCALE))
+      ((uptr)(ASAN_SHADOW_OFFSET) + (((vaddr)mem) >> ASAN_SHADOW_SCALE))
 
-#    define kLowMemBeg 0
-#    define kLowMemEnd (ASAN_SHADOW_OFFSET ? ASAN_SHADOW_OFFSET - 1 : 0)
+#    define kLowMemBeg (uptr)0
+#    define kLowMemEnd (uptr)(ASAN_SHADOW_OFFSET ? ASAN_SHADOW_OFFSET - 1 : 0)
 
-#    define kLowShadowBeg ASAN_SHADOW_OFFSET
-#    define kLowShadowEnd MEM_TO_SHADOW(kLowMemEnd)
+#    define kLowShadowBeg (uptr)ASAN_SHADOW_OFFSET
+#    define kLowShadowEnd (uptr)MEM_TO_SHADOW(kLowMemEnd)
 
-#    define kHighMemBeg (MEM_TO_SHADOW(kHighMemEnd) + 1)
+#    define kHighMemBeg (uptr)(MEM_TO_SHADOW(kHighMemEnd) + 1)
 
-#    define kHighShadowBeg MEM_TO_SHADOW(kHighMemBeg)
-#    define kHighShadowEnd MEM_TO_SHADOW(kHighMemEnd)
+#    define kHighShadowBeg (uptr)MEM_TO_SHADOW(kHighMemBeg)
+#    define kHighShadowEnd (uptr)MEM_TO_SHADOW(kHighMemEnd)
 
-#    define kMidShadowBeg MEM_TO_SHADOW(kMidMemBeg)
-#    define kMidShadowEnd MEM_TO_SHADOW(kMidMemEnd)
+#    define kMidShadowBeg (uptr)MEM_TO_SHADOW(kMidMemBeg)
+#    define kMidShadowEnd (uptr)MEM_TO_SHADOW(kMidMemEnd)
 
 // With the zero shadow base we can not actually map pages starting from 0.
 // This constant is somewhat arbitrary.
-#    define kZeroBaseShadowStart 0
-#    define kZeroBaseMaxShadowStart (1 << 18)
+#    define kZeroBaseShadowStart (uptr)0
+#    define kZeroBaseMaxShadowStart (uptr)(1 << 18)
 
 #    define kShadowGapBeg \
-      (kLowShadowEnd ? kLowShadowEnd + 1 : kZeroBaseShadowStart)
-#    define kShadowGapEnd ((kMidMemBeg ? kMidShadowBeg : kHighShadowBeg) - 1)
+      (uptr)(kLowShadowEnd ? kLowShadowEnd + 1 : kZeroBaseShadowStart)
+#    define kShadowGapEnd (uptr)((kMidMemBeg ? kMidShadowBeg : kHighShadowBeg) - 1)
 
-#    define kShadowGap2Beg (kMidMemBeg ? kMidShadowEnd + 1 : 0)
-#    define kShadowGap2End (kMidMemBeg ? kMidMemBeg - 1 : 0)
+#    define kShadowGap2Beg (uptr)(kMidMemBeg ? kMidShadowEnd + 1 : 0)
+#    define kShadowGap2End (uptr)(kMidMemBeg ? kMidMemBeg - 1 : 0)
 
-#    define kShadowGap3Beg (kMidMemBeg ? kMidMemEnd + 1 : 0)
-#    define kShadowGap3End (kMidMemBeg ? kHighShadowBeg - 1 : 0)
+#    define kShadowGap3Beg (uptr)(kMidMemBeg ? kMidMemEnd + 1 : 0)
+#    define kShadowGap3End (uptr)(kMidMemBeg ? kHighShadowBeg - 1 : 0)
 
 namespace __asan {
 
 static inline bool AddrIsInLowMem(vaddr a) {
   PROFILE_ASAN_MAPPING();
-  return a <= kLowMemEnd;
+  return a <= (vaddr)kLowMemEnd;
 }
 
 static inline bool AddrIsInLowShadow(vaddr a) {
   PROFILE_ASAN_MAPPING();
-  return a >= kLowShadowBeg && a <= kLowShadowEnd;
+  return a >= (vaddr)kLowShadowBeg && a <= (vaddr)kLowShadowEnd;
 }
 
 static inline bool AddrIsInMidMem(vaddr a) {
   PROFILE_ASAN_MAPPING();
-  return kMidMemBeg && a >= kMidMemBeg && a <= kMidMemEnd;
+  return kMidMemBeg && a >= (vaddr)kMidMemBeg && a <= (vaddr)kMidMemEnd;
 }
 
 static inline bool AddrIsInMidShadow(vaddr a) {
   PROFILE_ASAN_MAPPING();
-  return kMidMemBeg && a >= kMidShadowBeg && a <= kMidShadowEnd;
+  return kMidMemBeg && a >= (vaddr)kMidShadowBeg && a <= (vaddr)kMidShadowEnd;
 }
 
 static inline bool AddrIsInHighMem(vaddr a) {
   PROFILE_ASAN_MAPPING();
-  return kHighMemBeg && a >= kHighMemBeg && a <= kHighMemEnd;
+  return kHighMemBeg && a >= (vaddr)kHighMemBeg && a <= (vaddr)kHighMemEnd;
 }
 
 static inline bool AddrIsInHighShadow(vaddr a) {
   PROFILE_ASAN_MAPPING();
-  return kHighMemBeg && a >= kHighShadowBeg && a <= kHighShadowEnd;
+  return kHighMemBeg && a >= (vaddr)kHighShadowBeg && a <= (vaddr)kHighShadowEnd;
 }
 
 static inline bool AddrIsInShadowGap(vaddr a) {
   PROFILE_ASAN_MAPPING();
   if (kMidMemBeg) {
-    if (a <= kShadowGapEnd)
-      return ASAN_SHADOW_OFFSET == 0 || a >= kShadowGapBeg;
-    return (a >= kShadowGap2Beg && a <= kShadowGap2End) ||
-           (a >= kShadowGap3Beg && a <= kShadowGap3End);
+    if (a <= (vaddr)kShadowGapEnd)
+      return ASAN_SHADOW_OFFSET == 0 || a >= (vaddr)kShadowGapBeg;
+    return (a >= (vaddr)kShadowGap2Beg && a <= (vaddr)kShadowGap2End) ||
+           (a >= (vaddr)kShadowGap3Beg && a <= (vaddr)kShadowGap3End);
   }
   // In zero-based shadow mode we treat addresses near zero as addresses
   // in shadow gap as well.
   if (ASAN_SHADOW_OFFSET == 0)
-    return a <= kShadowGapEnd;
-  return a >= kShadowGapBeg && a <= kShadowGapEnd;
+    return a <= (vaddr)kShadowGapEnd;
+  return a >= (vaddr)kShadowGapBeg && a <= (vaddr)kShadowGapEnd;
 }
 
 }  // namespace __asan

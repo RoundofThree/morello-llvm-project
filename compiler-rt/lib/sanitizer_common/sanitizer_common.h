@@ -133,7 +133,7 @@ void UnmapFromTo(uptr from, uptr to);
 // shadow_size_bytes bytes on the right, which on linux is mapped no access.
 // The high_mem_end may be updated if the original shadow size doesn't fit.
 uptr MapDynamicShadow(usize shadow_size_bytes, usize shadow_scale,
-                      usize min_shadow_base_alignment, vaddr &high_mem_end);
+                      usize min_shadow_base_alignment, uptr &high_mem_end);
 
 // Let S = max(shadow_size, num_aliases * alias_size, ring_buffer_size).
 // Reserves 2*S bytes of address space to the right of the returned address and

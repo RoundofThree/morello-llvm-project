@@ -55,7 +55,7 @@ static void AsanDie() {
   if (flags()->unmap_shadow_on_exit) {
     if (kMidMemBeg) {
       UnmapOrDie((void*)kLowShadowBeg, kMidMemBeg - kLowShadowBeg);
-      UnmapOrDie((void*)(uptr)kMidMemEnd, kHighShadowEnd - kMidMemEnd);
+      UnmapOrDie((void*)kMidMemEnd, kHighShadowEnd - kMidMemEnd);
     } else {
       if (kHighShadowEnd)
         UnmapOrDie((void*)kLowShadowBeg, kHighShadowEnd - kLowShadowBeg);
@@ -73,7 +73,7 @@ int asan_inited;
 bool asan_init_is_running;
 
 #if !ASAN_FIXED_MAPPING
-vaddr kHighMemEnd, kMidMemBeg, kMidMemEnd;
+uptr kHighMemEnd, kMidMemBeg, kMidMemEnd;
 #endif
 
 // -------------------------- Misc ---------------- {{{1
