@@ -34,6 +34,10 @@
 #define MAP_NORESERVE 0
 #endif
 
+#if __has_feature(capabilities)
+#include <cheriintrin.h>
+#endif
+
 namespace __sanitizer {
 
 // ------------- sanitizer_common.h
@@ -197,6 +201,10 @@ void *MapFileToMemory(const char *file_name, usize *buff_size) {
   CHECK_NE(fsize, (usize)-1);
   CHECK_GT(fsize, 0);
   *buff_size = RoundUpTo(fsize, GetPageSizeCached());
+#if SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
+  // CHERI alignment
+  *buff_size = cheri_representable_length(*buff_size);
+#endif
   uptr map = internal_mmap(nullptr, *buff_size, PROT_READ, MAP_PRIVATE, fd, 0);
   return internal_iserror(map) ? nullptr : (void *)map;
 }
@@ -204,6 +212,11 @@ void *MapFileToMemory(const char *file_name, usize *buff_size) {
 void *MapWritableFileToMemory(void *addr, usize size, fd_t fd, OFF_T offset) {
   usize flags = MAP_SHARED;
   if (addr) flags |= MAP_FIXED;
+#if SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
+  // CHERI alignment
+  size = cheri_representable_length(size);
+  addr = __builtin_align_up(addr, ~cheri_representable_alignment_mask(size) + 1);
+#endif
   uptr p = internal_mmap(addr, size, PROT_READ | PROT_WRITE, flags, fd, offset);
   int mmap_errno = 0;
   if (internal_iserror(p, &mmap_errno)) {
@@ -388,6 +401,11 @@ void DecorateMapping(uptr addr, usize size, const char *name) {
 #endif
 
 uptr MmapNamed(void *addr, usize length, int prot, int flags, const char *name) {
+#if SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
+  // CHERI alignment
+  length = cheri_representable_length(length);
+  addr = __builtin_align_up(addr, ~cheri_representable_alignment_mask(length) + 1);
+#endif
   int fd = GetNamedMappingFd(name, length, &flags);
   uptr res = internal_mmap(addr, length, prot, flags, fd, 0);
   if (!internal_iserror(res))
