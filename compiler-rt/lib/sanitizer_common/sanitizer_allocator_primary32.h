@@ -355,7 +355,7 @@ class SizeClassAllocator32 {
     constexpr usize kShuffleArraySize = 48;
     uptr shuffle_array[kShuffleArraySize];
     usize count = 0;
-    for (usize i = region; i < region + n_chunks * size; i += size) {
+    for (uptr i = region; i < region + n_chunks * size; i += size) {
       shuffle_array[count++] = i;
       if (count == kShuffleArraySize) {
         if (UNLIKELY(!PopulateBatches(c, sci, class_id, &b, max_count,
