@@ -53,6 +53,11 @@
 // that, it was never implemented. So just define it to zero.
 #undef MAP_NORESERVE
 #define MAP_NORESERVE 0
+
+// XXXR3: GCC doesn't have __has_feature
+#if defined(__aarch64__) && __has_feature(capabilities)
+#include <cheriintrin.h>
+#endif // defined(__aarch64__) && __has_feature(capabilities)
 #endif
 
 #if SANITIZER_NETBSD
@@ -944,6 +949,20 @@ uptr MapDynamicShadow(usize shadow_size_bytes, usize shadow_scale,
   const usize left_padding =
       Max<usize>(granularity, 1ULL << min_shadow_base_alignment);
 
+#if SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
+  const usize shadow_size = RoundUpTo(shadow_size_bytes, granularity);
+  const usize map_size = cheri_representable_length(shadow_size + left_padding + alignment);
+
+  const uptr map_start = MmapNamed(nullptr, map_size, PROT_READ | PROT_WRITE,
+                        MAP_PRIVATE | MAP_ANON, "full shadow");
+  CHECK_NE(map_start, ~(uptr)0);
+  if (common_flags()->use_madv_dontdump)
+    DontDumpShadowMemory(map_start, map_size);
+
+  const uptr shadow_start = RoundUpTo(map_start + left_padding, alignment);
+
+  return shadow_start;
+#else
   const usize shadow_size = RoundUpTo(shadow_size_bytes, granularity);
   const usize map_size = shadow_size + left_padding + alignment;
 
@@ -956,6 +975,7 @@ uptr MapDynamicShadow(usize shadow_size_bytes, usize shadow_scale,
   UnmapFromTo(shadow_start + shadow_size, map_start + map_size);
 
   return shadow_start;
+#endif
 }
 
 static uptr MmapSharedNoReserve(uptr addr, usize size) {

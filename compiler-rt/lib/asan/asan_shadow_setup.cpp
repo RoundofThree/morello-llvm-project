@@ -70,6 +70,10 @@ void InitializeShadowMemory() {
   __asan_shadow_memory_dynamic_address = shadow_start;
 
   if (kLowShadowBeg) shadow_start -= GetMmapGranularity();
+#if SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
+  // CheriBSD has full shadow as we mapped the whole shadow beforehand
+  full_shadow_is_available = true;
+#endif // SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
 
   if (!full_shadow_is_available)
     full_shadow_is_available =
@@ -85,6 +89,10 @@ void InitializeShadowMemory() {
 
   if (Verbosity()) PrintAddressSpaceLayout();
 
+#if SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
+  // mmaped the whole shadow space beforehand
+  CHECK_EQ(kShadowGapEnd, kHighShadowBeg - 1);
+#else
   if (full_shadow_is_available) {
     // mmap the low shadow plus at least one page at the left.
     if (kLowShadowBeg)
@@ -118,6 +126,7 @@ void InitializeShadowMemory() {
     DumpProcessMap();
     Die();
   }
+#endif // SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
 }
 
 }  // namespace __asan

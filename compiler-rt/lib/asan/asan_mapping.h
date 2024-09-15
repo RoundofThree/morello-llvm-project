@@ -176,6 +176,8 @@
 #    define ASAN_SHADOW_OFFSET_DYNAMIC
 #  elif SANITIZER_MAC && defined(__aarch64__)
 #    define ASAN_SHADOW_OFFSET_DYNAMIC
+#  elif SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
+#    define ASAN_SHADOW_OFFSET_DYNAMIC
 #  elif SANITIZER_FREEBSD && defined(__aarch64__)
 #    define ASAN_SHADOW_OFFSET_CONST 0x0000800000000000
 #  elif SANITIZER_RISCV64
