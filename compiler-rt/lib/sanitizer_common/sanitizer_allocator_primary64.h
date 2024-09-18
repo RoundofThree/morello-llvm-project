@@ -242,7 +242,7 @@ class SizeClassAllocator64 {
       return RoundDownTo(reinterpret_cast<uptr>(p), kRegionSize);
     uptr space_beg = SpaceBeg();
     return RoundDownTo(reinterpret_cast<uptr>(p) - (vaddr)space_beg, kRegionSize) +
-        space_beg;
+        (vaddr)space_beg;
   }
 
   uptr GetRegionBeginBySizeClass(usize class_id) const {
