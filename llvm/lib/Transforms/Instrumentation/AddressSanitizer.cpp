@@ -15,6 +15,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#define LLVM_NO_DEFAULT_ADDRESS_SPACE
+
 #include "llvm/Transforms/Instrumentation/AddressSanitizer.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"
@@ -671,10 +673,14 @@ struct AddressSanitizer {
                                                             : UseAfterReturn),
         GlobalsMD(*GlobalsMD), SSGI(SSGI) {
     C = &(M.getContext());
-    LongSize = M.getDataLayout().getPointerSizeInBits();
+    DL = &M.getDataLayout();
+    // XXXR3: assuming Address space zero pointer -> range of any pointer,
+    // as in SanCov
+    LongSize = DL->getPointerSizeInBits(0);
     IntptrTy = Type::getIntNTy(*C, LongSize);
-    Int8PtrTy = Type::getInt8PtrTy(*C);
+    GlobalsInt8PtrTy = Type::getInt8PtrTy(*C, DL->getGlobalsAddressSpace());
     Int32Ty = Type::getInt32Ty(*C);
+    Int8Ty = Type::getInt8Ty(*C);
     TargetTriple = Triple(M.getTargetTriple());
 
     Mapping = getShadowMapping(TargetTriple, LongSize, this->CompileKernel);
@@ -758,6 +764,7 @@ private:
   };
 
   LLVMContext *C;
+  const DataLayout *DL;
   Triple TargetTriple;
   int LongSize;
   bool CompileKernel;
@@ -765,8 +772,9 @@ private:
   bool UseAfterScope;
   AsanDetectStackUseAfterReturnMode UseAfterReturn;
   Type *IntptrTy;
-  Type *Int8PtrTy;
+  Type *GlobalsInt8PtrTy;
   Type *Int32Ty;
+  Type *Int8Ty;
   ShadowMapping Mapping;
   FunctionCallee AsanHandleNoReturnFunc;
   FunctionCallee AsanPtrCmpFunction, AsanPtrSubFunction;
@@ -860,8 +868,12 @@ public:
         UseCtorComdat(UseGlobalsGC && ClWithComdat && !this->CompileKernel),
         DestructorKind(DestructorKind) {
     C = &(M.getContext());
-    int LongSize = M.getDataLayout().getPointerSizeInBits();
+    DL = &M.getDataLayout();
+    // XXXR3: assuming Address space zero pointer -> range of any pointer,
+    // as in SanCov
+    int LongSize = DL->getPointerSizeInBits(0);
     IntptrTy = Type::getIntNTy(*C, LongSize);
+    GlobalsInt8PtrTy = Type::getInt8PtrTy(*C, DL->getGlobalsAddressSpace());
     TargetTriple = Triple(M.getTargetTriple());
     Mapping = getShadowMapping(TargetTriple, LongSize, this->CompileKernel);
 
@@ -918,7 +930,9 @@ private:
   bool UseCtorComdat;
   AsanDtorKind DestructorKind;
   Type *IntptrTy;
+  Type *GlobalsInt8PtrTy;
   LLVMContext *C;
+  const DataLayout *DL;
   Triple TargetTriple;
   ShadowMapping Mapping;
   FunctionCallee AsanPoisonGlobals;
@@ -1023,7 +1037,7 @@ struct FunctionStackPoisoner : public InstVisitor<FunctionStackPoisoner> {
   FunctionStackPoisoner(Function &F, AddressSanitizer &ASan)
       : F(F), ASan(ASan), DIB(*F.getParent(), /*AllowUnresolved*/ false),
         C(ASan.C), IntptrTy(ASan.IntptrTy),
-        IntptrPtrTy(PointerType::get(IntptrTy, 0)), Mapping(ASan.Mapping),
+        IntptrPtrTy(PointerType::get(IntptrTy, ASan.DL->getProgramAddressSpace())), Mapping(ASan.Mapping),
         PoisonStack(ClStack &&
                     !Triple(F.getParent()->getTargetTriple()).isAMDGPU()) {}
 
@@ -1454,14 +1468,14 @@ void AddressSanitizer::instrumentMemIntrinsic(MemIntrinsic *MI) {
   if (isa<MemTransferInst>(MI)) {
     IRB.CreateCall(
         isa<MemMoveInst>(MI) ? AsanMemmove : AsanMemcpy,
-        {IRB.CreatePointerCast(MI->getOperand(0), IRB.getInt8PtrTy()),
-         IRB.CreatePointerCast(MI->getOperand(1), IRB.getInt8PtrTy()),
+        {IRB.CreatePointerCast(MI->getOperand(0), GlobalsInt8PtrTy),
+         IRB.CreatePointerCast(MI->getOperand(1), GlobalsInt8PtrTy),
          IRB.CreateIntCast(MI->getOperand(2), IntptrTy, false)});
   } else if (isa<MemSetInst>(MI)) {
     IRB.CreateCall(
         AsanMemset,
-        {IRB.CreatePointerCast(MI->getOperand(0), IRB.getInt8PtrTy()),
-         IRB.CreateIntCast(MI->getOperand(1), IRB.getInt32Ty(), false),
+        {IRB.CreatePointerCast(MI->getOperand(0), GlobalsInt8PtrTy),
+         IRB.CreateIntCast(MI->getOperand(1), Int32Ty, false),
          IRB.CreateIntCast(MI->getOperand(2), IntptrTy, false)});
   }
   MI->eraseFromParent();
@@ -1805,7 +1819,7 @@ Instruction *AddressSanitizer::instrumentAMDGPUAddress(
     return InsertBefore;
   // Instrument generic addresses in supported addressspaces.
   IRBuilder<> IRB(InsertBefore);
-  Value *AddrLong = IRB.CreatePointerCast(Addr, IRB.getInt8PtrTy());
+  Value *AddrLong = IRB.CreatePointerCast(Addr, IRB.getInt8PtrTy(0));
   Value *IsShared = IRB.CreateCall(AMDGPUAddressShared, {AddrLong});
   Value *IsPrivate = IRB.CreateCall(AMDGPUAddressPrivate, {AddrLong});
   Value *IsSharedOrPrivate = IRB.CreateOr(IsShared, IsPrivate);
@@ -1837,7 +1851,7 @@ void AddressSanitizer::instrumentAddress(Instruction *OrigIns,
     Module *M = IRB.GetInsertBlock()->getParent()->getParent();
     IRB.CreateCall(
         Intrinsic::getDeclaration(M, Intrinsic::asan_check_memaccess),
-        {IRB.CreatePointerCast(Addr, Int8PtrTy),
+        {IRB.CreatePointerCast(Addr, GlobalsInt8PtrTy),
          ConstantInt::get(Int32Ty, AccessInfo.Packed)});
     return;
   }
@@ -2669,7 +2683,7 @@ ModuleAddressSanitizer::getRedzoneSizeForGlobal(uint64_t SizeInBytes) const {
 }
 
 int ModuleAddressSanitizer::GetAsanVersion(const Module &M) const {
-  int LongSize = M.getDataLayout().getPointerSizeInBits();
+  int LongSize = M.getDataLayout().getPointerSizeInBits(0);
   bool isAndroid = Triple(M.getTargetTriple()).isAndroid();
   int Version = 8;
   // 32-bit Android is one version ahead because of the switch to dynamic
@@ -2789,9 +2803,9 @@ void AddressSanitizer::initializeCallbacks(Module &M) {
                                            ArrayType::get(IRB.getInt8Ty(), 0));
 
   AMDGPUAddressShared = M.getOrInsertFunction(
-      kAMDGPUAddressSharedName, IRB.getInt1Ty(), IRB.getInt8PtrTy());
+      kAMDGPUAddressSharedName, IRB.getInt1Ty(), IRB.getInt8PtrTy(0));
   AMDGPUAddressPrivate = M.getOrInsertFunction(
-      kAMDGPUAddressPrivateName, IRB.getInt1Ty(), IRB.getInt8PtrTy());
+      kAMDGPUAddressPrivateName, IRB.getInt1Ty(), IRB.getInt8PtrTy(0));
 }
 
 bool AddressSanitizer::maybeInsertAsanInitAtFunctionEntry(Function &F) {
