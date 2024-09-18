@@ -50,9 +50,9 @@ struct AsanInterceptorContext {
 // relevant information only.
 // We check all shadow bytes.
 #define ACCESS_MEMORY_RANGE(ctx, offset, size, isWrite) do {            \
-    vaddr __offset = (vaddr)(offset);                                     \
-    usize __size = (usize)(size);                                         \
-    usize __bad = 0;                                                     \
+    uptr __offset = (uptr)(offset);                                     \
+    usize __size = (usize)(size);                                       \
+    uptr __bad = 0;                                                     \
     if (__offset > __offset + __size) {                                 \
       GET_STACK_TRACE_FATAL_HERE;                                       \
       ReportStringFunctionSizeOverflow(__offset, __size, &stack);       \
