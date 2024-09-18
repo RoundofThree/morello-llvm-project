@@ -2492,18 +2492,18 @@ bool ModuleAddressSanitizer::InstrumentGlobals(IRBuilder<> &IRB, Module &M,
   auto &DL = M.getDataLayout();
 
   // A global is described by a structure
-  //   size_t beg;
+  //   uintptr_t beg;
   //   size_t size;
   //   size_t size_with_redzone;
   //   const char *name;
   //   const char *module_name;
   //   size_t has_dynamic_init;
   //   void *source_location;
-  //   size_t odr_indicator;
+  //   uintptr_t odr_indicator;
   // We initialize an array of such structures and pass it to a run-time call.
   StructType *GlobalStructTy =
-      StructType::get(IntptrTy, IntptrTy, IntptrTy, GlobalsInt8PtrTy, GlobalsInt8PtrTy,
-                      IntptrTy, GlobalsInt8PtrTy, IntptrTy);
+      StructType::get(GlobalsInt8PtrTy, IntptrTy, IntptrTy, GlobalsInt8PtrTy, GlobalsInt8PtrTy,
+                      IntptrTy, GlobalsInt8PtrTy, GlobalsInt8PtrTy);
   SmallVector<GlobalVariable *, 16> NewGlobals(n);
   SmallVector<Constant *, 16> Initializers(n);
 
@@ -2616,13 +2616,13 @@ bool ModuleAddressSanitizer::InstrumentGlobals(IRBuilder<> &IRB, Module &M,
 
     Constant *Initializer = ConstantStruct::get(
         GlobalStructTy,
-        ConstantExpr::getPointerCast(InstrumentedGlobal, IntptrTy),
+        ConstantExpr::getPointerCast(InstrumentedGlobal, GlobalsInt8PtrTy),
         ConstantInt::get(IntptrTy, SizeInBytes),
         ConstantInt::get(IntptrTy, SizeInBytes + RightRedzoneSize),
         ConstantExpr::getPointerCast(Name, GlobalsInt8PtrTy),
         ConstantExpr::getPointerCast(ModuleName, GlobalsInt8PtrTy),
         ConstantInt::get(IntptrTy, MD.IsDynInit), SourceLoc,
-        ConstantExpr::getPointerCast(ODRIndicator, IntptrTy));
+        ConstantExpr::getPointerCast(ODRIndicator, GlobalsInt8PtrTy));
 
     if (ClInitializers && MD.IsDynInit) HasDynamicallyInitializedGlobals = true;
 
