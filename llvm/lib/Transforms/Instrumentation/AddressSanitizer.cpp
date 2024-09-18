@@ -1043,7 +1043,7 @@ struct FunctionStackPoisoner : public InstVisitor<FunctionStackPoisoner> {
   FunctionStackPoisoner(Function &F, AddressSanitizer &ASan)
       : F(F), ASan(ASan), DIB(*F.getParent(), /*AllowUnresolved*/ false),
         C(ASan.C), IntptrTy(ASan.IntptrTy),
-        IntptrPtrTy(PointerType::get(IntptrTy, ASan.DL->getProgramAddressSpace())), Mapping(ASan.Mapping),
+        IntptrPtrTy(PointerType::get(ASan.Int8Ty, ASan.DL->getProgramAddressSpace())), Mapping(ASan.Mapping),
         PoisonStack(ClStack &&
                     !Triple(F.getParent()->getTargetTriple()).isAMDGPU()) {}
 
@@ -1853,12 +1853,14 @@ void AddressSanitizer::instrumentAddress(Instruction *OrigIns,
   size_t AccessSizeIndex = TypeSizeToSizeIndex(TypeSize);
   const ASanAccessInfo AccessInfo(IsWrite, CompileKernel, AccessSizeIndex);
 
+  // always casting to i8* before the opaque pointer transition is complete
+  Addr = IRB.CreatePointerCast(Addr, GlobalsInt8PtrTy);
   if (UseCalls && ClOptimizeCallbacks) {
     const ASanAccessInfo AccessInfo(IsWrite, CompileKernel, AccessSizeIndex);
     Module *M = IRB.GetInsertBlock()->getParent()->getParent();
     IRB.CreateCall(
         Intrinsic::getDeclaration(M, Intrinsic::asan_check_memaccess),
-        {IRB.CreatePointerCast(Addr, GlobalsInt8PtrTy),
+        {Addr,
          ConstantInt::get(Int32Ty, AccessInfo.Packed)});
     return;
   }
@@ -1879,7 +1881,7 @@ void AddressSanitizer::instrumentAddress(Instruction *OrigIns,
   Value *ShadowPtr = memToShadow(AddrLong, IRB);
   Value *CmpVal = Constant::getNullValue(ShadowTy);
   Value *ShadowValue =
-      IRB.CreateLoad(ShadowTy, ShadowPtr);
+      IRB.CreateLoad(ShadowTy, IRB.CreatePointerCast(ShadowPtr, ShadowTy->getPointerTo(DL->getGlobalsAddressSpace())));
 
   Value *Cmp = IRB.CreateICmpNE(ShadowValue, CmpVal);
   size_t Granularity = 1ULL << Mapping.Scale;
