@@ -3460,7 +3460,7 @@ void FunctionStackPoisoner::processStaticAllocas() {
                            ConstantInt::get(IntptrTy, LocalStackSize));
       IRB.SetInsertPoint(InsBefore);
       FakeStack = createPHI(IRB, UseAfterReturnIsEnabled, FakeStackValue, Term,
-                            ConstantInt::get(IntptrTy, 0));
+                            Constant::getNullValue(IntptrPtrTy));
     } else {
       // assert(ASan.UseAfterReturn == AsanDetectStackUseAfterReturnMode:Always)
       // void *FakeStack = __asan_stack_malloc_N(LocalStackSize);
