@@ -3514,8 +3514,7 @@ void FunctionStackPoisoner::processStaticAllocas() {
       isa<PtrToIntInst>(LocalStackBaseAlloca)
           ? cast<PtrToIntInst>(LocalStackBaseAlloca)->getPointerOperand()
           : LocalStackBaseAlloca;
-  LocalStackBaseAllocaPtr = LocalStackBaseAllocaPtr->stripPointerCasts();
-  assert(isa<AllocaInst>(LocalStackBaseAllocaPtr) &&
+  assert(isa<AllocaInst>(LocalStackBaseAllocaPtr->stripPointerCasts()) &&
          "Variable descriptions relative to ASan stack base will be dropped");
 
   // Replace Alloca instructions with base+offset.
