@@ -3252,14 +3252,14 @@ Value *FunctionStackPoisoner::createAllocaForLayout(
   assert((ClRealignStack & (ClRealignStack - 1)) == 0);
   uint64_t FrameAlignment = std::max(L.FrameAlignment, uint64_t(ClRealignStack));
   Alloca->setAlignment(Align(FrameAlignment));
-  return IRB.CreatePointerCast(Alloca, IntptrPtrTy);
+  return IRB.CreatePointerCast(Alloca, GlobalsInt8PtrTy);
 }
 
 void FunctionStackPoisoner::createDynamicAllocasInitStorage() {
   BasicBlock &FirstBB = *F.begin();
   IRBuilder<> IRB(dyn_cast<Instruction>(FirstBB.begin()));
-  DynamicAllocaLayout = IRB.CreateAlloca(IntptrPtrTy, nullptr);
-  IRB.CreateStore(Constant::getNullValue(IntptrPtrTy), DynamicAllocaLayout);
+  DynamicAllocaLayout = IRB.CreateAlloca(GlobalsInt8PtrTy, nullptr);
+  IRB.CreateStore(Constant::getNullValue(GlobalsInt8PtrTy), DynamicAllocaLayout);
   DynamicAllocaLayout->setAlignment(Align(32));
 }
 
