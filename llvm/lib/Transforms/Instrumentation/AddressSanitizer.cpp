@@ -683,6 +683,7 @@ struct AddressSanitizer {
     // XXXR3: assuming Address space zero pointer -> range of any pointer,
     // as in SanCov
     LongSize = DL->getPointerSizeInBits(0);
+    PointerSize = DL->getPointerSizeInBits(DL->getGlobalsAddressSpace());
     IntptrTy = Type::getIntNTy(*C, LongSize);
     GlobalsInt8PtrTy = Type::getInt8PtrTy(*C, DL->getGlobalsAddressSpace());
     Int32Ty = Type::getInt32Ty(*C);
@@ -773,6 +774,7 @@ private:
   const DataLayout *DL;
   Triple TargetTriple;
   int LongSize;
+  int PointerSize;
   bool CompileKernel;
   bool Recover;
   bool UseAfterScope;
@@ -3102,7 +3104,7 @@ void FunctionStackPoisoner::copyToShadowInline(ArrayRef<uint8_t> ShadowMask,
     return;
 
   const size_t LargestStoreSizeInBytes =
-      std::min<size_t>(sizeof(uint64_t), ASan.LongSize / 8);
+      std::min<size_t>(sizeof(uint64_t), ASan.PointerSize / 8);
 
   const bool IsLittleEndian = F.getParent()->getDataLayout().isLittleEndian();
   const unsigned AS = F.getParent()->getDataLayout().getProgramAddressSpace();
@@ -3396,7 +3398,7 @@ void FunctionStackPoisoner::processStaticAllocas() {
   // Minimal header size (left redzone) is 4 pointers,
   // i.e. 32 bytes on 64-bit platforms and 16 bytes in 32-bit platforms.
   uint64_t Granularity = 1ULL << Mapping.Scale;
-  uint64_t MinHeaderSize = std::max((uint64_t)ASan.LongSize / 2, Granularity);
+  uint64_t MinHeaderSize = std::max((uint64_t)ASan.PointerSize / 2, Granularity);
   const ASanStackFrameLayout &L =
       ComputeASanStackFrameLayout(SVD, Granularity, MinHeaderSize);
 
@@ -3538,7 +3540,7 @@ void FunctionStackPoisoner::processStaticAllocas() {
   // Write the frame description constant to redzone[1].
   Value *BasePlus1 = IRB.CreateGEP(
       IRB.getInt8Ty(), LocalStackBase,
-      ConstantInt::get(IntptrTy, ASan.LongSize / 8));
+      ConstantInt::get(IntptrTy, ASan.PointerSize / 8));
   GlobalVariable *StackDescriptionGlobal =
       createPrivateGlobalForString(*F.getParent(), DescriptionString,
                                    /*AllowMerging*/ true, kAsanGenPrefix);
@@ -3547,7 +3549,7 @@ void FunctionStackPoisoner::processStaticAllocas() {
   // Write the PC to redzone[2].
   Value *BasePlus2 = IRB.CreateGEP(
       IRB.getInt8Ty(), IRB.CreatePointerCast(LocalStackBase, GlobalsInt8PtrTy),
-      ConstantInt::get(IntptrTy, 2 * ASan.LongSize / 8));
+      ConstantInt::get(IntptrTy, 2 * ASan.PointerSize / 8));
   IRB.CreateStore(IRB.CreatePointerCast(&F, GlobalsInt8PtrTy), IRB.CreatePointerCast(BasePlus2, GlobalsPtrPtrTy));
 
   const auto &ShadowAfterScope = GetShadowBytesAfterScope(SVD, L);
@@ -3610,7 +3612,7 @@ void FunctionStackPoisoner::processStaticAllocas() {
                      ShadowBase);
         Value *SavedFlagPtrPtr = IRBPoison.CreateGEP(
             IRB.getInt8Ty(), FakeStack,
-            ConstantInt::get(IntptrTy, ClassSize - ASan.LongSize / 8));
+            ConstantInt::get(IntptrTy, ClassSize - ASan.PointerSize / 8));
         Value *SavedFlagPtr = IRBPoison.CreateLoad(
             GlobalsInt8PtrTy, IRBPoison.CreatePointerCast(SavedFlagPtrPtr, GlobalsPtrPtrTy));
         IRBPoison.CreateStore(
