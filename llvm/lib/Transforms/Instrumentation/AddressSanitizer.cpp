@@ -3522,10 +3522,12 @@ void FunctionStackPoisoner::processStaticAllocas() {
     AllocaInst *AI = Desc.AI;
     replaceDbgDeclare(AI, LocalStackBaseAllocaPtr, DIB, DIExprFlags,
                       Desc.Offset);
+    unsigned AllocaElementSize =
+      F.getParent()->getDataLayout().getTypeAllocSize(AI->getAllocatedType());
     Value *NewAllocaPtr = IRB.CreateGEP(
         AI->getAllocatedType(),
         IRB.CreatePointerCast(LocalStackBase, AI->getAllocatedType()->getPointerTo(AS)),
-        ConstantInt::get(IntptrTy, Desc.Offset));
+        ConstantInt::get(IntptrTy, Desc.Offset / AllocaElementSize));
     AI->replaceAllUsesWith(NewAllocaPtr);
   }
 
