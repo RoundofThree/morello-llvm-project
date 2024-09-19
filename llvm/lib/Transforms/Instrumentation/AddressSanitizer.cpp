@@ -3105,6 +3105,7 @@ void FunctionStackPoisoner::copyToShadowInline(ArrayRef<uint8_t> ShadowMask,
       std::min<size_t>(sizeof(uint64_t), ASan.LongSize / 8);
 
   const bool IsLittleEndian = F.getParent()->getDataLayout().isLittleEndian();
+  const unsigned AS = F.getParent()->getDataLayout().getProgramAddressSpace();
 
   // Poison given range in shadow using larges store size with out leading and
   // trailing zeros in ShadowMask. Zeros never change, so they need neither
@@ -3141,7 +3142,7 @@ void FunctionStackPoisoner::copyToShadowInline(ArrayRef<uint8_t> ShadowMask,
       ConstantInt::get(IntptrTy, i));
     Value *Poison = IRB.getIntN(StoreSizeInBytes * 8, Val);
     IRB.CreateAlignedStore(
-        Poison, IRB.CreatePointerCast(Ptr, Poison->getType()->getPointerTo()),
+        Poison, IRB.CreatePointerCast(Ptr, Poison->getType()->getPointerTo(AS)),
         Align(1));
 
     i += StoreSizeInBytes;
