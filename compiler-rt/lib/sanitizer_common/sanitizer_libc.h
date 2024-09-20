@@ -33,6 +33,7 @@ void *internal_memcpy(void *dest, const void *src, usize n);
 void *internal_memmove(void *dest, const void *src, usize n);
 // Should not be used in performance-critical places.
 void *internal_memset(void *s, int c, usize n);
+void *internal_malloc(usize len);
 char* internal_strchr(const char *s, int c);
 char *internal_strchrnul(const char *s, int c);
 int internal_strcmp(const char *s1, const char *s2);

@@ -210,6 +210,11 @@ void *internal_memset(void* s, int c, usize n) {
   return s;
 }
 
+void *internal_malloc(usize len) {
+  void *chunk = (void *)InternalAlloc(len);
+  return chunk;
+}
+
 usize internal_strcspn(const char *s, const char *reject) {
   usize i;
   for (i = 0; s[i]; i++) {
