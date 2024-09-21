@@ -482,6 +482,9 @@ static int printf_get_value_size(PrintfDirective *dir) {
       case 8:                                                      \
         va_arg(*aq, u64);                                          \
         break;                                                     \
+      case 16:                                                     \
+        va_arg(*aq, uptr);                                         \
+        break;                                                     \
       default:                                                     \
         Report("WARNING: unexpected arg size"                      \
                " in printf interceptor: %zu\n", static_cast<usize>(size));             \
