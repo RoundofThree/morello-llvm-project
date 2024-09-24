@@ -89,11 +89,7 @@ extern "C" {
 #include <sys/umtx.h>
 }
 #include <sys/thr.h>
-extern char **environ;
-#if defined(__aarch64__) && __has_feature(capabilities)
-// CheriBSD exports __auxargs
-extern Elf_Auxinfo *__auxargs;
-#endif  // defined(__aarch64__) && __has_feature(capabilities)
+extern const void *__elf_aux_vector;
 #endif  // SANITIZER_FREEBSD
 
 #if SANITIZER_NETBSD
@@ -644,31 +640,11 @@ static void ReadNullSepFileToArray(const char *path, char ***arr,
 
 static void GetArgsAndEnv(char ***argv, char ***envp) {
 #if SANITIZER_FREEBSD
-#if defined(__aarch64__) && __has_feature(capabilities)
   // On CheriBSD, kern.ps_strings returns an invalid capability,
   // as it should. But auxargs is available.
-  char **argvstr = NULL, **envstr = NULL;
-  for (Elf_Auxinfo *aux = __auxargs; aux->a_type != AT_NULL; aux++) {
-		switch (aux->a_type) {
-		case AT_ARGV:
-			argvstr = (char **)aux->a_un.a_ptr;
-			break;
-    case AT_ENVV:
-      envstr = (char **)aux->a_un.a_ptr;
-      break;
-    }
-  }
-  *argv = argvstr;
-  *envp = envstr;
-#else
   // Rather than relying on sysctl, query auxv of the current process.
-	void *sp;
-	sp = (void *)environ;
-	while (*sp++ != 0)
-		;
-	Elf_Auxinfo *auxv = (Elf_Auxinfo *)sp;
   char **argvstr = NULL, **envstr = NULL;
-  for (Elf_Auxinfo *aux = auxv; aux->a_type != AT_NULL; aux++) {
+  for (Elf_Auxinfo *aux = (Elf_Auxinfo *)__elf_aux_vector; aux->a_type != AT_NULL; aux++) {
 		switch (aux->a_type) {
 		case AT_ARGV:
 			argvstr = (char **)aux->a_un.a_ptr;
@@ -680,8 +656,6 @@ static void GetArgsAndEnv(char ***argv, char ***envp) {
   }
   *argv = argvstr;
   *envp = envstr;
-#endif // defined(__aarch64__) && __has_feature(capabilities)
-
 #elif SANITIZER_NETBSD
   *argv = __ps_strings->ps_argvstr;
   *envp = __ps_strings->ps_envstr;
