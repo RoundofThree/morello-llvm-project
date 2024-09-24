@@ -498,6 +498,13 @@ struct Allocator {
     CHECK(IsPowerOfTwo(alignment));
     usize rz_log = ComputeRZLog(size);
     usize rz_size = RZLog2Size(rz_log);
+    // LargeChunkHeader, if applicable, must fit in the left redzone, therefore
+    // either rz_size == kChunkHeaderSize, or
+    // rz_size >= kChunkHeaderSize + sizeof(LargeChunkHeader) 
+    if (rz_size != kChunkHeaderSize &&
+        sizeof(LargeChunkHeader) + kChunkHeaderSize > rz_size) {
+      rz_size = RoundUpTo(sizeof(LargeChunkHeader) + kChunkHeaderSize, 16);
+    }
     usize rounded_size = RoundUpTo(Max(size, kChunkHeader2Size), alignment);
     usize needed_size = rounded_size + rz_size;
     if (alignment > min_alignment)
