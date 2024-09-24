@@ -661,17 +661,25 @@ static void GetArgsAndEnv(char ***argv, char ***envp) {
   *argv = argvstr;
   *envp = envstr;
 #else
-  // On FreeBSD, retrieving the argument and environment arrays is done via the
-  // kern.ps_strings sysctl, which returns a pointer to a structure containing
-  // this information. See also <sys/exec.h>.
-  ps_strings *pss;
-  usize sz = sizeof(pss);
-  if (internal_sysctlbyname("kern.ps_strings", &pss, &sz, NULL, 0) == -1) {
-    Printf("sysctl kern.ps_strings failed\n");
-    Die();
+  // Rather than relying on sysctl, query auxv of the current process.
+	void *sp;
+	sp = (void *)environ;
+	while (*sp++ != 0)
+		;
+	Elf_Auxinfo *auxv = (Elf_Auxinfo *)sp;
+  char **argvstr = NULL, **envstr = NULL;
+  for (Elf_Auxinfo *aux = auxv; aux->a_type != AT_NULL; aux++) {
+		switch (aux->a_type) {
+		case AT_ARGV:
+			argvstr = (char **)aux->a_un.a_ptr;
+			break;
+    case AT_ENVV:
+      envstr = (char **)aux->a_un.a_ptr;
+      break;
+    }
   }
-  *argv = pss->ps_argvstr;
-  *envp = pss->ps_envstr;
+  *argv = argvstr;
+  *envp = envstr;
 #endif // defined(__aarch64__) && __has_feature(capabilities)
 
 #elif SANITIZER_NETBSD
