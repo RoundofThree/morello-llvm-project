@@ -89,6 +89,11 @@ extern "C" {
 #include <sys/umtx.h>
 }
 #include <sys/thr.h>
+extern char **environ;
+#if defined(__aarch64__) && __has_feature(capabilities)
+// CheriBSD exports __auxargs
+extern Elf_Auxinfo *__auxargs;
+#endif  // defined(__aarch64__) && __has_feature(capabilities)
 #endif  // SANITIZER_FREEBSD
 
 #if SANITIZER_NETBSD
@@ -640,66 +645,21 @@ static void ReadNullSepFileToArray(const char *path, char ***arr,
 static void GetArgsAndEnv(char ***argv, char ***envp) {
 #if SANITIZER_FREEBSD
 #if defined(__aarch64__) && __has_feature(capabilities)
-#define PROC_AUXV_MAX 256
-  // On CheriBSD, kern.ps_strings returns an invalid capability.
-  // This is a workaround.
-  char local_argv[ARG_MAX];
-  char local_env[ARG_MAX];
-	char auxv[PROC_AUXV_MAX * sizeof(Elf_Auxinfo)];
-  size_t arglen_bytes, envlen_bytes, auxvlen_bytes;
-  int name[4];
-  pid_t pid = internal_getpid();
-  // sysctl
-	name[0] = CTL_KERN;
-	name[1] = KERN_PROC;
-	name[2] = KERN_PROC_ARGS;
-	name[3] = pid;
-	arglen_bytes = sizeof(local_argv);
-	if (sysctl(name, 4, local_argv, &arglen_bytes, NULL, 0) == -1) {
-    Printf("sysctl kern.proc.KERN_PROC_ARGS failed\n");
-    Die();
-	}
-	name[2] = KERN_PROC_ENV;
-	envlen_bytes = sizeof(local_env);
-	if (sysctl(name, 4, local_env, &envlen_bytes, NULL, 0) == -1) {
-    Printf("sysctl kern.proc.KERN_PROC_ENV failed\n");
-    Die();
-	}
-  name[2] = KERN_PROC_AUXV;
-  auxvlen_bytes = sizeof(auxv);
-  if (sysctl(name, 4, auxv, &auxvlen_bytes, NULL, 0) == -1) {
-    Printf("sysctl kern.proc.KERN_PROC_AUXV failed\n");
-    Die();
-  }
-
-  size_t argc = 0, envc = 0;
-  for (Elf_Auxinfo *aux = (Elf_Auxinfo *)auxv; aux->a_type != AT_NULL; aux++) {
-		switch(aux->a_type) {
-		case AT_ARGC:
-			argc = (long)aux->a_un.a_val;
+  // On CheriBSD, kern.ps_strings returns an invalid capability,
+  // as it should. But auxargs is available.
+  char **argvstr = NULL, **envstr = NULL;
+  for (Elf_Auxinfo *aux = __auxargs; aux->a_type != AT_NULL; aux++) {
+		switch (aux->a_type) {
+		case AT_ARGV:
+			argvstr = (char **)aux->a_un.a_ptr;
 			break;
-    case AT_ENVC:
-      envc = (long)aux->a_un.a_val;
+    case AT_ENVV:
+      envstr = (char **)aux->a_un.a_ptr;
       break;
     }
   }
-
-  // use strdup!
-  char **argp = (char **)internal_malloc(argc * sizeof(char *));
-  size_t marker = 0;
-  for (unsigned i = 0; i < argc; i++) {
-    argp[i] = internal_strdup(local_argv + marker);
-    marker += internal_strlen(argp[i]) + 1;
-  }
-  char **env = (char **)internal_malloc(envc * sizeof(char *));
-  marker = 0;
-  for (unsigned i = 0; i < envc; i++) {
-    env[i] = internal_strdup(local_env + marker);
-    marker += internal_strlen(env[i]) + 1;
-  }
-
-  *argv = (char**)argp;
-  *envp = (char**)env;
+  *argv = argvstr;
+  *envp = envstr;
 #else
   // On FreeBSD, retrieving the argument and environment arrays is done via the
   // kern.ps_strings sysctl, which returns a pointer to a structure containing
