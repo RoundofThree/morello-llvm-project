@@ -110,6 +110,8 @@ void *MmapFixedOrDieOnFatalError(uptr fixed_addr, usize size,
                                  const char *name = nullptr);
 void *MmapFixedNoAccess(uptr fixed_addr, usize size, const char *name = nullptr);
 void *MmapNoAccess(usize size);
+void *MmapFixedWithAccess(uptr fixed_addr, usize size, const char *name = nullptr);
+void *MmapWithAccess(usize size);
 // Map aligned chunk of address space; size and alignment are powers of two.
 // Dies on all but out of memory errors, in the latter case returns nullptr.
 void *MmapAlignedOrDieOnFatalError(usize size, usize alignment,

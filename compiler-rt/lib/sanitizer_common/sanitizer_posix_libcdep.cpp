@@ -339,8 +339,15 @@ bool MmapFixedSuperNoReserve(uptr fixed_addr, usize size, const char *name) {
 }
 
 uptr ReservedAddressRange::Init(usize size, const char *name, uptr fixed_addr) {
+#if __has_feature(capabilities)
+  // In CHERI, we cannot expand resources of an existing
+  // capability. We mmap all at the beginning.
+  base_ = fixed_addr ? MmapFixedWithAccess(fixed_addr, size, name)
+                     : MmapWithAccess(size);
+#else
   base_ = fixed_addr ? MmapFixedNoAccess(fixed_addr, size, name)
                      : MmapNoAccess(size);
+#endif
   size_ = size;
   name_ = name;
   (void)os_handle_;  // unsupported
@@ -350,13 +357,25 @@ uptr ReservedAddressRange::Init(usize size, const char *name, uptr fixed_addr) {
 // Uses fixed_addr for now.
 // Will use offset instead once we've implemented this function for real.
 uptr ReservedAddressRange::Map(uptr fixed_addr, usize size, const char *name) {
+#if __has_feature(capabilities)
+  CHECK_LE((uptr)base_, fixed_addr);
+  DCHECK(fixed_addr + size <= (uptr)base_ + size_);
+  return (uptr)base_ + (usize)(fixed_addr - (uptr)base_);
+#else
   return reinterpret_cast<uptr>(
       MmapFixedOrDieOnFatalError(fixed_addr, size, name));
+#endif
 }
 
 uptr ReservedAddressRange::MapOrDie(uptr fixed_addr, usize size,
                                     const char *name) {
+#if __has_feature(capabilities)
+  CHECK_LE((uptr)base_, fixed_addr);
+  DCHECK(fixed_addr + size <= (uptr)base_ + size_);
+  return (uptr)base_ + (usize)(fixed_addr - (uptr)base_);
+#else
   return reinterpret_cast<uptr>(MmapFixedOrDie(fixed_addr, size, name));
+#endif
 }
 
 void ReservedAddressRange::Unmap(uptr addr, usize size) {
@@ -383,6 +402,22 @@ void *MmapNoAccess(usize size) {
   size = cheri_representable_length(size);
 #endif
   return (void *)internal_mmap(nullptr, size, PROT_NONE, flags, -1, 0);
+}
+
+void *MmapFixedWithAccess(uptr fixed_addr, usize size, const char *name) {
+  return (void *)MmapNamed((void *)fixed_addr, size, PROT_READ | PROT_WRITE,
+                           MAP_PRIVATE | MAP_FIXED | MAP_NORESERVE | MAP_ANON,
+                           name);
+}
+
+void *MmapWithAccess(usize size) {
+  unsigned flags = MAP_PRIVATE | MAP_ANON | MAP_NORESERVE;
+#if SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
+  // CHERI alignment
+  size = cheri_representable_length(size);
+#endif
+  return (void *)internal_mmap(nullptr, size, PROT_READ | PROT_WRITE,
+    flags, -1, 0);
 }
 
 // This function is defined elsewhere if we intercepted pthread_attr_getstack.
