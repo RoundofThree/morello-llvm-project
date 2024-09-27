@@ -1143,6 +1143,13 @@ class ArrayRef {
   T *end_ = nullptr;
 };
 
+// This function returns the current stack pointer.
+//
+// We don't want to inline it because __builtin_frame_address will change it's meaning.
+// __builtin_frame_address gives you the stack bottom of the current function.`
+// This will be the stack top of the calling function.
+__attribute__((noinline)) void *GetSP();
+
 }  // namespace __sanitizer
 
 inline void *operator new(__sanitizer::operator_new_size_type size,

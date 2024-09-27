@@ -346,6 +346,11 @@ void SleepForSeconds(unsigned seconds) {
 }
 void SleepForMillis(unsigned millis) { internal_usleep((u64)millis * 1000); }
 
+__attribute__((noinline)) void *GetSP()
+{
+  return __builtin_frame_address(0);
+}
+
 } // namespace __sanitizer
 
 using namespace __sanitizer;

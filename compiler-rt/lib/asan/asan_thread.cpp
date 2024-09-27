@@ -366,7 +366,10 @@ bool AsanThread::GetStackFrameAccessByAddr(uptr addr,
     return false;
   }
 
-  uptr *ptr = (uptr *)(mem_ptr + ASAN_SHADOW_GRANULARITY);
+  // keep the provenance of the pointer
+  uptr sp = (uptr)GetSP();
+  uptr *ptr = (uptr *)(sp + (usize)(mem_ptr - sp) +
+    ASAN_SHADOW_GRANULARITY);
   CHECK(ptr[0] == kCurrentStackFrameMagic);
   access->offset = addr - (uptr)ptr;
   access->frame_pc = ptr[2];
