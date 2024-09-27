@@ -3524,10 +3524,14 @@ void FunctionStackPoisoner::processStaticAllocas() {
                       Desc.Offset);
     unsigned AllocaElementSize =
       F.getParent()->getDataLayout().getTypeAllocSize(AI->getAllocatedType());
-    Value *NewAllocaPtr = IRB.CreateGEP(
-        AI->getAllocatedType(),
-        IRB.CreatePointerCast(LocalStackBase, AI->getAllocatedType()->getPointerTo(AS)),
-        ConstantInt::get(IntptrTy, Desc.Offset / AllocaElementSize));
+    // Desc.Offset may not be divisible by AllocaElementSize, so we offset with
+    // i8 and then cast the pointer to the AllocaElementType 
+    Value *BasePlusOffset = IRB.CreateGEP(
+        IRB.getInt8Ty(),
+        LocalStackBase,
+        ConstantInt::get(IntptrTy, Desc.Offset));
+    Value *NewAllocaPtr = IRB.CreatePointerCast(BasePlusOffset,
+        AI->getAllocatedType()->getPointerTo(AS));
     AI->replaceAllUsesWith(NewAllocaPtr);
   }
 
