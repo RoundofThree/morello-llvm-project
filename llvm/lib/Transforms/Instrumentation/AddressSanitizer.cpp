@@ -3522,8 +3522,6 @@ void FunctionStackPoisoner::processStaticAllocas() {
     AllocaInst *AI = Desc.AI;
     replaceDbgDeclare(AI, LocalStackBaseAllocaPtr, DIB, DIExprFlags,
                       Desc.Offset);
-    unsigned AllocaElementSize =
-      F.getParent()->getDataLayout().getTypeAllocSize(AI->getAllocatedType());
     // Desc.Offset may not be divisible by AllocaElementSize, so we offset with
     // i8 and then cast the pointer to the AllocaElementType 
     Value *BasePlusOffset = IRB.CreateGEP(
