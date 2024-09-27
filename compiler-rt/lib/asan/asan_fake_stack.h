@@ -121,7 +121,7 @@ class FakeStack {
   FakeFrame *Allocate(usize stack_size_log, usize class_id, uptr real_stack);
 
   // Deallocate the fake frame: read the saved flag address and write 0 there.
-  static void Deallocate(usize x, usize class_id) {
+  static void Deallocate(uptr x, usize class_id) {
     **SavedFlagPtr(x, class_id) = 0;
   }
 
