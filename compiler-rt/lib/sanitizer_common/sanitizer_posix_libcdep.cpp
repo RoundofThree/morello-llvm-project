@@ -43,10 +43,6 @@
 #define MAP_NORESERVE 0
 #endif
 
-#if __has_feature(capabilities)
-#include <cheriintrin.h>
-#endif
-
 typedef void (*sa_sigaction_t)(int, siginfo_t *, void *);
 
 namespace __sanitizer {
@@ -399,7 +395,7 @@ void *MmapNoAccess(usize size) {
   unsigned flags = MAP_PRIVATE | MAP_ANON | MAP_NORESERVE;
 #if SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
   // CHERI alignment
-  size = cheri_representable_length(size);
+  size = __builtin_cheri_round_representable_length(size);
 #endif
   return (void *)internal_mmap(nullptr, size, PROT_NONE, flags, -1, 0);
 }
@@ -414,7 +410,7 @@ void *MmapWithAccess(usize size) {
   unsigned flags = MAP_PRIVATE | MAP_ANON | MAP_NORESERVE;
 #if SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
   // CHERI alignment
-  size = cheri_representable_length(size);
+  size = __builtin_cheri_round_representable_length(size);
 #endif
   return (void *)internal_mmap(nullptr, size, PROT_READ | PROT_WRITE,
     flags, -1, 0);

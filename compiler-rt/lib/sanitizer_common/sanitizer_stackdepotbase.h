@@ -20,7 +20,7 @@
 #include "sanitizer_internal_defs.h"
 #include "sanitizer_mutex.h"
 
-#ifdef __CHERI_PURE_CAPABILITY__
+#if __has_feature(capabilities)
 #include <cheri.h>
 #endif
 
@@ -28,18 +28,24 @@ namespace __sanitizer {
 
 template <usize mask>
 inline usize GetLowPtrBits(uptr ptr) {
-#ifdef __CHERI_PURE_CAPABILITY__
-  return cheri_low_bits_get(ptr, mask);
+#if __has_feature(capabilities)
+  return __cheri_low_bits_get(ptr, mask);
 #else
   return ptr & mask;
 #endif
 }
-inline uptr SetLowPtrBits(uptr ptr, usize bits) { return ptr | bits; }
+inline uptr SetLowPtrBits(uptr ptr, usize bits) {
+#if __has_feature(capabilities)
+  return __cheri_low_bits_or(ptr, bits);
+#else
+  return ptr | bits;
+#endif
+}
 
 template <usize mask>
 inline uptr ClearLowPtrBits(uptr ptr) {
-#ifdef __CHERI_PURE_CAPABILITY__
-  return cheri_low_bits_clear(ptr, mask);
+#if __has_feature(capabilities)
+  return __cheri_low_bits_clear(ptr, mask);
 #else
   return ptr & ~mask;
 #endif

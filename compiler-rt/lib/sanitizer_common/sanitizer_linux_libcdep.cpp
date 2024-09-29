@@ -53,11 +53,6 @@
 // that, it was never implemented. So just define it to zero.
 #undef MAP_NORESERVE
 #define MAP_NORESERVE 0
-
-// XXXR3: GCC doesn't have __has_feature
-#if defined(__aarch64__) && __has_feature(capabilities)
-#include <cheriintrin.h>
-#endif // defined(__aarch64__) && __has_feature(capabilities)
 #endif
 
 #if SANITIZER_NETBSD
@@ -951,7 +946,7 @@ uptr MapDynamicShadow(usize shadow_size_bytes, usize shadow_scale,
 
 #if SANITIZER_FREEBSD && defined(__aarch64__) && __has_feature(capabilities)
   const usize shadow_size = RoundUpTo(shadow_size_bytes, granularity);
-  const usize map_size = cheri_representable_length(shadow_size + left_padding + alignment);
+  const usize map_size = __builtin_cheri_round_representable_length(shadow_size + left_padding + alignment);
 
   const uptr map_start = MmapNamed(nullptr, map_size, PROT_READ | PROT_WRITE,
                         MAP_PRIVATE | MAP_ANON, "full shadow");

@@ -14,10 +14,6 @@
 #include "sanitizer_common.h"
 #include "sanitizer_libc.h"
 
-#if __has_feature(capabilities)
-#include <cheriintrin.h>
-#endif
-
 namespace __sanitizer {
 
 s64 internal_atoll(const char *nptr) {
@@ -108,7 +104,7 @@ _memcpy(void *dst0, const void *src0, usize length, bool keeptags)
 		 */
 		t = length / wsize;
 		if (!keeptags) {
-			TLOOP(*(uptr *)dst = (uptr)cheri_tag_clear(
+			TLOOP(*(uptr *)dst = (uptr)__builtin_cheri_tag_clear(
 			        (void *)*(const uptr *)src);
 			    src += wsize; dst += wsize);
 		} else
@@ -139,7 +135,7 @@ _memcpy(void *dst0, const void *src0, usize length, bool keeptags)
 		t = length / wsize;
 		if (!keeptags) {
 			TLOOP(src -= wsize; dst -= wsize;
-			    *(uptr *)dst = (uptr)cheri_tag_clear(
+			    *(uptr *)dst = (uptr)__builtin_cheri_tag_clear(
 			        (void *)*(const uptr *)src));
 		} else
 			TLOOP(src -= wsize; dst -= wsize;
