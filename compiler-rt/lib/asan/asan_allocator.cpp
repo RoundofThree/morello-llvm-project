@@ -210,8 +210,10 @@ struct QuarantineCallback {
       CHECK_EQ(old_chunk_state, CHUNK_QUARANTINE);
     }
 
-    PoisonShadow(m->Beg(), RoundUpTo(m->UsedSize(), ASAN_SHADOW_GRANULARITY),
-                 kAsanHeapLeftRedzoneMagic);
+    if (flags()->heap_spatial_detection) {
+      PoisonShadow(m->Beg(), RoundUpTo(m->UsedSize(), ASAN_SHADOW_GRANULARITY),
+                  kAsanHeapLeftRedzoneMagic);
+    }
 
     // Statistics.
     AsanStats &thread_stats = GetCurrentThreadStats();
@@ -242,14 +244,18 @@ typedef Quarantine<QuarantineCallback, AsanChunk> AsanQuarantine;
 typedef AsanQuarantine::Cache QuarantineCache;
 
 void AsanMapUnmapCallback::OnMap(uptr p, usize size) const {
-  PoisonShadow(p, size, kAsanHeapLeftRedzoneMagic);
+  if (flags()->heap_spatial_detection) {
+    PoisonShadow(p, size, kAsanHeapLeftRedzoneMagic);
+  }
   // Statistics.
   AsanStats &thread_stats = GetCurrentThreadStats();
   thread_stats.mmaps++;
   thread_stats.mmaped += size;
 }
 void AsanMapUnmapCallback::OnUnmap(uptr p, usize size) const {
-  PoisonShadow(p, size, 0);
+  if (flags()->heap_spatial_detection) {
+    PoisonShadow(p, size, 0);
+  }
   // We are about to unmap a chunk of user memory.
   // Mark the corresponding shadow memory as not needed.
   FlushUnneededASanShadowMemory(p, size);
@@ -344,6 +350,9 @@ struct Allocator {
   }
 
   void RePoisonChunk(uptr chunk) {
+    if (!flags()->heap_spatial_detection) {
+      return;
+    }
     // This could be a user-facing chunk (with redzones), or some internal
     // housekeeping chunk, like TransferBatch. Start by assuming the former.
     AsanChunk *ac = GetAsanChunk((void *)chunk);
@@ -496,8 +505,13 @@ struct Allocator {
       size = 1;
     }
     CHECK(IsPowerOfTwo(alignment));
-    usize rz_log = ComputeRZLog(size);
-    usize rz_size = RZLog2Size(rz_log);
+    // XXXR3: rz_size can be just kChunkHeaderSize when heap spatial is off
+    usize rz_log = 0;
+    usize rz_size = kChunkHeaderSize;
+    if (flags()->heap_spatial_detection) {
+      rz_log = ComputeRZLog(size);
+      rz_size = RZLog2Size(rz_log);
+    }
     // LargeChunkHeader, if applicable, must fit in the left redzone, therefore
     // either rz_size == kChunkHeaderSize, or
     // rz_size >= kChunkHeaderSize + sizeof(LargeChunkHeader) 
@@ -511,7 +525,9 @@ struct Allocator {
       needed_size += alignment;
     // If we are allocating from the secondary allocator, there will be no
     // automatic right redzone, so add the right redzone manually.
-    if (!PrimaryAllocator::CanAllocate(needed_size, alignment))
+    // XXXR3: We don't need right redzone if heap spatial is off
+    if (!PrimaryAllocator::CanAllocate(needed_size, alignment) &&
+      flags()->heap_spatial_detection)
       needed_size += rz_size;
     CHECK(IsAligned(needed_size, min_alignment));
     if (size > kMaxAllowedMallocSize || needed_size > kMaxAllowedMallocSize ||
@@ -548,8 +564,13 @@ struct Allocator {
       // chunk. This is possible if CanPoisonMemory() was false for some
       // time, for example, due to flags()->start_disabled.
       // Anyway, poison the block before using it for anything else.
-      usize allocated_size = allocator.GetActuallyAllocatedSize(allocated);
-      PoisonShadow((uptr)allocated, allocated_size, kAsanHeapLeftRedzoneMagic);
+      if (flags()->heap_spatial_detection) {
+        usize allocated_size = allocator.GetActuallyAllocatedSize(allocated);
+        PoisonShadow((uptr)allocated, allocated_size, kAsanHeapLeftRedzoneMagic);
+      } else {
+        // XXXR3: We only poison the chunk header and any possible paddings
+        PoisonShadow((uptr)allocated, rz_size, kAsanHeapLeftRedzoneMagic);
+      }
     }
 
     uptr alloc_beg = reinterpret_cast<uptr>(allocated);
@@ -570,14 +591,23 @@ struct Allocator {
 
     usize size_rounded_down_to_granularity =
         RoundDownTo(size, ASAN_SHADOW_GRANULARITY);
-    // Unpoison the bulk of the memory region.
-    if (size_rounded_down_to_granularity)
-      PoisonShadow(user_beg, size_rounded_down_to_granularity, 0);
-    // Deal with the end of the region if size is not aligned to granularity.
-    if (size != size_rounded_down_to_granularity && CanPoisonMemory()) {
-      u8 *shadow =
-          (u8 *)MemToShadow(user_beg + size_rounded_down_to_granularity);
-      *shadow = fl.poison_partial ? (size & (ASAN_SHADOW_GRANULARITY - 1)) : 0;
+    if (fl.heap_spatial_detection) {
+      // Unpoison the bulk of the memory region.
+      if (size_rounded_down_to_granularity)
+        PoisonShadow(user_beg, size_rounded_down_to_granularity, 0);
+      // Deal with the end of the region if size is not aligned to granularity.
+      if (size != size_rounded_down_to_granularity && CanPoisonMemory()) {
+        u8 *shadow =
+            (u8 *)MemToShadow(user_beg + size_rounded_down_to_granularity);
+        *shadow = fl.poison_partial ? (size & (ASAN_SHADOW_GRANULARITY - 1)) : 0;
+      }
+    } else {
+      // Deal with the end of the region if size is not aligned to granularity.
+      if (size != size_rounded_down_to_granularity && CanPoisonMemory()) {
+        u8 *shadow =
+            (u8 *)MemToShadow(user_beg + size_rounded_down_to_granularity);
+        *shadow = fl.poison_partial ? (size & (ASAN_SHADOW_GRANULARITY - 1)) : 0;
+      }
     }
 
     AsanStats &thread_stats = GetCurrentThreadStats();

@@ -160,3 +160,7 @@ ASAN_FLAG(bool, verify_asan_link_order, true,
 ASAN_FLAG(
     bool, windows_hook_rtl_allocators, false,
     "(Windows only) enable hooking of Rtl(Allocate|Free|Size|ReAllocate)Heap.")
+ASAN_FLAG(
+    bool, heap_spatial_detection, true,
+    "Enable (or disable) detection of heap spatial violations."
+)
