@@ -20,35 +20,19 @@
 #include "sanitizer_internal_defs.h"
 #include "sanitizer_mutex.h"
 
-#if __has_feature(capabilities)
-#include <cheri.h>
-#endif
-
 namespace __sanitizer {
 
 template <usize mask>
 inline usize GetLowPtrBits(uptr ptr) {
-#if __has_feature(capabilities)
-  return __cheri_low_bits_get(ptr, mask);
-#else
-  return ptr & mask;
-#endif
+  return (usize)ptr & mask;
 }
 inline uptr SetLowPtrBits(uptr ptr, usize bits) {
-#if __has_feature(capabilities)
-  return __cheri_low_bits_or(ptr, bits);
-#else
   return ptr | bits;
-#endif
 }
 
 template <usize mask>
 inline uptr ClearLowPtrBits(uptr ptr) {
-#if __has_feature(capabilities)
-  return __cheri_low_bits_clear(ptr, mask);
-#else
   return ptr & ~mask;
-#endif
 }
 
 template <class Node, int kReservedBits, int kTabSizeLog>
@@ -77,7 +61,7 @@ class StackDepotBase {
   StackDepotStats GetStats() const {
     return {
         atomic_load_relaxed(&n_uniq_ids),
-        nodes.MemoryUsage() + Node::allocated(), // XXXR3
+        nodes.MemoryUsage() + Node::allocated(),
     };
   }
 
