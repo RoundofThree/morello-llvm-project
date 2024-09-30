@@ -39,20 +39,25 @@ static const uint64_t kMinAlignment = 16;
 // The larger the variable Size the larger is the redzone.
 // The resulting frame size is a multiple of Alignment.
 static uint64_t VarAndRedzoneSize(uint64_t Size, uint64_t Granularity,
-                                  uint64_t Alignment) {
+                                  uint64_t Alignment, bool WithoutRedzone = false) {
   uint64_t Res = 0;
-  if (Size <= 4)  Res = 16;
-  else if (Size <= 16) Res = 32;
-  else if (Size <= 128) Res = Size + 32;
-  else if (Size <= 512) Res = Size + 64;
-  else if (Size <= 4096) Res = Size + 128;
-  else                   Res = Size + 256;
+  if (WithoutRedzone) {
+    Res = Size;
+  } else {
+    if (Size <= 4)  Res = 16;
+    else if (Size <= 16) Res = 32;
+    else if (Size <= 128) Res = Size + 32;
+    else if (Size <= 512) Res = Size + 64;
+    else if (Size <= 4096) Res = Size + 128;
+    else                   Res = Size + 256;
+  }
   return alignTo(std::max(Res, 2 * Granularity), Alignment);
 }
 
 ASanStackFrameLayout
 ComputeASanStackFrameLayout(SmallVectorImpl<ASanStackVariableDescription> &Vars,
-                            uint64_t Granularity, uint64_t MinHeaderSize) {
+                            uint64_t Granularity, uint64_t MinHeaderSize, 
+                            bool WithoutRedzone) {
   assert(Granularity >= 8 && Granularity <= 64 &&
          (Granularity & (Granularity - 1)) == 0);
   assert(MinHeaderSize >= 16 && (MinHeaderSize & (MinHeaderSize - 1)) == 0 &&
@@ -82,7 +87,7 @@ ComputeASanStackFrameLayout(SmallVectorImpl<ASanStackVariableDescription> &Vars,
     uint64_t NextAlignment =
         IsLast ? Granularity : std::max(Granularity, Vars[i + 1].Alignment);
     uint64_t SizeWithRedzone =
-        VarAndRedzoneSize(Size, Granularity, NextAlignment);
+        VarAndRedzoneSize(Size, Granularity, NextAlignment, WithoutRedzone);
     Vars[i].Offset = Offset;
     Offset += SizeWithRedzone;
   }
@@ -114,27 +119,36 @@ SmallString<64> ComputeASanStackFrameDescription(
 
 SmallVector<uint8_t, 64>
 GetShadowBytes(const SmallVectorImpl<ASanStackVariableDescription> &Vars,
-               const ASanStackFrameLayout &Layout) {
+               const ASanStackFrameLayout &Layout, bool WithoutRedzone) {
   assert(Vars.size() > 0);
   SmallVector<uint8_t, 64> SB;
   SB.clear();
   const uint64_t Granularity = Layout.Granularity;
+  // Poison the header
   SB.resize(Vars[0].Offset / Granularity, kAsanStackLeftRedzoneMagic);
   for (const auto &Var : Vars) {
-    SB.resize(Var.Offset / Granularity, kAsanStackMidRedzoneMagic);
-
-    SB.resize(SB.size() + Var.Size / Granularity, 0);
+    if (!WithoutRedzone) {
+      SB.resize(Var.Offset / Granularity, kAsanStackMidRedzoneMagic);
+      SB.resize(SB.size() + Var.Size / Granularity, 0);
+    } else {
+      SB.resize(Var.Offset / Granularity, 0);
+      SB.resize(SB.size() + Var.Size / Granularity, 0);
+    }
     if (Var.Size % Granularity)
       SB.push_back(Var.Size % Granularity);
   }
-  SB.resize(Layout.FrameSize / Granularity, kAsanStackRightRedzoneMagic);
+  if (WithoutRedzone) {
+    SB.resize(Layout.FrameSize / Granularity, 0);
+  } else {
+    SB.resize(Layout.FrameSize / Granularity, kAsanStackRightRedzoneMagic);
+  }
   return SB;
 }
 
 SmallVector<uint8_t, 64> GetShadowBytesAfterScope(
     const SmallVectorImpl<ASanStackVariableDescription> &Vars,
-    const ASanStackFrameLayout &Layout) {
-  SmallVector<uint8_t, 64> SB = GetShadowBytes(Vars, Layout);
+    const ASanStackFrameLayout &Layout, bool WithoutRedzone) {
+  SmallVector<uint8_t, 64> SB = GetShadowBytes(Vars, Layout, WithoutRedzone);
   const uint64_t Granularity = Layout.Granularity;
 
   for (const auto &Var : Vars) {

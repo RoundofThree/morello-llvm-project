@@ -55,7 +55,9 @@ ASanStackFrameLayout ComputeASanStackFrameLayout(
     // The minimal size of the left-most redzone (header).
     // At least 4 pointer sizes, power of 2, and >= Granularity.
     // The resulting FrameSize should be multiple of MinHeaderSize.
-    uint64_t MinHeaderSize);
+    uint64_t MinHeaderSize,
+    // Whether to insert redzones
+    bool WithoutRedzone = false);
 
 // Compute frame description, see DescribeAddressIfStack in ASan runtime.
 SmallString<64> ComputeASanStackFrameDescription(
@@ -65,7 +67,7 @@ SmallString<64> ComputeASanStackFrameDescription(
 // if the stack frame when all local variables are inside of the own scope.
 SmallVector<uint8_t, 64>
 GetShadowBytes(const SmallVectorImpl<ASanStackVariableDescription> &Vars,
-               const ASanStackFrameLayout &Layout);
+               const ASanStackFrameLayout &Layout, bool WithoutRedzone = false);
 
 // Returns shadow bytes with marked red zones and after scope. This shadow
 // represents the state if the stack frame when all local variables are outside
@@ -73,7 +75,7 @@ GetShadowBytes(const SmallVectorImpl<ASanStackVariableDescription> &Vars,
 SmallVector<uint8_t, 64> GetShadowBytesAfterScope(
     // The array of stack variables. The elements may get reordered and changed.
     const SmallVectorImpl<ASanStackVariableDescription> &Vars,
-    const ASanStackFrameLayout &Layout);
+    const ASanStackFrameLayout &Layout, bool WithoutRedzone = false);
 
 } // llvm namespace
 

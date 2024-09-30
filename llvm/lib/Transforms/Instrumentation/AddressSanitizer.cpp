@@ -388,6 +388,10 @@ static cl::opt<bool> ClDynamicAllocaStack(
     cl::desc("Use dynamic alloca to represent stack variables"), cl::Hidden,
     cl::init(true));
 
+static cl::opt<bool> ClOptCheriStack(
+    "asan-opt-cheri-stack", cl::desc("Apply CHERI optimisations"),
+    cl::init(false));
+
 static cl::opt<uint32_t> ClForceExperiment(
     "asan-force-experiment",
     cl::desc("Force optimization experiment (for testing)"), cl::Hidden,
@@ -3400,7 +3404,7 @@ void FunctionStackPoisoner::processStaticAllocas() {
   uint64_t Granularity = 1ULL << Mapping.Scale;
   uint64_t MinHeaderSize = std::max((uint64_t)ASan.PointerSize / 2, Granularity);
   const ASanStackFrameLayout &L =
-      ComputeASanStackFrameLayout(SVD, Granularity, MinHeaderSize);
+      ComputeASanStackFrameLayout(SVD, Granularity, MinHeaderSize, ClOptCheriStack);
 
   // Build AllocaToSVDMap for ASanStackVariableDescription lookup.
   DenseMap<const AllocaInst *, ASanStackVariableDescription *> AllocaToSVDMap;
@@ -3555,16 +3559,16 @@ void FunctionStackPoisoner::processStaticAllocas() {
       ConstantInt::get(IntptrTy, 2 * ASan.PointerSize / 8));
   IRB.CreateStore(IRB.CreatePointerCast(&F, GlobalsInt8PtrTy), IRB.CreatePointerCast(BasePlus2, GlobalsPtrPtrTy));
 
-  const auto &ShadowAfterScope = GetShadowBytesAfterScope(SVD, L);
+  const auto &ShadowAfterScope = GetShadowBytesAfterScope(SVD, L, ClOptCheriStack);
 
   // Poison the stack red zones at the entry.
   Value *ShadowBase = ASan.memToShadow(IRB.CreatePointerCast(LocalStackBase, IntptrTy), IRB);
   // As mask we must use most poisoned case: red zones and after scope.
-  // As bytes we can use either the same or just red zones only.
+  // As bytes we can use either the same, just red zones or just after scope only.
   copyToShadow(ShadowAfterScope, ShadowAfterScope, IRB, ShadowBase);
 
   if (!StaticAllocaPoisonCallVec.empty()) {
-    const auto &ShadowInScope = GetShadowBytes(SVD, L);
+    const auto &ShadowInScope = GetShadowBytes(SVD, L, ClOptCheriStack);
 
     // Poison static allocas near lifetime intrinsics.
     for (const auto &APC : StaticAllocaPoisonCallVec) {
