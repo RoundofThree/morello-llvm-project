@@ -72,7 +72,7 @@ class CombinedAllocator {
     if (alignment > 8)
       CHECK(IsAligned(res, alignment));
 #if __CHERI_PURE_CAPABILITY__
-    if (__builtin_cheri_tag_get(res)) {
+    if (!__builtin_cheri_tag_get(res)) {
       Report("WARNING: invalid capability? %p [0x%zu, 0x%zu]\n", res, 
         __builtin_cheri_base_get(res), __builtin_cheri_length_get(res));
     }
