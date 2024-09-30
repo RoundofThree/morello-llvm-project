@@ -180,6 +180,9 @@ struct SizeClassAllocator32LocalCache {
     InitCache(c);
     if (UNLIKELY(c->count == c->max_count))
       Drain(c, allocator, class_id);
+    // XXXR3: derive from a pointer authority to preserve provenance
+    uptr region_base = (uptr)allocator->GetBlockBegin(p);
+    p = (void *)(region_base + (usize)((uptr)p - region_base));
     c->batch[c->count++] = p;
     stats_.Sub(AllocatorStatAllocated, c->class_size);
   }

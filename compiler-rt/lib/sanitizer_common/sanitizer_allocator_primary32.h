@@ -35,7 +35,7 @@ template<class SizeClassAllocator> struct SizeClassAllocator32LocalCache;
 // UserChunk1 .. UserChunkN <gap> MetaChunkN .. MetaChunk1
 //
 // In order to avoid false sharing the objects of this class should be
-// chache-line aligned.
+// cache-line aligned.
 
 struct SizeClassAllocator32FlagMasks {  //  Bit masks.
   enum {
@@ -64,6 +64,11 @@ class SizeClassAllocator32 {
       FlatByteMap<(Params::kSpaceSize >> Params::kRegionSizeLog),
                   AddressSpaceView>,
       TwoLevelByteMap<kTwoLevelByteMapSize1, 1 << 12, AddressSpaceView>>::type;
+  using PtrMap = typename conditional<
+      (kTwoLevelByteMapSize1 < kMinFirstMapSizeTwoLevelByteMap),
+      FlatPtrMap<(Params::kSpaceSize >> Params::kRegionSizeLog),
+                  AddressSpaceView>,
+      TwoLevelPtrMap<kTwoLevelByteMapSize1, 1 << 12, AddressSpaceView>>::type;
 
   COMPILER_CHECK(!SANITIZER_SIGN_EXTENDED_ADDRESSES ||
                  (kSpaceSize & (kSpaceSize - 1)) == 0);
@@ -293,7 +298,10 @@ class SizeClassAllocator32 {
     return res;
   }
 
-  uptr ComputeRegionBeg(uptr mem) const { return RoundDownTo(mem, kRegionSize); }
+  uptr ComputeRegionBeg(uptr mem) const {
+    // XXXR3: return an authority pointer in provenance-aware architectures
+    return region_bases[ComputeRegionId(mem)];
+  }
 
   uptr AllocateRegion(AllocatorStats *stat, usize class_id) {
     DCHECK_LT(class_id, kNumClasses);
@@ -305,6 +313,7 @@ class SizeClassAllocator32 {
     stat->Add(AllocatorStatMapped, kRegionSize);
     CHECK(IsAligned(res, kRegionSize));
     possible_regions[ComputeRegionId(res)] = class_id;
+    region_bases[ComputeRegionId(res)] = res;
     return res;
   }
 
@@ -378,4 +387,6 @@ class SizeClassAllocator32 {
 
   ByteMap possible_regions;
   SizeClassInfo size_class_info_array[kNumClasses];
+  // This is necessary in provenance-aware architectures.
+  PtrMap region_bases;
 };

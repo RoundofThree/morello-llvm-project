@@ -71,6 +71,14 @@ class CombinedAllocator {
       res = secondary_.Allocate(&stats_, original_size, alignment);
     if (alignment > 8)
       CHECK(IsAligned(res, alignment));
+#if __CHERI_PURE_CAPABILITY__
+    if (__builtin_cheri_tag_get(res)) {
+      Report("WARNING: invalid capability? %p [0x%zu, 0x%zu]\n", res, 
+        __builtin_cheri_base_get(res), __builtin_cheri_length_get(res));
+    }
+    original_size = __builtin_cheri_round_representable_length(original_size);
+    res = __builtin_cheri_bounds_set(res, original_size);
+#endif
     return res;
   }
 

@@ -27,7 +27,7 @@ struct NoOpMapUnmapCallback {
   void OnUnmap(uptr p, usize size) const {}
 };
 
-// Maps integers in rage [0, kSize) to values.
+// Maps integers in range [0, kSize) to values.
 template <typename T, u64 kSize,
           typename AddressSpaceViewTy = LocalAddressSpaceView>
 class FlatMap {
@@ -163,11 +163,20 @@ class TwoLevelMap {
 template <u64 kSize, typename AddressSpaceViewTy = LocalAddressSpaceView>
 using FlatByteMap = FlatMap<u8, kSize, AddressSpaceViewTy>;
 
+template <u64 kSize, typename AddressSpaceViewTy = LocalAddressSpaceView>
+using FlatPtrMap = FlatMap<uptr, kSize, AddressSpaceViewTy>;
+
 template <u64 kSize1, u64 kSize2,
           typename AddressSpaceViewTy = LocalAddressSpaceView,
           class MapUnmapCallback = NoOpMapUnmapCallback>
 using TwoLevelByteMap =
     TwoLevelMap<u8, kSize1, kSize2, AddressSpaceViewTy, MapUnmapCallback>;
+
+template <u64 kSize1, u64 kSize2,
+          typename AddressSpaceViewTy = LocalAddressSpaceView,
+          class MapUnmapCallback = NoOpMapUnmapCallback>
+using TwoLevelPtrMap =
+    TwoLevelMap<uptr, kSize1, kSize2, AddressSpaceViewTy, MapUnmapCallback>;
 }  // namespace __sanitizer
 
 #endif
