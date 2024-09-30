@@ -1118,6 +1118,9 @@ struct FunctionStackPoisoner : public InstVisitor<FunctionStackPoisoner> {
 
   void unpoisonDynamicAllocasBeforeInst(Instruction *InstBefore,
                                         Value *SavedStack) {
+    if (ClOptCheriStack) {
+      return;
+    }
     IRBuilder<> IRB(InstBefore);
     Value *DynamicAreaPtr = IRB.CreatePointerCast(SavedStack, GlobalsInt8PtrTy);
     // When we insert _asan_allocas_unpoison before @llvm.stackrestore, we
@@ -3662,6 +3665,9 @@ void FunctionStackPoisoner::poisonAlloca(Value *V, uint64_t Size,
 // (3) if we poisoned at least one %alloca in a function,
 //     unpoison the whole stack frame at function exit.
 void FunctionStackPoisoner::handleDynamicAllocaCall(AllocaInst *AI) {
+  if (ClOptCheriStack) {
+    return;
+  }
   IRBuilder<> IRB(AI);
 
   const uint64_t Alignment = std::max(kAllocaRzSize, AI->getAlignment());
