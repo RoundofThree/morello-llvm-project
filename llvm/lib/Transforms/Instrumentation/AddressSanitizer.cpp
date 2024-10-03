@@ -530,8 +530,7 @@ static ShadowMapping getShadowMapping(const Triple &TargetTriple, int LongSize,
     else if (IsSystemZ)
       Mapping.Offset = kSystemZ_ShadowOffset64;
     else if (IsFreeBSD && IsAArch64) {
-      // if (DL.hasCheriCapabilities()) {  // XXXR3: FIXME: Morello
-      if (true) {
+      if (IsCheriPurecap) {
         Mapping.Offset = kDynamicShadowSentinel;
       } else {
         Mapping.Offset = kFreeBSDAArch64_ShadowOffset64;
