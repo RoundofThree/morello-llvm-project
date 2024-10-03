@@ -95,7 +95,8 @@ bool forAllReachableExits(const DominatorTree &DT, const PostDominatorTree &PDT,
 // Get AddressSanitizer parameters.
 void getAddressSanitizerParams(const Triple &TargetTriple, int LongSize,
                                bool IsKasan, uint64_t *ShadowBase,
-                               int *MappingScale, bool *OrShadowOffset);
+                               int *MappingScale, bool *OrShadowOffset,
+                               bool IsCheriPurecap = false);
 
 } // namespace llvm
 

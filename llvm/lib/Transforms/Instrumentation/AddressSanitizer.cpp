@@ -461,17 +461,20 @@ namespace {
 /// If InGlobal is true, then
 ///   extern char __asan_shadow[];
 ///   shadow = &__asan_shadow + (mem >> Scale)
+/// If MemCorrection != 0,
+///   shadow = &__asan_shadow + ((mem - MemCorrection) >> Scale)
 struct ShadowMapping {
   int Scale;
   uint64_t Offset;
   bool OrShadowOffset;
   bool InGlobal;
+  uint64_t MemCorrection;
 };
 
 } // end anonymous namespace
 
 static ShadowMapping getShadowMapping(const Triple &TargetTriple, int LongSize,
-                                      bool IsKasan) {
+                                      bool IsKasan, bool IsCheriPurecap = false) {
   bool IsAndroid = TargetTriple.isAndroid();
   bool IsIOS = TargetTriple.isiOS() || TargetTriple.isWatchOS();
   bool IsMacOS = TargetTriple.isMacOSX();
@@ -591,14 +594,19 @@ static ShadowMapping getShadowMapping(const Triple &TargetTriple, int LongSize,
       IsAndroid && !TargetTriple.isAndroidVersionLT(21);
   Mapping.InGlobal = ClWithIfunc && IsAndroidWithIfuncSupport && IsArmOrThumb;
 
+  Mapping.MemCorrection = IsAArch64 && IsCheriPurecap && IsFreeBSD && IsKasan ?
+                          0xffff000000000000UL : 0;
+
   return Mapping;
 }
 
 namespace llvm {
 void getAddressSanitizerParams(const Triple &TargetTriple, int LongSize,
                                bool IsKasan, uint64_t *ShadowBase,
-                               int *MappingScale, bool *OrShadowOffset) {
-  auto Mapping = getShadowMapping(TargetTriple, LongSize, IsKasan);
+                               int *MappingScale, bool *OrShadowOffset,
+                               bool IsCheriPurecap) {
+  auto Mapping = getShadowMapping(TargetTriple, LongSize, IsKasan, 
+    IsCheriPurecap);
   *ShadowBase = Mapping.Offset;
   *MappingScale = Mapping.Scale;
   *OrShadowOffset = Mapping.OrShadowOffset;
@@ -694,7 +702,8 @@ struct AddressSanitizer {
     Int8Ty = Type::getInt8Ty(*C);
     TargetTriple = Triple(M.getTargetTriple());
 
-    Mapping = getShadowMapping(TargetTriple, LongSize, this->CompileKernel);
+    Mapping = getShadowMapping(TargetTriple, LongSize, this->CompileKernel, 
+      DL->hasCheriCapabilities());
 
     assert(this->UseAfterReturn != AsanDetectStackUseAfterReturnMode::Invalid);
   }
@@ -887,7 +896,8 @@ public:
     IntptrTy = Type::getIntNTy(*C, LongSize);
     GlobalsInt8PtrTy = Type::getInt8PtrTy(*C, DL->getGlobalsAddressSpace());
     TargetTriple = Triple(M.getTargetTriple());
-    Mapping = getShadowMapping(TargetTriple, LongSize, this->CompileKernel);
+    Mapping = getShadowMapping(TargetTriple, LongSize, this->CompileKernel,
+      DL->hasCheriCapabilities());
 
     if (ClOverrideDestructorKind != AsanDtorKind::Invalid)
       this->DestructorKind = ClOverrideDestructorKind;
@@ -1463,8 +1473,15 @@ static bool isUnsupportedAMDGPUAddrspace(Value *Addr) {
 }
 
 // Mem is an Integer, the return value is a Pointer
+// In CheriBSD KASAN, we do an additional substraction corresponding to
+// VM_MIN_KERNEL_ADDRESS
 Value *AddressSanitizer::memToShadow(Value *Mem, IRBuilder<> &IRB) {
-  // Shadow >> scale
+  if (this->CompileKernel && TargetTriple.isOSFreeBSD() &&
+      TargetTriple.getArch() == Triple::aarch64 && 
+      DL->hasCheriCapabilities()) {
+    Mem = IRB.CreateSub(Mem, ConstantInt::get(IntptrTy, Mapping.MemCorrection));
+  }
+  // Mem >> scale
   Value *Shadow = IRB.CreateLShr(Mem, Mapping.Scale);
   if (Mapping.Offset == 0)
     return IRB.CreateIntToPtr(Shadow, GlobalsInt8PtrTy);
