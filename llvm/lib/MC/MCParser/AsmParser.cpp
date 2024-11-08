@@ -5889,7 +5889,7 @@ bool AsmParser::parseDirectiveAddrsigSym() {
 }
 
 /// parseDirectiveCheriCap
-///  ::= .chericap sym[+off]
+///  ::= .chericap sym[@code][+off]
 bool AsmParser::parseDirectiveCheriCap(SMLoc DirectiveLoc) {
   const MCExpr *SymExpr;
   SMLoc ExprLoc = getLexer().getLoc();
@@ -5934,7 +5934,8 @@ bool AsmParser::parseDirectiveCheriCap(SMLoc DirectiveLoc) {
       Offset = 0;
     }
     const MCSymbol &Symbol = SRE->getSymbol();
-    getStreamer().EmitCheriCapability(&Symbol, Offset, CapSize, ExprLoc);
+    bool Code = SRE->getKind() == MCSymbolRefExpr::VK_CHERI_CODE;
+    getStreamer().EmitCheriCapability(&Symbol, Offset, CapSize, Code, ExprLoc);
   }
   if (parseToken(AsmToken::EndOfStatement, "expected end of statement"))
     return true;

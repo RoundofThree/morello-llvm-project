@@ -220,23 +220,23 @@ void MCStreamer::emitGPRel32Value(const MCExpr *Value) {
 
 void MCStreamer::EmitCheriCapability(const MCSymbol *Value,
                                      const MCExpr *Addend, unsigned CapSize,
-                                     SMLoc Loc) {
+                                     bool Code, SMLoc Loc) {
   if (!Addend) {
     Addend = MCConstantExpr::create(0, Context);
   }
-  EmitCheriCapabilityImpl(Value, Addend, CapSize, Loc);
+  EmitCheriCapabilityImpl(Value, Addend, CapSize, Code, Loc);
 }
 
 void MCStreamer::EmitCheriCapabilityImpl(const MCSymbol *Value,
                                          const MCExpr *Addend, unsigned CapSize,
-                                         SMLoc Loc) {
+                                         bool Code, SMLoc Loc) {
   report_fatal_error("EmitCheriCapability is not implemented for this target!");
 }
 
 void MCStreamer::EmitCheriCapability(const MCSymbol *Value, int64_t Addend,
-                                     unsigned CapSize, SMLoc Loc) {
+                                     unsigned CapSize, bool Code, SMLoc Loc) {
   EmitCheriCapability(Value, MCConstantExpr::create(Addend, Context), CapSize,
-                      Loc);
+                      Code, Loc);
 }
 
 void MCStreamer::emitCheriIntcap(int64_t Value, unsigned CapSize, SMLoc Loc) {

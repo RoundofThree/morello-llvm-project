@@ -1,4 +1,5 @@
-; RUN: llc @PURECAP_HARDFLOAT_ARGS@ < %s -o - | FileCheck %s
+; RUN: llc @PURECAP_HARDFLOAT_ARGS@ < %s -o - | FileCheck %s --check-prefixes=CHECK,NOCODEPTR
+@IF-MORELLO@; RUN: llc @PURECAP_HARDFLOAT_ARGS@ < %s -o - -cheri-codeptr-relocs | FileCheck %s --check-prefixes=CHECK,CODEPTR
 ; RUN: llc @PURECAP_HARDFLOAT_ARGS@ < %s -o - -filetype=obj | llvm-readobj --relocs --symbols - | FileCheck %s --check-prefix=RELOCS
 ; Capabilities for exception landing pads were using preemptible relocations such as
 ; .chericap foo + .Ltmp - .Lfunc_begin instead of using a local alias.
@@ -80,7 +81,9 @@ declare dso_local void @__cxa_end_catch() local_unnamed_addr addrspace(200)
 ; Note: RISC-V uses DW_EH_PE_udata4, so the 0xc marker uses 4 bytes instead of 1
 ; CHECK-NEXT:  [[SMALL_CS_DIRECTIVE:(\.byte)|(\.word)]] 12     {{#|//}} (landing pad is a capability)
 ; Note: the following line should not be using _Z8do_catchv, but a local alias
-; CHECK-NEXT:  .chericap  .L_Z8do_catchv$eh_alias+(.Ltmp2-.Lfunc_begin0)   {{#|//}}     jumps to .Ltmp2
+@IF-MORELLO@; NOCODEPTR-NEXT:  .chericap  .L_Z8do_catchv$eh_alias+(.Ltmp2-.Lfunc_begin0)   {{#|//}}     jumps to .Ltmp2
+@IFNOT-MORELLO@; CHECK-NEXT:  .chericap  .L_Z8do_catchv$eh_alias+(.Ltmp2-.Lfunc_begin0)   {{#|//}}     jumps to .Ltmp2
+@IF-MORELLO@; CODEPTR-NEXT:  .chericap  .L_Z8do_catchv$eh_alias@code+(.Ltmp2-.Lfunc_begin0)   {{#|//}}     jumps to .Ltmp2
 ; CHECK-NEXT:  .byte 3                               {{#|//}}   On action: 2
 ; CHECK-NEXT:  [[CS_DIRECTIVE]] .Ltmp1-.Lfunc_begin0           {{#|//}} >> Call Site 2 <<
 ; CHECK-NEXT:  [[CS_DIRECTIVE]] .Lfunc_end0-.Ltmp1             {{#|//}}   Call between .Ltmp1 and .Lfunc_end0

@@ -167,6 +167,9 @@ void freebsd::Linker::ConstructJob(Compilation &C, const JobAction &JA,
 
   ArgStringList CmdArgs;
 
+  if (Arch == llvm::Triple::aarch64)
+    aarch64::addMorelloLinkerFlags(Args, CmdArgs);
+
   // Silence warning for -cheri=NNN
   Args.ClaimAllArgs(options::OPT_cheri_EQ);
   Args.ClaimAllArgs(options::OPT_cheri);

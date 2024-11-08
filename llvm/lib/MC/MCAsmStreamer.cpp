@@ -382,7 +382,8 @@ public:
   void emitBundleUnlock() override;
 
   void EmitCheriCapabilityImpl(const MCSymbol *Symbol, const MCExpr *Addend,
-                               unsigned CapSize, SMLoc Loc = SMLoc()) override;
+                               unsigned CapSize, bool Code = false,
+                               SMLoc Loc = SMLoc()) override;
   void emitCheriIntcap(const MCExpr *Expr, unsigned CapSize,
                        SMLoc Loc = SMLoc()) override;
 
@@ -2372,7 +2373,8 @@ void MCAsmStreamer::emitBundleUnlock() {
 
 void MCAsmStreamer::EmitCheriCapabilityImpl(const MCSymbol *Symbol,
                                             const MCExpr *Addend,
-                                            unsigned CapSize, SMLoc Loc) {
+                                            unsigned CapSize, bool Code,
+                                            SMLoc Loc) {
   OS << "\t.chericap\t";
   // Avoid parens,unary minus, and zero for constants:
   assert(Addend);
@@ -2384,8 +2386,13 @@ void MCAsmStreamer::EmitCheriCapabilityImpl(const MCSymbol *Symbol,
     else if (Offset < 0)
       OS << Offset;
   } else {
+    MCSymbolRefExpr::VariantKind VK;
+    if (Code)
+      VK = MCSymbolRefExpr::VK_CHERI_CODE;
+    else
+      VK = MCSymbolRefExpr::VK_None;
     const MCSymbolRefExpr *SRE = MCSymbolRefExpr::create(
-        Symbol, MCSymbolRefExpr::VK_None, getContext(), Loc);
+        Symbol, VK, getContext(), Loc);
     MCBinaryExpr::createAdd(SRE, Addend, getContext())->print(OS, MAI);
   }
   EmitEOL();

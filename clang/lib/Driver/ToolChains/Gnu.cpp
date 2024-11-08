@@ -455,6 +455,9 @@ void tools::gnutools::Linker::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back("--fix-cortex-a53-843419");
   }
 
+  if (Arch == llvm::Triple::aarch64)
+    aarch64::addMorelloLinkerFlags(Args, CmdArgs);
+
   ToolChain.addExtraOpts(CmdArgs);
 
   CmdArgs.push_back("--eh-frame-hdr");

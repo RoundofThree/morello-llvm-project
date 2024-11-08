@@ -34,6 +34,9 @@ void getMorelloMode(const Driver &D, const llvm::Triple &Triple,
                     bool &C64, bool &PureCap,
                     bool &ReducedCapRegs, bool &FnDesc);
 
+void addMorelloLinkerFlags(const llvm::opt::ArgList &Args,
+                           llvm::opt::ArgStringList &CmdArgs);
+
 bool isPurecap(const llvm::opt::ArgList &Args, const llvm::Triple &Triple,
                bool *IsPurecapBenchmarkABI = nullptr);
 

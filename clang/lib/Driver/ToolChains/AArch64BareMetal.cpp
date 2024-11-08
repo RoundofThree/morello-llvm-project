@@ -254,6 +254,7 @@ void Linker::ConstructJob(Compilation &C, const JobAction &JA,
   CmdArgs.push_back(Args.MakeArgString(TC.getStdLibDir()));
 
   CmdArgs.push_back("--gc-sections");
+  addMorelloLinkerFlags(Args, CmdArgs);
 
   bool UseStartfiles = !Args.hasArg(options::OPT_nostdlib, options::OPT_nostartfiles);
   if (UseStartfiles) {

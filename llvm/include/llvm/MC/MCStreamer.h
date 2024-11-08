@@ -821,11 +821,16 @@ public:
   // TODO: it would be nice if we could get CapSize from somewhere else but
   // MCAsmInfo only knowns about the triple which is not enough
 
-  // Emit the expression \p Value into the output as a CHERI capability
+  // Emit the expression \p Value into the output as a CHERI capability. If
+  // \p Code is true, inform the compartmentalisation runtime not to wrap the
+  // symbol in a trampoline if the symbol is local. This currently is only used
+  // for C++ exception landing pads.
   void EmitCheriCapability(const MCSymbol *Value, int64_t Addend,
-                           unsigned CapSize, SMLoc Loc = SMLoc());
+                           unsigned CapSize, bool Code = false,
+                           SMLoc Loc = SMLoc());
   void EmitCheriCapability(const MCSymbol *Value, const MCExpr *Addend,
-                           unsigned CapSize, SMLoc Loc = SMLoc());
+                           unsigned CapSize, bool Code = false,
+                           SMLoc Loc = SMLoc());
 
   // Emit \p Value as an untagged capability-size value
   virtual void emitCheriIntcap(int64_t Value, unsigned CapSize,
@@ -1172,7 +1177,7 @@ public:
 protected:
   virtual void EmitCheriCapabilityImpl(const MCSymbol *Value,
                                        const MCExpr *Addend, unsigned CapSize,
-                                       SMLoc Loc = SMLoc());
+                                       bool Code = false, SMLoc Loc = SMLoc());
 
   /// Target-independent untagged CHERI capability
   virtual void emitCheriIntcapGeneric(const MCExpr *Expr, unsigned CapSize,

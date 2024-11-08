@@ -613,6 +613,9 @@ def morello_bounded_memargs_caller_only : Flag<["-"], "morello-bounded-memargs=c
 def morello_no_bounded_memargs : Flag<["-"], "no-morello-bounded-memargs">, Flags<[CC1Option]>, Group<cheri_Group>,
   HelpText<"Use CSP for passing arguments in memory (default)">;
 
+def cheri_codeptr_relocs : Flag<["-"], "cheri-codeptr-relocs">, Flags<[CC1Option]>, Group<cheri_Group>,
+  HelpText<"Emit relocations for code pointers differently from function pointers">;
+
 class InternalDriverOpt : Group<internal_driver_Group>,
   Flags<[NoXarchOption, HelpHidden]>;
 def driver_mode : Joined<["--"], "driver-mode=">, Group<internal_driver_Group>,

@@ -104,6 +104,7 @@
 #include "llvm/Pass.h"
 #include "llvm/Remarks/RemarkStreamer.h"
 #include "llvm/Support/Casting.h"
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/FileSystem.h"
@@ -145,6 +146,8 @@ const char PPGroupName[] = "pseudo probe";
 const char PPGroupDescription[] = "Pseudo Probe Emission";
 
 STATISTIC(EmittedInsts, "Number of machine instrs printed");
+
+extern cl::opt<bool> CheriEmitCodePtrRelocs;
 
 char AsmPrinter::ID = 0;
 
@@ -3435,11 +3438,12 @@ static void emitGlobalConstantCHERICap(const DataLayout &DL, const Constant *CV,
                                         CapWidth);
     return;
   } else if (auto BA = dyn_cast<BlockAddress>(CV)) {
-    // For block addresses we emit `.chericap FN+(.LtmpN - FN)`
+    // For block addresses we emit `.chericap FN@code+(.LtmpN - FN)`
     auto FnStart = AP.getSymbol(BA->getFunction());
     const MCExpr *DiffToStart = MCBinaryExpr::createSub(
         Expr, MCSymbolRefExpr::create(FnStart, AP.OutContext), AP.OutContext);
-    AP.OutStreamer->EmitCheriCapability(FnStart, DiffToStart, CapWidth);
+    AP.OutStreamer->EmitCheriCapability(FnStart, DiffToStart, CapWidth,
+                                        CheriEmitCodePtrRelocs);
     return;
   }
   if (const MCSymbolRefExpr *SRE = dyn_cast<MCSymbolRefExpr>(Expr)) {

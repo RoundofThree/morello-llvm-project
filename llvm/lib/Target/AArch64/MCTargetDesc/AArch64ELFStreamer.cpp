@@ -229,7 +229,7 @@ public:
 
 protected:
   void EmitCheriCapabilityImpl(const MCSymbol *Symbol, const MCExpr *Addend,
-                               unsigned CapSize, SMLoc Loc) override;
+                               unsigned CapSize, bool Code, SMLoc Loc) override;
   void emitCheriIntcap(const MCExpr *Expr, unsigned CapSize,
                        SMLoc Loc) override;
 
@@ -331,13 +331,18 @@ private:
 
 void AArch64ELFStreamer::EmitCheriCapabilityImpl(const MCSymbol *Symbol,
     const MCExpr *Addend,
-    unsigned CapSize, SMLoc Loc) {
+    unsigned CapSize, bool Code, SMLoc Loc) {
   assert(Addend && "Should have received a MCConstExpr(0) instead of nullptr");
   assert(CapSize == 16 && "Unexpected capability size");
   visitUsedSymbol(*Symbol);
   MCContext &Context = getContext();
+  MCSymbolRefExpr::VariantKind VK;
+  if (Code)
+    VK = MCSymbolRefExpr::VK_CHERI_CODE;
+  else
+    VK = MCSymbolRefExpr::VK_None;
   const MCSymbolRefExpr *SRE =
-      MCSymbolRefExpr::create(Symbol, MCSymbolRefExpr::VK_None, Context, Loc);
+      MCSymbolRefExpr::create(Symbol, VK, Context, Loc);
   const MCBinaryExpr *CapExpr = MCBinaryExpr::createAdd(SRE, Addend, Context);
 
   // Pad to ensure that the capability is aligned

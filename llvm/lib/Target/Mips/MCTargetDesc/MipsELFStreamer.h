@@ -76,7 +76,7 @@ public:
 
 protected:
   void EmitCheriCapabilityImpl(const MCSymbol *Symbol, const MCExpr *Addend,
-                               unsigned CapSize, SMLoc Loc) override;
+                               unsigned CapSize, bool Code, SMLoc Loc) override;
 };
 
 MCELFStreamer *createMipsELFStreamer(MCContext &Context,

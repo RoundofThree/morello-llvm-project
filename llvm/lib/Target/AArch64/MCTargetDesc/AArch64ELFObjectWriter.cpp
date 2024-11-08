@@ -53,6 +53,7 @@ bool AArch64ELFObjectWriter::needsRelocateWithSymbol(const MCSymbol &Sym,
 
   case ELF::R_MORELLO_CAPINIT:
   case ELF::R_MORELLO_DESC_CAPINIT:
+  case ELF::R_MORELLO_CODE_CAPINIT:
     return true;
   }
 }
@@ -134,6 +135,7 @@ unsigned AArch64ELFObjectWriter::getRelocType(MCContext &Ctx,
 
   assert((!Target.getSymA() ||
           Target.getSymA()->getKind() == MCSymbolRefExpr::VK_None ||
+          Target.getSymA()->getKind() == MCSymbolRefExpr::VK_CHERI_CODE ||
           Target.getSymA()->getKind() == MCSymbolRefExpr::VK_PLT) &&
          "Should only be expression-level modifiers here");
 
@@ -275,6 +277,8 @@ unsigned AArch64ELFObjectWriter::getRelocType(MCContext &Ctx,
       } else
         switch (SymLoc) {
         case AArch64MCExpr::VK_CAPINIT:
+          if (Target.getAccessVariant() == MCSymbolRefExpr::VK_CHERI_CODE)
+            return ELF::R_MORELLO_CODE_CAPINIT;
           return IsDescABI
               ? ELF::R_MORELLO_DESC_CAPINIT
               : ELF::R_MORELLO_CAPINIT;

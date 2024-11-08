@@ -1863,6 +1863,11 @@ static void addMorelloFlags(const ArgList &Args, ArgStringList &CmdArgs,
 
   CmdArgs.push_back("-mllvm");
   CmdArgs.push_back(Args.MakeArgString("-cheri-cap-table-abi=pcrel"));
+
+  if (Arg *A = Args.getLastArg(options::OPT_cheri_codeptr_relocs)) {
+    CmdArgs.push_back("-mllvm");
+    CmdArgs.push_back("-cheri-codeptr-relocs");
+  }
 }
 
 namespace {

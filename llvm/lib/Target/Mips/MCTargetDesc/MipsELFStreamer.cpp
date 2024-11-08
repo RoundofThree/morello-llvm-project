@@ -107,7 +107,8 @@ void MipsELFStreamer::emitValueImpl(const MCExpr *Value, unsigned Size,
 
 void MipsELFStreamer::EmitCheriCapabilityImpl(const MCSymbol *Symbol,
                                               const MCExpr *Addend,
-                                              unsigned CapSize, SMLoc Loc) {
+                                              unsigned CapSize, bool Code,
+                                              SMLoc Loc) {
   assert(Addend && "Should have received a MCConstExpr(0) instead of nullptr");
   visitUsedSymbol(*Symbol);
   MCContext &Context = getContext();

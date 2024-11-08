@@ -181,6 +181,7 @@ ELF_RELOC(R_MORELLO_RELATIVE,                        0xe803)
 ELF_RELOC(R_MORELLO_IRELATIVE,                       0xe804)
 ELF_RELOC(R_MORELLO_TLSDESC,                         0xe805)
 ELF_RELOC(R_MORELLO_TLS_TPREL128,                    0xe806)
+ELF_RELOC(R_MORELLO_CODE_CAPINIT,                    0xe807)
 
 // Descriptor ABI Dynamic Relocations
 ELF_RELOC(R_MORELLO_DESC_CAPINIT,                    0xe810)

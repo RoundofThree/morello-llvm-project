@@ -313,7 +313,7 @@ public:
 
 protected:
   void EmitCheriCapabilityImpl(const MCSymbol *Symbol, const MCExpr *Addend,
-                               unsigned CapSize, SMLoc Loc) override;
+                               unsigned CapSize, bool Code, SMLoc Loc) override;
 };
 
 void RISCVELFStreamer::emitCheriIntcap(const MCExpr *Expr, unsigned CapSize,
@@ -324,7 +324,8 @@ void RISCVELFStreamer::emitCheriIntcap(const MCExpr *Expr, unsigned CapSize,
 
 void RISCVELFStreamer::EmitCheriCapabilityImpl(const MCSymbol *Symbol,
                                                const MCExpr *Addend,
-                                               unsigned CapSize, SMLoc Loc) {
+                                               unsigned CapSize, bool Code,
+                                               SMLoc Loc) {
   assert(Addend && "Should have received a MCConstExpr(0) instead of nullptr");
   visitUsedSymbol(*Symbol);
   MCContext &Context = getContext();
