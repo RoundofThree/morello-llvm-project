@@ -889,7 +889,14 @@ static void addRelativeReloc(InputSectionBase &isec, uint64_t offsetInSec,
   }
   // Currently, relative capability relocations are not added through this
   // function, so all relocations processed here are against integers.
-  RelType reltype = target->relativeIntRel.getValueOr(target->relativeRel);
+  RelType reltype = target->relativeRel;
+  if (target->relativeIntRel.hasValue()) {
+    if (config->cheriEmitCodePtrRelocs &&
+        sym.isFunc() && target->relativeIntFuncRel.hasValue())
+      reltype = *target->relativeIntFuncRel;
+    else
+      reltype = *target->relativeIntRel;
+  }
   part.relaDyn->addRelativeReloc(reltype, isec, offsetInSec, sym,
                                  addend, type, expr);
 }
@@ -928,9 +935,15 @@ static void addGotEntry(Symbol &sym) {
   if (config->morelloC64Plt) {
     // There are additional static relocations needed to initialize the GOT
     // entry. Delegate this to addMorelloC64GotRelocation.
-    addMorelloC64GotRelocation(
-        sym.isPreemptible ? target->gotRel : target->relativeRel, &sym,
-        in.got.get(), off, 0);
+    RelType reltype;
+    if (sym.isPreemptible)
+      reltype = target->gotRel;
+    else if (config->cheriEmitCodePtrRelocs && sym.isFunc() &&
+        target->relativeFuncRel.hasValue())
+      reltype = *target->relativeFuncRel;
+    else
+      reltype = target->relativeRel;
+    addMorelloC64GotRelocation(reltype, &sym, in.got.get(), off, 0);
     return;
   }
 

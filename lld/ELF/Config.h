@@ -299,6 +299,9 @@ struct Configuration {
   CapRelocsMode localCapRelocsMode;
   CapTableScopePolicy capTableScope;
   bool relativeCapRelocsOnly;
+  // True to emit relocations for code pointers differently from function
+  // pointers.
+  bool cheriEmitCodePtrRelocs = false;
 
   bool power10Stubs;
   ARMVFPArgKind armVFPArgs = ARMVFPArgKind::Default;

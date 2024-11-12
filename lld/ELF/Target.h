@@ -124,7 +124,9 @@ public:
   RelType gotRel;
   RelType pltRel;
   RelType relativeRel;
+  llvm::Optional<RelType> relativeFuncRel;
   llvm::Optional<RelType> relativeIntRel;
+  llvm::Optional<RelType> relativeIntFuncRel;
   RelType iRelativeRel;
   RelType symbolicRel;
   RelType tlsDescRel;

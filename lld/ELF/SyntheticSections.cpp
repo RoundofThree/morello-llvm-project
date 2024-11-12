@@ -1826,6 +1826,9 @@ void RelocationBaseSection::partitionRels() {
 	return r.type == relativeRel ||
             (config->emachine == EM_AARCH64 &&
              (r.type == R_MORELLO_RELATIVE ||
+              r.type == R_MORELLO_FUNC_RELATIVE ||
+              r.type == R_AARCH64_RELATIVE ||
+              r.type == R_AARCH64_FUNC_RELATIVE ||
               r.type == R_MORELLO_DESC_RELATIVE ||
               r.type == R_MORELLO_DESC_DAT_RELATIVE ||
               r.type == R_MORELLO_DESC_FUNC_RELATIVE)); }) -

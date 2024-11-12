@@ -898,7 +898,8 @@ static void addCapDynamicRelocation(RelType dynType, Symbol *sym,
                                     int64_t addend) {
   bool isExecRel =
       (sym->isFunc() || sym->isGnuIFunc()) &&
-      (dynType == R_MORELLO_RELATIVE || dynType == target->iRelativeRel);
+      (dynType == R_MORELLO_RELATIVE || dynType == R_MORELLO_FUNC_RELATIVE ||
+       dynType == target->iRelativeRel);
 
   RelType realDynType = dynType;
 
@@ -925,7 +926,8 @@ static void addCapDynamicRelocation(RelType dynType, Symbol *sym,
     }
   }
 
-  if (dynType == R_MORELLO_RELATIVE && !sym->includeInDynsym() &&
+  if ((dynType == R_MORELLO_RELATIVE || dynType == R_MORELLO_FUNC_RELATIVE) &&
+      !sym->includeInDynsym() &&
       config->localCapRelocsMode == CapRelocsMode::ElfReloc) {
     in.relaDyn->addReloc(
         {realDynType, sec, offset,
@@ -964,10 +966,23 @@ static void addMorelloCapabilityRelocation(Symbol *sym, RelType type,
                                          InputSectionBase *sec, uint64_t offset,
                                          int64_t addend) {
   // When dynamic linking we propagate the R_MORELLO_CAPINIT if the symbol is
-  // preemptible, otherwise we use R_MORELLO_RELATIVE.
-  RelType dynType = (sym->includeInDynsym() && sym->isPreemptible)
-                        ? R_MORELLO_CAPINIT
-                        : R_MORELLO_RELATIVE;
+  // preemptible, otherwise we use R_MORELLO_RELATIVE or
+  // R_MORELLO_FUNC_RELATIVE.
+  bool dynamic = sym->includeInDynsym() && sym->isPreemptible;
+  RelType dynType{};
+  if (dynamic) {
+    if (config->cheriEmitCodePtrRelocs && type == R_MORELLO_CODE_CAPINIT)
+      error("Cannot relocate code capability to preemptible symbol: " +
+            verboseToString(sym));
+    else
+      dynType = R_MORELLO_CAPINIT;
+  } else {
+    if (config->cheriEmitCodePtrRelocs && type != R_MORELLO_CODE_CAPINIT &&
+        sym->isFunc())
+      dynType = R_MORELLO_FUNC_RELATIVE;
+    else
+      dynType = R_MORELLO_RELATIVE;
+  }
   addMorelloC64GotRelocation(dynType, sym, sec, offset, addend);
 }
 

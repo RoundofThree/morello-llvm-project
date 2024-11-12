@@ -226,6 +226,7 @@ RelExpr AArch64::getRelExpr(RelType type, const Symbol &s,
   case R_AARCH64_NONE:
     return R_NONE;
   case R_MORELLO_CAPINIT:
+  case R_MORELLO_CODE_CAPINIT:
     return R_CHERI_CAPABILITY;
   case R_MORELLO_DESC_CAPINIT:
     return R_MORELLO_DESC_CAPABILITY;
@@ -1105,7 +1106,9 @@ public:
 
 AArch64C64::AArch64C64() {
   relativeRel = R_MORELLO_RELATIVE;
+  relativeFuncRel = R_MORELLO_FUNC_RELATIVE;
   relativeIntRel = R_AARCH64_RELATIVE;
+  relativeIntFuncRel = R_AARCH64_FUNC_RELATIVE;
   iRelativeRel = R_MORELLO_IRELATIVE;
   gotRel = R_MORELLO_GLOB_DAT;
   pltRel = R_MORELLO_JUMP_SLOT;
