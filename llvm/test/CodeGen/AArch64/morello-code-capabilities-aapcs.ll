@@ -1,5 +1,3 @@
-; XFAIL: *
-; Test fails because the IR parser doesn't accept capabilities for indirect calls.
 ; RUN: llc < %s -mtriple=aarch64-none-elf -mattr=+morello | FileCheck %s
 
 target datalayout = "e-m:e-pf200:128:128:128:64-i8:8:32-i16:16:32-i64:64-i128:128-n32:64-S128"
@@ -25,7 +23,7 @@ entry:
   store i8** %argv, i8*** %argv.addr, align 8
   store void (i8*) addrspace(200)* addrspacecast (void (i8*)* @foo to void (i8*) addrspace(200)*), void (i8*) addrspace(200)** %cfoo, align 16
   %0 = load void (i8*) addrspace(200)*, void (i8*) addrspace(200)** %cfoo, align 16
-  call void %0(i8* getelementptr inbounds ([30 x i8], [30 x i8]* @.str, i32 0, i32 0))
+  call addrspace(200) void %0(i8* getelementptr inbounds ([30 x i8], [30 x i8]* @.str, i32 0, i32 0))
   ret i32 0
 }
 
