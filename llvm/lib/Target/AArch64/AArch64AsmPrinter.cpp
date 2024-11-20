@@ -675,10 +675,12 @@ bool AArch64AsmPrinter::printAsmMRegister(const MachineOperand &MO, char Mode,
   default:
     return true; // Unknown mode.
   case 'w':
+    Reg = getXRegFromCReg(Reg);
     Reg = getWRegFromXReg(Reg);
     break;
   case 'x':
     Reg = getXRegFromWReg(Reg);
+    Reg = getXRegFromCReg(Reg);
     break;
   case 't':
     Reg = getXRegFromXRegTuple(Reg);
