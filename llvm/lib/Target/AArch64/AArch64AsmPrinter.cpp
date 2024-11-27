@@ -682,6 +682,10 @@ bool AArch64AsmPrinter::printAsmMRegister(const MachineOperand &MO, char Mode,
     Reg = getXRegFromWReg(Reg);
     Reg = getXRegFromCReg(Reg);
     break;
+  case 'C':
+    Reg = getXRegFromWReg(Reg);
+    Reg = getCRegFromXReg(Reg);
+    break;
   case 't':
     Reg = getXRegFromXRegTuple(Reg);
     break;
@@ -725,10 +729,12 @@ bool AArch64AsmPrinter::PrintAsmOperand(const MachineInstr *MI, unsigned OpNum,
       return true; // Unknown modifier.
     case 'w':      // Print W register
     case 'x':      // Print X register
+    case 'C':      // Print C register
       if (MO.isReg())
         return printAsmMRegister(MO, ExtraCode[0], O);
       if (MO.isImm() && MO.getImm() == 0) {
-        unsigned Reg = ExtraCode[0] == 'w' ? AArch64::WZR : AArch64::XZR;
+        unsigned Reg = ExtraCode[0] == 'C' ? AArch64::CZR :
+                       ExtraCode[0] == 'w' ? AArch64::WZR : AArch64::XZR;
         O << AArch64InstPrinter::getRegisterName(Reg);
         return false;
       }

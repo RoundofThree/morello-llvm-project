@@ -106,6 +106,46 @@ inline static unsigned getXRegFromWReg(unsigned Reg) {
   return Reg;
 }
 
+inline static unsigned getCRegFromXReg(unsigned Reg) {
+  switch (Reg) {
+  case AArch64::X0: return AArch64::C0;
+  case AArch64::X1: return AArch64::C1;
+  case AArch64::X2: return AArch64::C2;
+  case AArch64::X3: return AArch64::C3;
+  case AArch64::X4: return AArch64::C4;
+  case AArch64::X5: return AArch64::C5;
+  case AArch64::X6: return AArch64::C6;
+  case AArch64::X7: return AArch64::C7;
+  case AArch64::X8: return AArch64::C8;
+  case AArch64::X9: return AArch64::C9;
+  case AArch64::X10: return AArch64::C10;
+  case AArch64::X11: return AArch64::C11;
+  case AArch64::X12: return AArch64::C12;
+  case AArch64::X13: return AArch64::C13;
+  case AArch64::X14: return AArch64::C14;
+  case AArch64::X15: return AArch64::C15;
+  case AArch64::X16: return AArch64::C16;
+  case AArch64::X17: return AArch64::C17;
+  case AArch64::X18: return AArch64::C18;
+  case AArch64::X19: return AArch64::C19;
+  case AArch64::X20: return AArch64::C20;
+  case AArch64::X21: return AArch64::C21;
+  case AArch64::X22: return AArch64::C22;
+  case AArch64::X23: return AArch64::C23;
+  case AArch64::X24: return AArch64::C24;
+  case AArch64::X25: return AArch64::C25;
+  case AArch64::X26: return AArch64::C26;
+  case AArch64::X27: return AArch64::C27;
+  case AArch64::X28: return AArch64::C28;
+  case AArch64::FP: return AArch64::CFP;
+  case AArch64::LR: return AArch64::CLR;
+  case AArch64::SP: return AArch64::CSP;
+  case AArch64::XZR: return AArch64::CZR;
+  }
+  // For anything else, return it unchanged.
+  return Reg;
+}
+
 inline static unsigned getXRegFromCReg(unsigned Reg) {
   switch (Reg) {
   case AArch64::C0: return AArch64::X0;

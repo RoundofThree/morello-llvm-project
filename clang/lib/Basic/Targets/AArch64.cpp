@@ -931,6 +931,7 @@ bool AArch64TargetInfo::validateConstraintModifier(
     switch (Modifier) {
     case 'x':
     case 'w':
+    case 'C':
       // For now assume that the person knows what they're
       // doing with the modifier.
       return true;
