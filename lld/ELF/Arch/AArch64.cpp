@@ -1105,6 +1105,7 @@ public:
 
 AArch64C64::AArch64C64() {
   relativeRel = R_MORELLO_RELATIVE;
+  relativeIntRel = R_AARCH64_RELATIVE;
   iRelativeRel = R_MORELLO_IRELATIVE;
   gotRel = R_MORELLO_GLOB_DAT;
   pltRel = R_MORELLO_JUMP_SLOT;

@@ -887,7 +887,10 @@ static void addRelativeReloc(InputSectionBase &isec, uint64_t offsetInSec,
     part.relrDyn->relocs.push_back({&isec, offsetInSec});
     return;
   }
-  part.relaDyn->addRelativeReloc(target->relativeRel, isec, offsetInSec, sym,
+  // Currently, relative capability relocations are not added through this
+  // function, so all relocations processed here are against integers.
+  RelType reltype = target->relativeIntRel.getValueOr(target->relativeRel);
+  part.relaDyn->addRelativeReloc(reltype, isec, offsetInSec, sym,
                                  addend, type, expr);
 }
 
