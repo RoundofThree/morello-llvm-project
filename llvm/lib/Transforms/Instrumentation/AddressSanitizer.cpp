@@ -116,6 +116,7 @@ static const uint64_t kFreeBSD_ShadowOffset32 = 1ULL << 30;
 static const uint64_t kFreeBSD_ShadowOffset64 = 1ULL << 46;
 static const uint64_t kFreeBSDAArch64_ShadowOffset64 = 1ULL << 47;
 static const uint64_t kFreeBSDKasan_ShadowOffset64 = 0xdffff7c000000000;
+static const uint64_t kFreeBSDAArch64Kasan_ShadowOffset64 = 0xdfff208000000000;
 static const uint64_t kNetBSD_ShadowOffset32 = 1ULL << 30;
 static const uint64_t kNetBSD_ShadowOffset64 = 1ULL << 46;
 static const uint64_t kNetBSDKasan_ShadowOffset64 = 0xdfff900000000000;
@@ -533,7 +534,11 @@ static ShadowMapping getShadowMapping(const Triple &TargetTriple, int LongSize,
       if (IsCheriPurecap) {
         Mapping.Offset = kDynamicShadowSentinel;
       } else {
-        Mapping.Offset = kFreeBSDAArch64_ShadowOffset64;
+        if (IsKasan) {
+          Mapping.Offset = kFreeBSDAArch64Kasan_ShadowOffset64;
+        } else {
+          Mapping.Offset = kFreeBSDAArch64_ShadowOffset64;
+        }
       }
     } else if (IsFreeBSD && !IsMIPS64) {
       if (IsKasan)
