@@ -707,7 +707,7 @@ struct AddressSanitizer {
     TargetTriple = Triple(M.getTargetTriple());
 
     Mapping = getShadowMapping(TargetTriple, LongSize, this->CompileKernel, 
-      DL->hasCheriCapabilities());
+      DL->getGlobalsAddressSpace() == 200);
 
     assert(this->UseAfterReturn != AsanDetectStackUseAfterReturnMode::Invalid);
   }
@@ -901,7 +901,7 @@ public:
     GlobalsInt8PtrTy = Type::getInt8PtrTy(*C, DL->getGlobalsAddressSpace());
     TargetTriple = Triple(M.getTargetTriple());
     Mapping = getShadowMapping(TargetTriple, LongSize, this->CompileKernel,
-      DL->hasCheriCapabilities());
+      DL->getGlobalsAddressSpace() == 200);
 
     if (ClOverrideDestructorKind != AsanDtorKind::Invalid)
       this->DestructorKind = ClOverrideDestructorKind;
@@ -1482,7 +1482,7 @@ static bool isUnsupportedAMDGPUAddrspace(Value *Addr) {
 Value *AddressSanitizer::memToShadow(Value *Mem, IRBuilder<> &IRB) {
   if (this->CompileKernel && TargetTriple.isOSFreeBSD() &&
       TargetTriple.getArch() == Triple::aarch64 && 
-      DL->hasCheriCapabilities()) {
+      DL->getGlobalsAddressSpace() == 200) {
     Mem = IRB.CreateSub(Mem, ConstantInt::get(IntptrTy, Mapping.MemCorrection));
   }
   // Mem >> scale
