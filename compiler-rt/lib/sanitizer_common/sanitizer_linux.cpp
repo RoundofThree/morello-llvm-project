@@ -89,7 +89,7 @@ extern "C" {
 #include <sys/umtx.h>
 }
 #include <sys/thr.h>
-extern const void *__elf_aux_vector;
+extern const void *__elf_aux_vector __attribute__ ((weak));
 #endif  // SANITIZER_FREEBSD
 
 #if SANITIZER_NETBSD
