@@ -9018,14 +9018,15 @@ INTERCEPTOR(char *, MD2Data, const unsigned char *data, unsigned int len,
 
 #if SANITIZER_INTERCEPT_SHA2
 #define SHA2_INTERCEPTORS(LEN, SHA2_STATE_T) \
-  INTERCEPTOR(void, SHA##LEN##_Init, void *context) { \
+  INTERCEPTOR(int, SHA##LEN##_Init, void *context) { \
     void *ctx; \
     COMMON_INTERCEPTOR_ENTER(ctx, SHA##LEN##_Init, context); \
-    REAL(SHA##LEN##_Init)(context); \
+    int ret = REAL(SHA##LEN##_Init)(context); \
     if (context) \
       COMMON_INTERCEPTOR_WRITE_RANGE(ctx, context, SHA##LEN##_CTX_sz); \
+    return ret; \
   } \
-  INTERCEPTOR(void, SHA##LEN##_Update, void *context, \
+  INTERCEPTOR(int, SHA##LEN##_Update, void *context, \
               const u8 *data, SIZE_T len) { \
     void *ctx; \
     COMMON_INTERCEPTOR_ENTER(ctx, SHA##LEN##_Update, context, data, len); \
@@ -9033,22 +9034,24 @@ INTERCEPTOR(char *, MD2Data, const unsigned char *data, unsigned int len,
       COMMON_INTERCEPTOR_READ_RANGE(ctx, data, len); \
     if (context) \
       COMMON_INTERCEPTOR_READ_RANGE(ctx, context, SHA##LEN##_CTX_sz); \
-    REAL(SHA##LEN##_Update)(context, data, len); \
+    int ret = REAL(SHA##LEN##_Update)(context, data, len); \
     if (context) \
       COMMON_INTERCEPTOR_WRITE_RANGE(ctx, context, SHA##LEN##_CTX_sz); \
+    return ret; \
   } \
-  INTERCEPTOR(void, SHA##LEN##_Final, u8 digest[LEN/8], \
+  INTERCEPTOR(int, SHA##LEN##_Final, u8 digest[LEN/8], \
   void *context) { \
     void *ctx; \
     CHECK_EQ(SHA##LEN##_digest_length, LEN/8); \
     COMMON_INTERCEPTOR_ENTER(ctx, SHA##LEN##_Final, digest, context); \
     if (context) \
       COMMON_INTERCEPTOR_READ_RANGE(ctx, context, SHA##LEN##_CTX_sz); \
-    REAL(SHA##LEN##_Final)(digest, context); \
+    int ret = REAL(SHA##LEN##_Final)(digest, context); \
     if (digest) \
       COMMON_INTERCEPTOR_WRITE_RANGE(ctx, digest, \
                                      sizeof(digest[0]) * \
   SHA##LEN##_digest_length); \
+    return ret; \
   } \
   INTERCEPTOR(char *, SHA##LEN##_End, void *context, char *buf) { \
     void *ctx; \
