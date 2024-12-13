@@ -537,7 +537,10 @@ static ShadowMapping getShadowMapping(const Triple &TargetTriple, int LongSize,
         if (IsKasan) {
           Mapping.Offset = kFreeBSDAArch64Kasan_ShadowOffset64;
         } else {
-          Mapping.Offset = kFreeBSDAArch64_ShadowOffset64;
+          // CHERI hybrid ABI compiler-rt is now designed with dynamic shadow offset
+          // XXXR3: before upstreaming, change it to have fixed offset
+          // Mapping.Offset = kFreeBSDAArch64_ShadowOffset64;
+          Mapping.Offset = kDynamicShadowSentinel;
         }
       }
     } else if (IsFreeBSD && !IsMIPS64) {
