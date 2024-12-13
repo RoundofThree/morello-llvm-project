@@ -499,6 +499,8 @@ static void AsanInitInternal() {
     // XXXR3: In CHERI hybrid, a memcpy intrinsic is emitted, so we turn off ASan
     Symbolizer::LateInitialize();
     asan_inited = 1;
+#else
+    Symbolizer::LateInitialize();
 #endif
   }
 
