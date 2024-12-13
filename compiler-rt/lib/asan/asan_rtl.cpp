@@ -494,7 +494,12 @@ static void AsanInitInternal() {
     __lsan::ScopedInterceptorDisabler disabler;
     Symbolizer::LateInitialize();
   } else {
+#if __has_feature(capabilities) && !defined(__CHERI_PURE_CAPABILITY__)
+    asan_inited = 0;
+    // XXXR3: In CHERI hybrid, a memcpy intrinsic is emitted, so we turn off ASan
     Symbolizer::LateInitialize();
+    asan_inited = 1;
+#endif
   }
 
   VReport(1, "AddressSanitizer Init done\n");
