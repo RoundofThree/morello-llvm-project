@@ -591,23 +591,14 @@ struct Allocator {
 
     usize size_rounded_down_to_granularity =
         RoundDownTo(size, ASAN_SHADOW_GRANULARITY);
-    if (fl.heap_spatial_detection) {
-      // Unpoison the bulk of the memory region.
-      if (size_rounded_down_to_granularity)
-        PoisonShadow(user_beg, size_rounded_down_to_granularity, 0);
-      // Deal with the end of the region if size is not aligned to granularity.
-      if (size != size_rounded_down_to_granularity && CanPoisonMemory()) {
-        u8 *shadow =
-            (u8 *)MemToShadow(user_beg + size_rounded_down_to_granularity);
-        *shadow = fl.poison_partial ? (size & (ASAN_SHADOW_GRANULARITY - 1)) : 0;
-      }
-    } else {
-      // Deal with the end of the region if size is not aligned to granularity.
-      if (size != size_rounded_down_to_granularity && CanPoisonMemory()) {
-        u8 *shadow =
-            (u8 *)MemToShadow(user_beg + size_rounded_down_to_granularity);
-        *shadow = fl.poison_partial ? (size & (ASAN_SHADOW_GRANULARITY - 1)) : 0;
-      }
+    // Unpoison the bulk of the memory region.
+    if (size_rounded_down_to_granularity)
+      PoisonShadow(user_beg, size_rounded_down_to_granularity, 0);
+    // Deal with the end of the region if size is not aligned to granularity.
+    if (size != size_rounded_down_to_granularity && CanPoisonMemory()) {
+      u8 *shadow =
+          (u8 *)MemToShadow(user_beg + size_rounded_down_to_granularity);
+      *shadow = fl.poison_partial ? (size & (ASAN_SHADOW_GRANULARITY - 1)) : 0;
     }
 
     AsanStats &thread_stats = GetCurrentThreadStats();
