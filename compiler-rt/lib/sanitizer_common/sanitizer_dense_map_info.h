@@ -101,6 +101,7 @@ struct DenseMapInfo<T *> {
   }
 };
 
+#ifdef __CHERI_PURE_CAPABILITY__
 // Provide DenseMapInfo for uintptr_t
 template <>
 struct DenseMapInfo<uptr> {
@@ -120,6 +121,7 @@ struct DenseMapInfo<uptr> {
     return LHS == RHS;
   }
 };
+#endif
 
 // Provide DenseMapInfo for chars.
 template <>
