@@ -376,7 +376,7 @@ uptr MapDynamicShadow(usize shadow_size_bytes, usize shadow_scale,
   return shadow_start;
 }
 
-uptr FindAvailableMemoryRange(usize size, usize alignment, uptr left_padding,
+uptr FindAvailableMemoryRange(usize size, usize alignment, usize left_padding,
                               uptr *largest_gap_found,
                               uptr *max_occupied_addr) {
   uptr address = 0;

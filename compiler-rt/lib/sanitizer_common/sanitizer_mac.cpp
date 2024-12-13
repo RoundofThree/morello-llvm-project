@@ -1265,9 +1265,9 @@ uptr MapDynamicShadowAndAliases(usize shadow_size, usize alias_size,
   return 0;
 }
 
-vaddr FindAvailableMemoryRange(usize size, usize alignment, usize left_padding,
-                              usize *largest_gap_found,
-                              vaddr *max_occupied_addr) {
+uptr FindAvailableMemoryRange(usize size, usize alignment, usize left_padding,
+                              uptr *largest_gap_found,
+                              uptr *max_occupied_addr) {
   typedef vm_region_submap_short_info_data_64_t RegionInfo;
   enum { kRegionInfoSize = VM_REGION_SUBMAP_SHORT_INFO_COUNT_64 };
   // Start searching for available memory region past PAGEZERO, which is

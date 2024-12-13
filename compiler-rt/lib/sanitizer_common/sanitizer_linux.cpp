@@ -220,7 +220,7 @@ uptr internal_mmap(void *addr, usize length, int prot, int flags, int fd,
 #else
   return internal_syscall(SYSCALL(mmap), (uptr)addr, length, prot, flags, fd,
                           offset);
-#endif // defined(__aarch64__) && __has_feature(capabilities)
+#endif // defined(__aarch64__) && defined(__CHERI_PURE_CAPABILITY__)
 #else
   // mmap2 specifies file offset in 4096-byte units.
   CHECK(IsAligned(offset, 4096));
@@ -2253,6 +2253,7 @@ void CheckASLR() {
     // just yet regarding FreeBSD release
     return;
   }
+  // XXXR3: this crashes when compiling in hybrid ABI
   if ((aslr_status & PROC_ASLR_ACTIVE) != 0) {
     Printf("This sanitizer is not compatible with enabled ASLR "
            "and binaries compiled with PIE\n");
@@ -2302,9 +2303,9 @@ void CheckNoDeepBind(const char *filename, int flag) {
 #endif
 }
 
-int FindAvailableMemoryRange(usize size, usize alignment, usize left_padding,
-                              usize *largest_gap_found,
-                              vaddr *max_occupied_addr) {
+uptr FindAvailableMemoryRange(usize size, usize alignment, usize left_padding,
+                              uptr *largest_gap_found,
+                              uptr *max_occupied_addr) {
   UNREACHABLE("FindAvailableMemoryRange is not available");
   return 0;
 }
