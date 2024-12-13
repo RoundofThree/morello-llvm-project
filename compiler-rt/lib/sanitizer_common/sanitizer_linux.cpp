@@ -198,7 +198,7 @@ ScopedBlockSignals::~ScopedBlockSignals() { SetSigProcMask(&saved_, nullptr); }
 uptr internal_mmap(void *addr, usize length, int prot, int flags, int fd,
                    u64 offset) {
 #if SANITIZER_FREEBSD || SANITIZER_LINUX_USES_64BIT_SYSCALLS
-#if defined(__aarch64__) && __has_feature(capabilities)
+#if defined(__aarch64__) && defined(__CHERI_PURE_CAPABILITY__)
   // __syscall truncates the returned capability to 64-bits
   // so we write ASM
   uptr result;
