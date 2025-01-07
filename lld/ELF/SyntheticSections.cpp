@@ -1394,10 +1394,6 @@ static uint64_t addPltRelSz() {
   if (in.relaIplt->getParent() == in.relaPlt->getParent() &&
       in.relaIplt->name == in.relaPlt->name)
     size += in.relaIplt->getSize();
-
-  if (in.relaDyn->getParent() == in.relaPlt->getParent() &&
-      (in.relaDyn->name == in.relaPlt->name))
-    size += in.relaDyn->getSize();
   return size;
 }
 
@@ -1523,8 +1519,7 @@ DynamicSection<ELFT>::computeContents() {
   // as relaIplt has. And we still want to emit proper dynamic tags for that
   // case, so here we always use relaPlt as marker for the beginning of
   // .rel[a].plt section.
-  if (isMain && (in.relaPlt->isNeeded() || in.relaIplt->isNeeded() ||
-                 in.relaDyn->isNeeded())) {
+  if (isMain && (in.relaPlt->isNeeded() || in.relaIplt->isNeeded())) {
     addInSec(DT_JMPREL, *in.relaPlt);
     entries.emplace_back(DT_PLTRELSZ, addPltRelSz());
     switch (config->emachine) {
