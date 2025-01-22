@@ -535,10 +535,11 @@ Type *EVT::getTypeForEVT(LLVMContext &Context) const {
     return ScalableVectorType::get(Type::getDoubleTy(Context), 8);
   case MVT::Metadata: return Type::getMetadataTy(Context);
   case MVT::c64:
+    return SizedCapabilityType::get(Context, 64);
   case MVT::c128:
+    return SizedCapabilityType::get(Context, 128);
   case MVT::c256:
-    // XXX: Hard-coded AS
-    return PointerType::get(Type::getInt8Ty(Context), 200);
+    return SizedCapabilityType::get(Context, 256);
   }
   // clang-format on
 }
@@ -555,6 +556,8 @@ MVT MVT::getVT(Type *Ty, bool HandleUnknown){
     return MVT::isVoid;
   case Type::IntegerTyID:
     return getIntegerVT(cast<IntegerType>(Ty)->getBitWidth());
+  case Type::SizedCapabilityTyID:
+    return getCapabilityVT(cast<SizedCapabilityType>(Ty)->getBitWidth());
   case Type::HalfTyID:      return MVT(MVT::f16);
   case Type::BFloatTyID:    return MVT(MVT::bf16);
   case Type::FloatTyID:     return MVT(MVT::f32);
@@ -565,13 +568,8 @@ MVT MVT::getVT(Type *Ty, bool HandleUnknown){
   case Type::FP128TyID:     return MVT(MVT::f128);
   case Type::PPC_FP128TyID: return MVT(MVT::ppcf128);
   case Type::PointerTyID: {
-    // FIXME: This used to return a cPTR, but it doesn't work because
-    // now we can't round-trip EVTs through the IR and get the same thing.
-    // This means EVTs containing vectors of capabilities can't work.
-    // Perhaps we should have the diffrent capability types in different
-    // address spaces?
-    if (isCheriPointer(Ty, nullptr))
-      return MVT(MVT::c128);
+    // NB: Removing this upstream, so ensure we haven't made it worse
+    assert(!isCheriPointer(Ty, nullptr));
     return MVT(MVT::iPTR);
   }
   case Type::FixedVectorTyID:
