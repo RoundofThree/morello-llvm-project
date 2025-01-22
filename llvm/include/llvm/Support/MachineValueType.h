@@ -287,13 +287,8 @@ namespace llvm {
       FIRST_CAPABILITY_VALUETYPE = c64,
       LAST_CAPABILITY_VALUETYPE = c256,
 
-      v1c128         = LAST_CAPABILITY_VALUETYPE + 1,
-
-      FIRST_CAPABILITY_VECTOR_VALUETYPE = v1c128,
-      LAST_CAPABILITY_VECTOR_VALUETYPE = v1c128,
-
       FIRST_VALUETYPE =  1,    // This is always the beginning of the list.
-      LAST_VALUETYPE = v1c128, // This always remains at the end of the list.
+      LAST_VALUETYPE = c256,  // This always remains at the end of the list.
       VALUETYPE_SIZE = LAST_VALUETYPE + 1,
 
       // This is the current maximum for LAST_VALUETYPE.
@@ -383,10 +378,8 @@ namespace llvm {
 
     /// Return true if this is a capability type.
     bool isCapability() const {
-      return ((SimpleTy >= MVT::FIRST_CAPABILITY_VALUETYPE &&
-               SimpleTy <= MVT::LAST_CAPABILITY_VALUETYPE) ||
-              (SimpleTy >= MVT::FIRST_CAPABILITY_VECTOR_VALUETYPE &&
-               SimpleTy <= MVT::LAST_CAPABILITY_VECTOR_VALUETYPE));
+      return (SimpleTy >= MVT::FIRST_CAPABILITY_VALUETYPE) &&
+             (SimpleTy <= MVT::LAST_CAPABILITY_VALUETYPE);
     }
 
     /// Return true if this is a capability type. Deprecated.
@@ -413,8 +406,7 @@ namespace llvm {
 
     bool isFixedLengthVector() const {
       return (SimpleTy >= MVT::FIRST_FIXEDLEN_VECTOR_VALUETYPE &&
-              SimpleTy <= MVT::LAST_FIXEDLEN_VECTOR_VALUETYPE) ||
-             SimpleTy == MVT::v1c128;
+              SimpleTy <= MVT::LAST_FIXEDLEN_VECTOR_VALUETYPE);
     }
 
     /// Return true if this is a 16-bit vector type.
@@ -446,8 +438,7 @@ namespace llvm {
               SimpleTy == MVT::v8i16  || SimpleTy == MVT::v4i32  ||
               SimpleTy == MVT::v2i64  || SimpleTy == MVT::v1i128 ||
               SimpleTy == MVT::v8f16  || SimpleTy == MVT::v8bf16 ||
-              SimpleTy == MVT::v4f32 || SimpleTy == MVT::v2f64 ||
-              SimpleTy == MVT::v1c128);
+              SimpleTy == MVT::v4f32  || SimpleTy == MVT::v2f64);
     }
 
     /// Return true if this is a 256-bit vector type.
@@ -720,7 +711,6 @@ namespace llvm {
       case nxv2f64:
       case nxv4f64:
       case nxv8f64: return f64;
-      case v1c128: return c128;
       }
       // clang-format on
     }
@@ -889,8 +879,7 @@ namespace llvm {
       case nxv1f16:
       case nxv1bf16:
       case nxv1f32:
-      case nxv1f64:
-      case v1c128: return 1;
+      case nxv1f64: return 1;
       }
     }
 
@@ -1006,7 +995,6 @@ namespace llvm {
       case ppcf128:
       case i128:
       case c128:
-      case v1c128:
       case v128i1:
       case v16i8:
       case v8i16:
@@ -1398,9 +1386,6 @@ namespace llvm {
         if (NumElements == 64) return MVT::v64f64;
         if (NumElements == 128) return MVT::v128f64;
         if (NumElements == 256) return MVT::v256f64;
-        break;
-      case MVT::v1c128:
-        if (NumElements == 1)  return MVT::v1c128;
         break;
       }
       return (MVT::SimpleValueType)(MVT::INVALID_SIMPLE_VALUE_TYPE);

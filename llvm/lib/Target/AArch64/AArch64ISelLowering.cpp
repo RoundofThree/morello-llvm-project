@@ -21997,9 +21997,6 @@ AArch64TargetLowering::getPreferredVectorAction(MVT VT) const {
       VT == MVT::v1f32)
     return TypeWidenVector;
 
-  if (VT == MVT::v1c128)
-    return TypeScalarizeVector;
-
   return TargetLoweringBase::getPreferredVectorAction(VT);
 }
 

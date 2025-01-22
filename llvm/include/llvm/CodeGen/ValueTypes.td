@@ -230,8 +230,6 @@ def c64  : ValueType<64,  !add(i64x8.Value, 1)>;  // 64-bit capability value
 def c128 : ValueType<128, !add(c64.Value,   1)>;  // 128-bit capability value
 def c256 : ValueType<256, !add(c128.Value,  1)>;  // 256-bit capability value
 
-def v1c128 : ValueType<128, !add(c256.Value, 1)>;
-
 // Pseudo valuetype mapped to the current capability pointer size.
 def cPTR       : ValueType<0, 247>;
 
