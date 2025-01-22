@@ -13729,6 +13729,7 @@ bool AArch64TargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
                                                MachineFunction &MF,
                                                unsigned Intrinsic) const {
   auto &DL = I.getModule()->getDataLayout();
+  const TargetLowering *TLI = MF.getSubtarget().getTargetLowering();
   switch (Intrinsic) {
   case Intrinsic::aarch64_sve_st2:
     return setInfoSVEStN<2>(*this, DL, Info, I);
@@ -13791,7 +13792,7 @@ bool AArch64TargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   case Intrinsic::aarch64_cldxr: {
     Type *ValTy = I.getParamElementType(0);
     Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.memVT = MVT::getVT(ValTy);
+    Info.memVT = TLI->getSimpleValueType(DL, ValTy);
     if (Intrinsic == Intrinsic::aarch64_cldaxr ||
         Intrinsic == Intrinsic::aarch64_cldxr) {
       assert(Info.memVT == MVT::c128);
@@ -13808,7 +13809,7 @@ bool AArch64TargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   case Intrinsic::aarch64_cstxr: {
     Type *ValTy = I.getParamElementType(1);
     Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.memVT = MVT::getVT(ValTy);
+    Info.memVT = TLI->getSimpleValueType(DL, ValTy);
     if (Intrinsic == Intrinsic::aarch64_cstlxr ||
         Intrinsic == Intrinsic::aarch64_cstxr) {
       assert(Info.memVT == MVT::c128);
