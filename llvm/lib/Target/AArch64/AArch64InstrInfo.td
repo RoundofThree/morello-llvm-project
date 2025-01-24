@@ -2627,9 +2627,9 @@ def B  : BranchImm<0, "b", [(br bb:$addr)]>;
 } // isBranch, isTerminator, isBarrier
 
 let isCall = 1, Defs = [LR], Uses = [SP] in {
-def BL : CallImm<1, "bl", [(AArch64call (iPTR tglobaladdr:$addr))]>;
+def BL : CallImm<1, "bl", [(AArch64call tglobaladdr:$addr)]>;
 def PBLClear : Pseudo<(outs), (ins i64imm:$addr),
-                     [(AArch64clearcall (iPTR tglobaladdr:$addr))]>;
+                     [(AArch64clearcall tglobaladdr:$addr)]>;
 } // isCall
 def : Pat<(AArch64call texternalsym:$func), (BL texternalsym:$func)>;
 def : Pat<(AArch64clearcall texternalsym:$func), (PBLClear texternalsym:$func)>;
