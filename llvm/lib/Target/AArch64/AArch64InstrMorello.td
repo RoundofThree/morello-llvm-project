@@ -689,7 +689,7 @@ def : Pat<(ptradd Capsp:$Cn, (i64 (shl GPR64:$Rm, (i64 4)))),
 def : Pat<(ptrtoint Capsp:$Cn), (CapGetValue Capsp:$Cn)>;
 def : Pat<(i32 (ptrtoint Capsp:$Cn)),
            (EXTRACT_SUBREG (CapGetValue Capsp:$Cn), sub_32)>;
-def : Pat<(cbrind Cap:$Cn), (CapBranch Cap:$Cn)>;
+def : Pat<(brind Cap:$Cn), (CapBranch Cap:$Cn)>;
 def : Pat<(AArch64call_bti Cap:$Rn),
           (BLR_BTI Cap:$Rn)>,
       Requires<[NoSLSBLRMitigation]>;
@@ -810,119 +810,119 @@ def : Pat<(i32 (int_cheri_cap_load_tags GPR64sp:$Rn)),
 // Alternate base loads.
 
 // Capabilties
-def : Pat<(cload (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(load (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltLoadCapabilityImmUnscaled Capsp:$Cn, simm9:$imm)>;
 
 // i8
-def : Pat<(i32 (zextcloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i32 (zextloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadByteImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(i32 (extcloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i32 (extloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadByteImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(i64 (zextcloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (zextloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (SUBREG_TO_REG (i64 0), (AltLoadByteImmUnscaled Capsp:$Cn,
                                                           simm9:$imm),
                          sub_32)>;
-def : Pat<(i64 (extcloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (extloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (SUBREG_TO_REG (i64 0), (AltLoadByteImmUnscaled Capsp:$Cn,
                                                           simm9:$imm),
                           sub_32)>;
-def : Pat<(i32 (extcloadi1 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i32 (extloadi1 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadByteImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(i32 (zextcloadi1 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i32 (zextloadi1 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadByteImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(i64 (extcloadi1 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (extloadi1 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (SUBREG_TO_REG (i64 0), (AltLoadByteImmUnscaled Capsp:$Cn,
                                                           simm9:$imm),
                          sub_32)>;
-def : Pat<(i64 (zextcloadi1 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (zextloadi1 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (SUBREG_TO_REG (i64 0), (AltLoadByteImmUnscaled Capsp:$Cn,
                                                           simm9:$imm),
                          sub_32)>;
-def : Pat<(i32 (sextcloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i32 (sextloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadSignedByteToWordImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(i64 (sextcloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (sextloadi8 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadSignedByteToDWordImmUnscaled Capsp:$Cn, simm9:$imm)>;
 
 // i16
-def : Pat<(i32 (zextcloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i32 (zextloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadHalfImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(i32 (extcloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i32 (extloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadHalfImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(i64 (zextcloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (zextloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (SUBREG_TO_REG (i64 0), (AltLoadHalfImmUnscaled Capsp:$Cn,
                                                           simm9:$imm),
                          sub_32)>;
-def : Pat<(i64 (extcloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (extloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (SUBREG_TO_REG (i64 0), (AltLoadHalfImmUnscaled Capsp:$Cn,
                                                           simm9:$imm),
                          sub_32)>;
-def : Pat<(i32 (sextcloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i32 (sextloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadSignedHalfToWordImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(i64 (sextcloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (sextloadi16 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadSignedHalfToDWordImmUnscaled Capsp:$Cn, simm9:$imm)>;
 
 // i32
-def : Pat<(i32 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i32 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadWordImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(i64 (zextcloadi32 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (zextloadi32 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (SUBREG_TO_REG (i64 0), (AltLoadWordImmUnscaled Capsp:$Cn,
                                                           simm9:$imm),
                          sub_32)>;
-def : Pat<(i64 (extcloadi32 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (extloadi32 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (SUBREG_TO_REG (i64 0), (AltLoadWordImmUnscaled Capsp:$Cn,
                                                           simm9:$imm),
                          sub_32)>;
-def : Pat<(i64 (sextcloadi32 (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (sextloadi32 (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadSignedWordToDWordImmUnscaled Capsp:$Cn, simm9:$imm)>;
 
 // i64
-def : Pat<(i64 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(i64 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadDWordImmUnscaled Capsp:$Cn, simm9:$imm)>;
 
 // f16
-def : Pat<(f16 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(f16 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPHalfImmUnscaled Capsp:$Cn, simm9:$imm)>;
 // f32
-def : Pat<(f32 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(f32 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPSingleImmUnscaled Capsp:$Cn, simm9:$imm)>;
 // f64
-def : Pat<(f64 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(f64 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPDoubleImmUnscaled Capsp:$Cn, simm9:$imm)>;
 // f128
-def : Pat<(f128 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(f128 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPQuadImmUnscaled Capsp:$Cn, simm9:$imm)>;
 } // Predicates = [HasMorello, HasNotC64]
 
 let Predicates = [IsLE, HasMorello, HasNotC64] in {
 // Quad patterns
-def : Pat<(v8f16 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v8f16 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPQuadImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v4f32 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v4f32 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPQuadImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v2f64 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v2f64 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPQuadImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v16i8 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v16i8 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPQuadImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v8i16 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v8i16 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPQuadImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v4i32 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v4i32 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPQuadImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v2i64 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v2i64 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPQuadImmUnscaled Capsp:$Cn, simm9:$imm)>;
 // Double patterns
-def : Pat<(v4f16 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v4f16 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPDoubleImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v2f32 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v2f32 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPDoubleImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v1f64 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v1f64 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPDoubleImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v8i8 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v8i8 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPDoubleImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v4i16 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v4i16 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPDoubleImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v2i32 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v2i32 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPDoubleImmUnscaled Capsp:$Cn, simm9:$imm)>;
-def : Pat<(v1i64 (cload (am_cunscaled Capsp:$Cn, simm9:$imm))),
+def : Pat<(v1i64 (load (am_cunscaled Capsp:$Cn, simm9:$imm))),
           (AltLoadFPDoubleImmUnscaled Capsp:$Cn, simm9:$imm)>;
 }
 
@@ -930,92 +930,92 @@ let Predicates = [HasMorello, HasNotC64] in {
 // Alternate base stores.
 
 // Capabilties
-def : Pat<(cstore Cap:$Ct, (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(store Cap:$Ct, (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreCapabilityImmUnscaled Cap:$Ct, Capsp:$Cn, simm9:$imm)>;
 
 // i8
 let AddedComplexity = 5 in
-def : Pat<(trunccstorei8 GPR32:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(truncstorei8 GPR32:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreByteImmUnscaled GPR32:$Rt, Capsp:$Cn, simm9:$imm)>;
 let AddedComplexity = 10 in
-def : Pat<(trunccstorei8 GPR64:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(truncstorei8 GPR64:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreByteImmUnscaled (EXTRACT_SUBREG GPR64:$Rt, sub_32),
                                    Capsp:$Cn, simm9:$imm)>;
 
 // i16
 let AddedComplexity = 5 in
-def : Pat<(trunccstorei16 GPR32:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(truncstorei16 GPR32:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreHalfImmUnscaled GPR32:$Rt, Capsp:$Cn, simm9:$imm)>;
 let AddedComplexity = 10 in
-def : Pat<(trunccstorei16 GPR64:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(truncstorei16 GPR64:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreHalfImmUnscaled (EXTRACT_SUBREG GPR64:$Rt, sub_32),
                                    Capsp:$Cn, simm9:$imm)>;
 
 // i32
 let AddedComplexity = 5 in
-def : Pat<(cstore GPR32:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(store GPR32:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreWordImmUnscaled GPR32:$Rt, Capsp:$Cn, simm9:$imm)>;
 let AddedComplexity = 10 in
-def : Pat<(trunccstorei32 GPR64:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(truncstorei32 GPR64:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreWordImmUnscaled (EXTRACT_SUBREG GPR64:$Rt, sub_32),
                                    Capsp:$Cn, simm9:$imm)>;
 
 // i64
 let AddedComplexity = 5 in
-def : Pat<(cstore GPR64:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(store GPR64:$Rt, (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreDWordImmUnscaled GPR64:$Rt, Capsp:$Cn, simm9:$imm)>;
 
 // f16
 let AddedComplexity = 5 in
-def : Pat<(cstore (f16 FPR16:$Rt), (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(store (f16 FPR16:$Rt), (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreFPHalfImmUnscaled FPR16:$Rt, Capsp:$Cn, simm9:$imm)>;
 
 // f32
 let AddedComplexity = 5 in
-def : Pat<(cstore (f32 FPR32:$Rt), (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(store (f32 FPR32:$Rt), (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreFPSingleImmUnscaled FPR32:$Rt, Capsp:$Cn, simm9:$imm)>;
 
 // f64
 let AddedComplexity = 5 in
-def : Pat<(cstore (f64 FPR64:$Rt), (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(store (f64 FPR64:$Rt), (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreFPDoubleImmUnscaled FPR64:$Rt, Capsp:$Cn, simm9:$imm)>;
 
 // f128
 let AddedComplexity = 5 in
-def : Pat<(cstore (f128 FPR128:$Rt), (am_cunscaled Capsp:$Cn, simm9:$imm)),
+def : Pat<(store (f128 FPR128:$Rt), (am_cunscaled Capsp:$Cn, simm9:$imm)),
           (AltStoreFPQuadImmUnscaled FPR128:$Rt, Capsp:$Cn, simm9:$imm)>;
 } // Predicates = [HasMorello, HasNotC64]
 
 let Predicates = [IsLE, HasMorello, HasNotC64] in {
 // Quad patterns
-def : Pat<(cstore (v8f16 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v8f16 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPQuadImmUnscaled FPR128:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v4f32 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v4f32 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPQuadImmUnscaled FPR128:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v2f64 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v2f64 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPQuadImmUnscaled FPR128:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v16i8 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v16i8 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPQuadImmUnscaled FPR128:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v8i16 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v8i16 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPQuadImmUnscaled FPR128:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v4i32 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v4i32 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPQuadImmUnscaled FPR128:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v2i64 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v2i64 FPR128:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPQuadImmUnscaled FPR128:$Rt, Capsp:$Rn, simm9:$imm)>;
 // Double patterns
-def : Pat<(cstore (v4f16 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v4f16 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPDoubleImmUnscaled FPR64:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v2f32 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v2f32 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPDoubleImmUnscaled FPR64:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v1f64 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v1f64 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPDoubleImmUnscaled FPR64:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v8i8 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v8i8 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPDoubleImmUnscaled FPR64:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v4i16 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v4i16 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPDoubleImmUnscaled FPR64:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v2i32 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v2i32 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPDoubleImmUnscaled FPR64:$Rt, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore (v1i64 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
+def : Pat<(store (v1i64 FPR64:$Rt), (am_cunscaled Capsp:$Rn, simm9:$imm)),
           (AltStoreFPDoubleImmUnscaled FPR64:$Rt, Capsp:$Rn, simm9:$imm)>;
 } // Predicates = [IsLE, HasMorello, HasNotC64]
 
@@ -1046,140 +1046,140 @@ def : Pat<(store Cap:$Ct, (ro_Xindexed128 GPR64sp:$Rn, GPR64:$Rm,
 let AddedComplexity = 3 in {
 // Alternate base register offset loads
 // Capability loads
-def : Pat<(cload (cro_Windexed128 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(load (cro_Windexed128 Capsp:$Rn, GPR32:$Rm,
                                   ro_Wextend128:$extend)),
           (AltLoadCapRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend128:$extend)>;
-def : Pat<(cload (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(load (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm,
                                   ro_Xextend128:$extend)),
           (AltLoadCapRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend128:$extend)>;
 // Integer loads
-def : Pat<(cload (cro_Windexed32 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(load (cro_Windexed32 Capsp:$Rn, GPR32:$Rm,
                                               ro_Wextend32:$extend)),
           (AltLoadSWordRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend32:$extend)>;
-def : Pat<(cload (cro_Xindexed32 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(load (cro_Xindexed32 Capsp:$Rn, GPR64:$Rm,
                                              ro_Xextend32:$extend)),
           (AltLoadSWordRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend32:$extend)>;
-def : Pat<(cload (cro_Windexed64 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(load (cro_Windexed64 Capsp:$Rn, GPR32:$Rm,
                                  ro_Wextend64:$extend)),
           (AltLoadDWordRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend64:$extend)>;
-def : Pat<(cload (cro_Xindexed64 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(load (cro_Xindexed64 Capsp:$Rn, GPR64:$Rm,
                                  ro_Xextend64:$extend)),
           (AltLoadDWordRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend64:$extend)>;
 // Single FP loads
-def : Pat<(f32 (cload (cro_Windexed32 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(f32 (load (cro_Windexed32 Capsp:$Rn, GPR32:$Rm,
                                       ro_Wextend32:$extend))),
           (AltLoadSFPRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend32:$extend)>;
-def : Pat<(f32 (cload (cro_Xindexed32 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(f32 (load (cro_Xindexed32 Capsp:$Rn, GPR64:$Rm,
                                       ro_Xextend32:$extend))),
           (AltLoadSFPRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend32:$extend)>;
 // Sign extending loads
 // i8
-def : Pat<(i64 (sextcloadi8 (cro_Windexed8 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(i64 (sextloadi8 (cro_Windexed8 Capsp:$Rn, GPR32:$Rm,
                                            ro_Wextend8:$extend))),
           (AltLoadSignedByteDRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend8:$extend)>;
-def : Pat<(i64 (sextcloadi8 (cro_Xindexed8 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(i64 (sextloadi8 (cro_Xindexed8 Capsp:$Rn, GPR64:$Rm,
                                            ro_Xextend8:$extend))),
           (AltLoadSignedByteDRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend8:$extend)>;
-def : Pat<(i32 (sextcloadi8 (cro_Windexed8 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(i32 (sextloadi8 (cro_Windexed8 Capsp:$Rn, GPR32:$Rm,
                                            ro_Wextend8:$extend))),
           (AltLoadSignedByteSRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend8:$extend)>;
-def : Pat<(i32 (sextcloadi8 (cro_Xindexed8 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(i32 (sextloadi8 (cro_Xindexed8 Capsp:$Rn, GPR64:$Rm,
                                            ro_Xextend8:$extend))),
           (AltLoadSignedByteSRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend8:$extend)>;
 // i16
-def : Pat<(i64 (sextcloadi16 (cro_Windexed16 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(i64 (sextloadi16 (cro_Windexed16 Capsp:$Rn, GPR32:$Rm,
                                              ro_Wextend16:$extend))),
           (AltLoadSignedHalfwordDRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend16:$extend)>;
-def : Pat<(i64 (sextcloadi16 (cro_Xindexed16 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(i64 (sextloadi16 (cro_Xindexed16 Capsp:$Rn, GPR64:$Rm,
                                              ro_Xextend16:$extend))),
           (AltLoadSignedHalfwordDRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend16:$extend)>;
-def : Pat<(i32 (sextcloadi16 (cro_Windexed16 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(i32 (sextloadi16 (cro_Windexed16 Capsp:$Rn, GPR32:$Rm,
                                              ro_Wextend16:$extend))),
           (AltLoadSignedHalfwordSRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend16:$extend)>;
-def : Pat<(i32 (sextcloadi16 (cro_Xindexed16 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(i32 (sextloadi16 (cro_Xindexed16 Capsp:$Rn, GPR64:$Rm,
                                              ro_Xextend16:$extend))),
           (AltLoadSignedHalfwordSRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend16:$extend)>;
 // Zero extending loads
 // i8
-def : Pat<(zextcloadi8 (cro_Windexed8 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(zextloadi8 (cro_Windexed8 Capsp:$Rn, GPR32:$Rm,
                                       ro_Wextend8:$extend)),
           (AltLoadByteRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend8:$extend)>;
-def : Pat<(zextcloadi8 (cro_Xindexed8 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(zextloadi8 (cro_Xindexed8 Capsp:$Rn, GPR64:$Rm,
                                            ro_Xextend8:$extend)),
           (AltLoadByteRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend8:$extend)>;
 // i16
-def : Pat<(zextcloadi16 (cro_Windexed16 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(zextloadi16 (cro_Windexed16 Capsp:$Rn, GPR32:$Rm,
                                         ro_Wextend16:$extend)),
           (AltLoadHalfwordRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend16:$extend)>;
-def : Pat<(zextcloadi16 (cro_Xindexed16 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(zextloadi16 (cro_Xindexed16 Capsp:$Rn, GPR64:$Rm,
                                         ro_Xextend16:$extend)),
           (AltLoadHalfwordRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend16:$extend)>;
 // Ext loads
 // i8
-def : Pat<(extcloadi8 (cro_Windexed8 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(extloadi8 (cro_Windexed8 Capsp:$Rn, GPR32:$Rm,
                                      ro_Wextend8:$extend)),
           (AltLoadByteRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend8:$extend)>;
-def : Pat<(extcloadi8 (cro_Xindexed8 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(extloadi8 (cro_Xindexed8 Capsp:$Rn, GPR64:$Rm,
                                            ro_Xextend8:$extend)),
           (AltLoadByteRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend8:$extend)>;
 // i16
-def : Pat<(extcloadi16 (cro_Windexed16 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(extloadi16 (cro_Windexed16 Capsp:$Rn, GPR32:$Rm,
                                        ro_Wextend16:$extend)),
           (AltLoadHalfwordRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend16:$extend)>;
-def : Pat<(extcloadi16 (cro_Xindexed16 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(extloadi16 (cro_Xindexed16 Capsp:$Rn, GPR64:$Rm,
                                        ro_Xextend16:$extend)),
           (AltLoadHalfwordRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend16:$extend)>;
 
 // Alternate base register offset stores
 // Capability stores
-def : Pat<(cstore Cap:$Ct, (cro_Windexed128 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(store Cap:$Ct, (cro_Windexed128 Capsp:$Rn, GPR32:$Rm,
                                             ro_Wextend128:$extend)),
           (AltStoreCapRegExtW Cap:$Ct, Capsp:$Rn, GPR32:$Rm,
                               ro_Wextend128:$extend)>;
-def : Pat<(cstore Cap:$Ct, (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(store Cap:$Ct, (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm,
                                             ro_Xextend128:$extend)),
           (AltStoreCapRegExtX Cap:$Ct, Capsp:$Rn, GPR64:$Rm,
                               ro_Xextend128:$extend)>;
 // Integer stores
-def : Pat<(cstore GPR32:$Rt, (cro_Windexed32 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(store GPR32:$Rt, (cro_Windexed32 Capsp:$Rn, GPR32:$Rm,
                                               ro_Wextend32:$extend)),
           (AltStoreSWordRegExtW GPR32:$Rt, Capsp:$Rn, GPR32:$Rm,
                                 ro_Wextend32:$extend)>;
-def : Pat<(cstore GPR32:$Rt, (cro_Xindexed32 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(store GPR32:$Rt, (cro_Xindexed32 Capsp:$Rn, GPR64:$Rm,
                                              ro_Xextend32:$extend)),
           (AltStoreSWordRegExtX GPR32:$Rt, Capsp:$Rn, GPR64:$Rm,
                                 ro_Xextend32:$extend)>;
-def : Pat<(cstore GPR64:$Rt, (cro_Windexed64 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(store GPR64:$Rt, (cro_Windexed64 Capsp:$Rn, GPR32:$Rm,
                                               ro_Wextend64:$extend)),
           (AltStoreDWordRegExtW GPR64:$Rt, Capsp:$Rn, GPR32:$Rm,
                                 ro_Wextend64:$extend)>;
-def : Pat<(cstore GPR64:$Rt, (cro_Xindexed64 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(store GPR64:$Rt, (cro_Xindexed64 Capsp:$Rn, GPR64:$Rm,
                                              ro_Xextend64:$extend)),
           (AltStoreDWordRegExtX GPR64:$Rt, Capsp:$Rn, GPR64:$Rm,
                                 ro_Xextend64:$extend)>;
 // Single FP stores
-def : Pat<(cstore (f32 FPR32:$Rt), (cro_Windexed32 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(store (f32 FPR32:$Rt), (cro_Windexed32 Capsp:$Rn, GPR32:$Rm,
                                                     ro_Wextend32:$extend)),
           (AltStoreSFPRegExtW FPR32:$Rt, Capsp:$Rn, GPR32:$Rm,
                               ro_Wextend32:$extend)>;
-def : Pat<(cstore (f32 FPR32:$Rt), (cro_Xindexed32 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(store (f32 FPR32:$Rt), (cro_Xindexed32 Capsp:$Rn, GPR64:$Rm,
                                                     ro_Xextend32:$extend)),
           (AltStoreSFPRegExtX FPR32:$Rt, Capsp:$Rn, GPR64:$Rm,
                               ro_Xextend32:$extend)>;
 // Truncating stores
-def : Pat<(trunccstorei8 GPR32:$Rt, (cro_Windexed8 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(truncstorei8 GPR32:$Rt, (cro_Windexed8 Capsp:$Rn, GPR32:$Rm,
                                               ro_Wextend8:$extend)),
           (AltStoreByteRegExtW GPR32:$Rt, Capsp:$Rn, GPR32:$Rm,
                                 ro_Wextend8:$extend)>;
-def : Pat<(trunccstorei8 GPR32:$Rt, (cro_Xindexed8 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(truncstorei8 GPR32:$Rt, (cro_Xindexed8 Capsp:$Rn, GPR64:$Rm,
                                              ro_Xextend8:$extend)),
           (AltStoreByteRegExtX GPR32:$Rt, Capsp:$Rn, GPR64:$Rm,
                                 ro_Xextend8:$extend)>;
-def : Pat<(trunccstorei16 GPR32:$Rt, (cro_Windexed16 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(truncstorei16 GPR32:$Rt, (cro_Windexed16 Capsp:$Rn, GPR32:$Rm,
                                       ro_Wextend16:$extend)),
           (AltStoreHalfwordRegExtW GPR32:$Rt, Capsp:$Rn, GPR32:$Rm,
                                    ro_Wextend16:$extend)>;
-def : Pat<(trunccstorei16 GPR32:$Rt, (cro_Xindexed16 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(truncstorei16 GPR32:$Rt, (cro_Xindexed16 Capsp:$Rn, GPR64:$Rm,
                                              ro_Xextend16:$extend)),
           (AltStoreHalfwordRegExtX GPR32:$Rt, Capsp:$Rn, GPR64:$Rm,
                                    ro_Xextend16:$extend)>;
@@ -1188,17 +1188,17 @@ def : Pat<(trunccstorei16 GPR32:$Rt, (cro_Xindexed16 Capsp:$Rn, GPR64:$Rm,
 
 // Double FP loads and stores
 multiclass AltRegExtDoubleFPPat<ValueType type> {
-  def : Pat<(type (cload (cro_Windexed64 Capsp:$Rn, GPR32:$Rm,
+  def : Pat<(type (load (cro_Windexed64 Capsp:$Rn, GPR32:$Rm,
                                          ro_Wextend64:$extend))),
             (AltLoadDFPRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend64:$extend)>;
-  def : Pat<(type (cload (cro_Xindexed64 Capsp:$Rn, GPR64:$Rm,
+  def : Pat<(type (load (cro_Xindexed64 Capsp:$Rn, GPR64:$Rm,
                                          ro_Xextend64:$extend))),
             (AltLoadDFPRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend64:$extend)>;
-  def : Pat<(cstore (type FPR64:$Rt), (cro_Windexed64 Capsp:$Rn, GPR32:$Rm,
+  def : Pat<(store (type FPR64:$Rt), (cro_Windexed64 Capsp:$Rn, GPR32:$Rm,
                                                ro_Wextend64:$extend)),
             (AltStoreDFPRegExtW FPR64:$Rt, Capsp:$Rn, GPR32:$Rm,
                                 ro_Wextend64:$extend)>;
-  def : Pat<(cstore (type FPR64:$Rt), (cro_Xindexed64 Capsp:$Rn, GPR64:$Rm,
+  def : Pat<(store (type FPR64:$Rt), (cro_Xindexed64 Capsp:$Rn, GPR64:$Rm,
                                                ro_Xextend64:$extend)),
             (AltStoreDFPRegExtX FPR64:$Rt, Capsp:$Rn, GPR64:$Rm,
                                 ro_Xextend64:$extend)>;
@@ -1243,33 +1243,33 @@ def : Pat<(acquiring_load<atomic_load_cap>  GPR64sp:$ptr),
           (CapLoadAcq GPR64sp:$ptr)>;
 
 // Alternate base patterns.
-def : Pat<(seq_cst_load<atomic_cload_8>  Capsp:$ptr),
+def : Pat<(seq_cst_load<atomic_load_8>  Capsp:$ptr),
           (AltLoadByteAcq Capsp:$ptr)>;
-def : Pat<(acquiring_load<atomic_cload_8>  Capsp:$ptr),
+def : Pat<(acquiring_load<atomic_load_8>  Capsp:$ptr),
           (AltLoadByteAcq Capsp:$ptr)>;
-def : Pat<(relaxed_load<atomic_cload_8>
+def : Pat<(relaxed_load<atomic_load_8>
                (am_cunscaled Capsp:$Cn, simm9:$offset)),
           (AltLoadByteImmUnscaled Capsp:$Cn, simm9:$offset)>;
 
-def : Pat<(relaxed_load<atomic_cload_16>
+def : Pat<(relaxed_load<atomic_load_16>
                (am_cunscaled Capsp:$Cn, simm9:$offset)),
           (AltLoadHalfImmUnscaled Capsp:$Cn, simm9:$offset)>;
 
-def : Pat<(seq_cst_load<atomic_cload_32> Capsp:$ptr),
+def : Pat<(seq_cst_load<atomic_load_32> Capsp:$ptr),
           (AltLoadWordAcq Capsp:$ptr)>;
-def : Pat<(acquiring_load<atomic_cload_32> Capsp:$ptr),
+def : Pat<(acquiring_load<atomic_load_32> Capsp:$ptr),
           (AltLoadWordAcq Capsp:$ptr)>;
-def : Pat<(relaxed_load<atomic_cload_32>
+def : Pat<(relaxed_load<atomic_load_32>
                (am_cunscaled Capsp:$Cn, simm9:$offset)),
           (AltLoadWordImmUnscaled Capsp:$Cn, simm9:$offset)>;
 
-def : Pat<(relaxed_load<atomic_cload_64>
+def : Pat<(relaxed_load<atomic_load_64>
                (am_cunscaled Capsp:$Cn, simm9:$offset)),
           (AltLoadDWordImmUnscaled Capsp:$Cn, simm9:$offset)>;
 
-def : Pat<(seq_cst_load<atomic_cload_cap> Capsp:$ptr), (AltCapLoadAcq Capsp:$ptr)>;
-def : Pat<(acquiring_load<atomic_cload_cap> Capsp:$ptr), (AltCapLoadAcq Capsp:$ptr)>;
-def : Pat<(relaxed_load<atomic_cload_cap>
+def : Pat<(seq_cst_load<atomic_load_cap> Capsp:$ptr), (AltCapLoadAcq Capsp:$ptr)>;
+def : Pat<(acquiring_load<atomic_load_cap> Capsp:$ptr), (AltCapLoadAcq Capsp:$ptr)>;
+def : Pat<(relaxed_load<atomic_load_cap>
                (am_cunscaled128_8 Capsp:$Cn, simm9:$offset)),
           (AltLoadCapabilityImmUnscaled Capsp:$Cn, simm9:$offset)>;
 }
@@ -1289,29 +1289,29 @@ def : Pat<(relaxed_store<atomic_store_cap>
 def : Pat<(releasing_store<atomic_store_cap> GPR64sp:$ptr, Cap:$val),
           (CapStoreRel Cap:$val, GPR64sp:$ptr)>;
 
-def : Pat<(relaxed_store<atomic_cstore_8>
+def : Pat<(relaxed_store<atomic_store_8>
                (am_cunscaled Capsp:$Cn, simm9:$offset), GPR32:$val),
           (AltStoreByteImmUnscaled GPR32:$val, Capsp:$Cn, simm9:$offset)>;
-def : Pat<(releasing_store<atomic_cstore_8> Capsp:$ptr, GPR32:$val),
+def : Pat<(releasing_store<atomic_store_8> Capsp:$ptr, GPR32:$val),
           (AltStoreByteRel GPR32:$val, Capsp:$ptr)>;
 
-def : Pat<(relaxed_store<atomic_cstore_16>
+def : Pat<(relaxed_store<atomic_store_16>
                (am_cunscaled Capsp:$Cn, simm9:$offset), GPR32:$val),
           (AltStoreHalfImmUnscaled GPR32:$val, Capsp:$Cn, simm9:$offset)>;
 
-def : Pat<(releasing_store<atomic_cstore_32> Capsp:$ptr, GPR32:$val),
+def : Pat<(releasing_store<atomic_store_32> Capsp:$ptr, GPR32:$val),
           (AltStoreWordRel GPR32:$val, Capsp:$ptr)>;
-def : Pat<(relaxed_store<atomic_cstore_32>
+def : Pat<(relaxed_store<atomic_store_32>
                (am_cunscaled Capsp:$Cn, simm9:$offset), GPR32:$val),
           (AltStoreWordImmUnscaled GPR32:$val, Capsp:$Cn, simm9:$offset)>;
 
-def : Pat<(relaxed_store<atomic_cstore_64>
+def : Pat<(relaxed_store<atomic_store_64>
                (am_cunscaled Capsp:$Cn, simm9:$offset), GPR64:$val),
           (AltStoreDWordImmUnscaled GPR64:$val, Capsp:$Cn, simm9:$offset)>;
 
-def : Pat<(releasing_store<atomic_cstore_cap> Capsp:$ptr, Capsp:$val),
+def : Pat<(releasing_store<atomic_store_cap> Capsp:$ptr, Capsp:$val),
           (AltCapStoreRel Capsp:$val, Capsp:$ptr)>;
-def : Pat<(relaxed_store<atomic_cstore_cap>
+def : Pat<(relaxed_store<atomic_store_cap>
                (am_cunscaled Capsp:$Cn, simm9:$offset), Capsp:$val),
           (AltStoreCapabilityImmUnscaled Capsp:$val, Capsp:$Cn,
                                          simm9:$offset)>;

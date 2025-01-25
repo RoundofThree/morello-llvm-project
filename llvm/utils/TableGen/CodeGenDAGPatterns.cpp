@@ -967,9 +967,6 @@ std::string TreePredicateFn::getPredCode() const {
     if (ScalarMemoryVT)
       PrintFatalError(getOrigPatFragRecord()->getRecord()->getLoc(),
                       "ScalarMemoryVT requires IsLoad or IsStore");
-    if (isCapability())
-      PrintFatalError(getOrigPatFragRecord()->getRecord()->getLoc(),
-                      "Capability requires IsLoad or IsStore");
   }
 
   if (isLoad() + isStore() + isAtomic() > 1)
@@ -1173,13 +1170,6 @@ std::string TreePredicateFn::getPredCode() const {
                ">(N)->getMemoryVT().getScalarType() != MVT::" +
                ScalarMemoryVT->getName() + ") return false;\n")
                   .str();
-
-    if (isCapability())
-      Code +=
-            " if (!accessesMemoryViaCapability(N)) return false;\n";
-    else
-      Code +=
-            " if (accessesMemoryViaCapability(N)) return false;\n";
   }
 
   if (hasNoUse())
@@ -1248,9 +1238,6 @@ bool TreePredicateFn::isNonExtLoad() const {
 }
 bool TreePredicateFn::isAnyExtLoad() const {
   return isPredefinedPredicateEqualTo("IsAnyExtLoad", true);
-}
-bool TreePredicateFn::isCapability() const {
-  return isPredefinedPredicateEqualTo("IsCapability", true);
 }
 bool TreePredicateFn::isSignExtLoad() const {
   return isPredefinedPredicateEqualTo("IsSignExtLoad", true);

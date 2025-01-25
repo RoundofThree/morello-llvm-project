@@ -716,25 +716,25 @@ def : Pat<(store (v1i64 FPR64:$Rt), (am_punscaled GPR64sp:$Rn, simm9:$imm)),
 
 let Predicates = [HasMorello, HasC64] in {
 // Capability loads.
-def : Pat<(cload (am_cindexed128 Capsp:$Rn, uimm12s16:$imm)),
+def : Pat<(load (am_cindexed128 Capsp:$Rn, uimm12s16:$imm)),
           (PCapLoadImmPre Capsp:$Rn, uimm12s16:$imm)>;
-def : Pat<(cload (am_pcunscaled128 Capsp:$Rn, simm9:$imm)),
+def : Pat<(load (am_pcunscaled128 Capsp:$Rn, simm9:$imm)),
           (PCapLoadUnscaledImm Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cload (cro_Windexed128 Capsp:$Rn, GPR32:$Rm, ro_Wextend128:$extend)),
+def : Pat<(load (cro_Windexed128 Capsp:$Rn, GPR32:$Rm, ro_Wextend128:$extend)),
           (PCapLoadRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend128:$extend)>;
-def : Pat<(cload (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm, ro_Xextend128:$extend)),
+def : Pat<(load (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm, ro_Xextend128:$extend)),
           (PCapLoadRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend128:$extend)>;
 
 // Capability stores.
-def : Pat<(cstore Cap:$Ct, (am_cindexed128 Capsp:$Rn, uimm12s16:$imm)),
+def : Pat<(store Cap:$Ct, (am_cindexed128 Capsp:$Rn, uimm12s16:$imm)),
           (PCapStoreImmPre Cap:$Ct, Capsp:$Rn, uimm12s16:$imm)>;
-def : Pat<(cstore Cap:$Ct, (am_pcunscaled128 Capsp:$Rn, simm9:$imm)),
+def : Pat<(store Cap:$Ct, (am_pcunscaled128 Capsp:$Rn, simm9:$imm)),
           (PCapStoreUnscaledImm Cap:$Ct, Capsp:$Rn, simm9:$imm)>;
-def : Pat<(cstore Cap:$Ct, (cro_Windexed128 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(store Cap:$Ct, (cro_Windexed128 Capsp:$Rn, GPR32:$Rm,
                                           ro_Wextend128:$extend)),
           (PCapStoreRegExtW Cap:$Ct, Capsp:$Rn, GPR32:$Rm,
                            ro_Wextend128:$extend)>;
-def : Pat<(cstore Cap:$Ct, (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(store Cap:$Ct, (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm,
                                            ro_Xextend128:$extend)),
           (PCapStoreRegExtX Cap:$Ct, Capsp:$Rn, GPR64:$Rm,
                            ro_Xextend128:$extend)>;
@@ -747,21 +747,21 @@ def : Pat<(cstore Cap:$Ct, (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm,
 let Predicates = [HasMorello, HasC64] in {
 def : Pat<(ldxr_fatptr Capsp:$addr), (PCapLoadEx Capsp:$addr)>;
 def : Pat<(ldaxr_fatptr Capsp:$addr), (PCapLoadExAcq Capsp:$addr)>;
-def : Pat<(relaxed_load<atomic_cload_cap>
+def : Pat<(relaxed_load<atomic_load_cap>
                (am_cindexed128 Capsp:$Cn, uimm12s16:$offset)),
           (PCapLoadImmPre Capsp:$Cn, uimm12s16:$offset)>;
-def : Pat<(relaxed_load<atomic_cload_cap> (cro_Windexed128 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(relaxed_load<atomic_load_cap> (cro_Windexed128 Capsp:$Rn, GPR32:$Rm,
                                                        ro_Wextend128:$extend)),
           (PCapLoadRegExtW Capsp:$Rn, GPR32:$Rm, ro_Wextend128:$extend)>;
-def : Pat<(relaxed_load<atomic_cload_cap> (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(relaxed_load<atomic_load_cap> (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm,
                                                        ro_Xextend128:$extend)),
           (PCapLoadRegExtX Capsp:$Rn, GPR64:$Rm, ro_Xextend128:$extend)>;
-def : Pat<(relaxed_load<atomic_cload_cap>
+def : Pat<(relaxed_load<atomic_load_cap>
                (am_pcunscaled128 Capsp:$Rn, simm9:$offset)),
           (PCapLoadUnscaledImm Capsp:$Rn, simm9:$offset)>;
-def : Pat<(seq_cst_load<atomic_cload_cap>  Capsp:$ptr),
+def : Pat<(seq_cst_load<atomic_load_cap>  Capsp:$ptr),
           (PCapLoadAcq Capsp:$ptr)>;
-def : Pat<(acquiring_load<atomic_cload_cap>  Capsp:$ptr),
+def : Pat<(acquiring_load<atomic_load_cap>  Capsp:$ptr),
           (PCapLoadAcq Capsp:$ptr)>;
 }
 
@@ -774,21 +774,21 @@ def : Pat<(stxr_fatptr Cap:$val, Capsp:$addr),
           (PCapStoreEx Cap:$val, Capsp:$addr)>;
 def : Pat<(stlxr_fatptr Cap:$val, Capsp:$addr),
           (PCapStoreExRel Cap:$val, Capsp:$addr)>;
-def : Pat<(relaxed_store<atomic_cstore_cap>
+def : Pat<(relaxed_store<atomic_store_cap>
                (am_cindexed128 Capsp:$Cn, uimm12s16:$offset), Cap:$val),
           (PCapStoreImmPre Cap:$val, Capsp:$Cn, uimm12s16:$offset)>;
-def : Pat<(relaxed_store<atomic_cstore_cap> (cro_Windexed128 Capsp:$Rn, GPR32:$Rm,
+def : Pat<(relaxed_store<atomic_store_cap> (cro_Windexed128 Capsp:$Rn, GPR32:$Rm,
                                                 ro_Wextend128:$extend), Cap:$val),
           (PCapStoreRegExtW Cap:$val, Capsp:$Rn, GPR32:$Rm, ro_Wextend128:$extend)>;
-def : Pat<(relaxed_store<atomic_cstore_cap> (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm,
+def : Pat<(relaxed_store<atomic_store_cap> (cro_Xindexed128 Capsp:$Rn, GPR64:$Rm,
                                                 ro_Xextend128:$extend), Cap:$val),
           (PCapStoreRegExtX Cap:$val, Capsp:$Rn, GPR64:$Rm, ro_Xextend128:$extend)>;
-def : Pat<(relaxed_store<atomic_cstore_cap>
+def : Pat<(relaxed_store<atomic_store_cap>
                (am_pcunscaled128 Capsp:$Rn, simm9:$offset), Cap:$val),
           (PCapStoreUnscaledImm Cap:$val, Capsp:$Rn, simm9:$offset)>;
-def : Pat<(releasing_store<atomic_cstore_cap> Capsp:$ptr, Cap:$val),
+def : Pat<(releasing_store<atomic_store_cap> Capsp:$ptr, Cap:$val),
           (PCapStoreRel Cap:$val, Capsp:$ptr)>;
 
-defm : CapCASPatterns<"PCapCompareSwap", "atomic_cmp_cswap_cap", Capsp>;
-defm : CapSWPPatterns<"PCapSwap", "atomic_cswap_cap", Capsp>;
+defm : CapCASPatterns<"PCapCompareSwap", "atomic_cmp_swap_cap", Capsp>;
+defm : CapSWPPatterns<"PCapSwap", "atomic_swap_cap", Capsp>;
 }

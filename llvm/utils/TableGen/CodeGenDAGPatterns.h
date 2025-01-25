@@ -551,10 +551,6 @@ public:
   // Is the desired predefined predicate for an atomic?
   bool isAtomic() const;
 
-  // Is the desired predefined predicate a load/store accessing memory through
-  // a capability?
-  bool isCapability() const;
-
   /// Is this predicate the predefined unindexed load predicate?
   /// Is this predicate the predefined unindexed store predicate?
   bool isUnindexed() const;
