@@ -418,6 +418,18 @@ static StringRef getArchNameForCompilerRTLib(const ToolChain &TC,
   if (TC.getArch() == llvm::Triple::x86_64 && Triple.isX32())
     return "x32";
 
+  if (TC.getArch() == llvm::Triple::aarch64 && TC.isCheriPurecap()) {
+    Arg *MabiArg = Args.getLastArg(clang::driver::options::OPT_mabi_EQ);
+    StringRef Abi = MabiArg ? MabiArg->getValue() : "purecap";
+    if (Abi == "purecap") {
+      return "aarch64c";
+    } else if (Abi == "purecap-benchmark") {
+      return "aarch64cb";
+    } else {
+      llvm_unreachable("Invalid ABI.");
+    }
+  }
+
   return llvm::Triple::getArchTypeName(TC.getArch());
 }
 
