@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "AArch64ELFStreamer.h"
+#include "AArch64FixupKinds.h"
 #include "AArch64MCAsmInfo.h"
 #include "AArch64MCTargetDesc.h"
 #include "AArch64TargetStreamer.h"
@@ -232,6 +233,7 @@ protected:
                                unsigned CapSize, bool Code, SMLoc Loc) override;
   void emitCheriIntcap(const MCExpr *Expr, unsigned CapSize,
                        SMLoc Loc) override;
+  void emitCapInit(const MCExpr *Value) override;
 
 private:
   enum ElfMappingSymbol {
@@ -329,6 +331,16 @@ private:
   }
 };
 
+void AArch64ELFStreamer::emitCapInit(const MCExpr *Value) {
+  MCStreamer::emitValueImpl(Value, 16);
+  MCDataFragment *DF = getOrCreateDataFragment();
+  flushPendingLabels(DF, DF->getContents().size());
+  // Don't resize this, the user will emit the data.
+  DF->getFixups().push_back(
+      MCFixup::create(DF->getContents().size(), Value,
+                      MCFixupKind(AArch64::fixup_morello_capinit)));
+}
+
 void AArch64ELFStreamer::EmitCheriCapabilityImpl(const MCSymbol *Symbol,
     const MCExpr *Addend,
     unsigned CapSize, bool Code, SMLoc Loc) {
@@ -349,7 +361,7 @@ void AArch64ELFStreamer::EmitCheriCapabilityImpl(const MCSymbol *Symbol,
   // TODO: in the future we should check alignment when emitting relocations
   //  instead of adding alignment for all capabilities.
   emitValueToAlignment(CapSize, 0, 1, 0);
-  emitCapInit(AArch64MCExpr::create(CapExpr, AArch64MCExpr::VK_CAPINIT, Context));
+  emitCapInit(CapExpr);
   emitIntValue(0, 8);
   emitIntValue(0, 8);
 }

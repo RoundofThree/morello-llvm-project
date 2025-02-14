@@ -275,6 +275,10 @@ void MCStreamer::emitCheriIntcapGeneric(const MCExpr *Expr, unsigned CapSize,
   }
 }
 
+void MCStreamer::emitCapInit(const MCExpr *Value) {
+  report_fatal_error("emitCapInit is not implemented for this target!");
+}
+
 /// Emit NumBytes bytes worth of the value specified by FillValue.
 /// This implements directives such as '.space'.
 void MCStreamer::emitFill(uint64_t NumBytes, uint8_t FillValue) {

@@ -7065,8 +7065,6 @@ bool AArch64AsmParser::parseDirectiveCapInit(SMLoc L) {
   if (getParser().parseExpression(ExprVal))
     return Error(CapInitLoc, ".capinit directive expects symbol or symbol+offset");
 
-  ExprVal = AArch64MCExpr::create(ExprVal, AArch64MCExpr::VK_CAPINIT, getContext());
-
   getParser().getStreamer().emitCapInit(ExprVal);
   return false;
 }

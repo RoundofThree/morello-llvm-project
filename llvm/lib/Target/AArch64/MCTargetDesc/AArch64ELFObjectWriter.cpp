@@ -275,15 +275,7 @@ unsigned AArch64ELFObjectWriter::getRelocType(MCContext &Ctx,
                         "relocation not supported (LP64 eqv: ABS64)");
         return ELF::R_AARCH64_NONE;
       } else
-        switch (SymLoc) {
-        case AArch64MCExpr::VK_CAPINIT:
-          if (Target.getAccessVariant() == MCSymbolRefExpr::VK_CHERI_CODE)
-            return ELF::R_MORELLO_CODE_CAPINIT;
-          return IsDescABI
-              ? ELF::R_MORELLO_DESC_CAPINIT
-              : ELF::R_MORELLO_CAPINIT;
-        default: return ELF::R_AARCH64_ABS64;
-        }
+        return ELF::R_AARCH64_ABS64;
     case AArch64::fixup_aarch64_add_imm12:
       if (RefKind == AArch64MCExpr::VK_DTPREL_HI12)
         return R_CLS(TLSLD_ADD_DTPREL_HI12);
@@ -544,6 +536,12 @@ unsigned AArch64ELFObjectWriter::getRelocType(MCContext &Ctx,
       return ELF::R_AARCH64_NONE;
     case AArch64::fixup_morello_tlsdesc_call:
       return ELF::R_MORELLO_TLSDESC_CALL;
+    case AArch64::fixup_morello_capinit:
+      if (Target.getAccessVariant() == MCSymbolRefExpr::VK_CHERI_CODE)
+        return ELF::R_MORELLO_CODE_CAPINIT;
+      return IsDescABI
+          ? ELF::R_MORELLO_DESC_CAPINIT
+          : ELF::R_MORELLO_CAPINIT;
     default:
       Ctx.reportError(Fixup.getLoc(), "Unknown ELF relocation type");
       return ELF::R_AARCH64_NONE;

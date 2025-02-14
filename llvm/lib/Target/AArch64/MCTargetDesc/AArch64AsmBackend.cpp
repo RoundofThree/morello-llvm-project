@@ -74,7 +74,8 @@ public:
         {"fixup_morello_pcrel_call26", 0, 26, PCRelFlagVal },
         {"fixup_morello_tlsdesc_call", 0, 0, 0},
         {"fixup_morello_pcrel_branch14", 5, 14, PCRelFlagVal},
-        {"fixup_morello_pcrel_branch19", 5, 19, PCRelFlagVal}};
+        {"fixup_morello_pcrel_branch19", 5, 19, PCRelFlagVal},
+        {"fixup_morello_capinit", 0, 0, 0}};
 
     // Fixup kinds from .reloc directive are like R_AARCH64_NONE. They do not
     // require any extra processing.
@@ -385,6 +386,9 @@ unsigned AArch64AsmBackend::getFixupKindContainereSizeInBytes(unsigned Kind) con
     return 4;
   case FK_Data_8:
     return 8;
+
+  case AArch64::fixup_morello_capinit:
+    return 16;
 
   case AArch64::fixup_morello_tlsdesc_call:
   case AArch64::fixup_aarch64_movw:

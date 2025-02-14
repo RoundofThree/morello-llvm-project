@@ -669,15 +669,6 @@ void MCObjectStreamer::emitValueToOffset(const MCExpr *Offset,
   insert(new MCOrgFragment(*Offset, Value, Loc));
 }
 
-void MCObjectStreamer::emitCapInit(const MCExpr *Value) {
-  MCStreamer::emitValueImpl(Value, 16);
-  MCDataFragment *DF = getOrCreateDataFragment();
-  flushPendingLabels(DF, DF->getContents().size());
-  // Don't resize this, the user will emit the data.
-  DF->getFixups().push_back(MCFixup::create(DF->getContents().size(),
-                                            Value, FK_Data_8));
-}
-
 // Associate DTPRel32 fixup with data and resize data area
 void MCObjectStreamer::emitDTPRel32Value(const MCExpr *Value) {
   MCDataFragment *DF = getOrCreateDataFragment();

@@ -532,7 +532,7 @@ public:
 
   /// Emit a capinit relocation. This doesn't allocate the storage
   /// for the capability, and we expect some data directives to follow this.
-  virtual void emitCapInit(const MCExpr *Func) {};
+  virtual void emitCapInit(const MCExpr *Value);
 
   /// Emit an assignment of \p Value to \p Symbol.
   ///

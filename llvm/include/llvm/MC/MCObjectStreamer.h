@@ -180,8 +180,6 @@ public:
                                       const MCSymbol *FnStartSym,
                                       const MCSymbol *FnEndSym) override;
 
-  void emitCapInit(const MCExpr *Func) override;
-
   void emitCVDefRangeDirective(
       ArrayRef<std::pair<const MCSymbol *, const MCSymbol *>> Ranges,
       StringRef FixedSizePortion) override;
