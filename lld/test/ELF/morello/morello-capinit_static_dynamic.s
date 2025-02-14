@@ -18,17 +18,18 @@
 ptr1:
  .capinit str + 8
  .8byte 0
- .8byte 12
+ .8byte 0
 
  .type ptr2, %object
  .size ptr2, 16
 ptr2:
  .capinit str
  .8byte 0
- .8byte 12
+ .8byte 0
 
 str:
  .string "Hello World"
+ .size str, . - str
 
  .globl __rela_dyn_start
  .globl __rela_dyn_end
@@ -85,7 +86,7 @@ str:
 // CHECK:       Symbol {
 // CHECK:         Name: str
 // CHECK-NEXT:    Value: 0x2201B0
-// CHECK-NEXT:    Size: 0
+// CHECK-NEXT:    Size: 12
 // CHECK-NEXT:    Binding: Local
 // CHECK-NEXT:    Type: None
 // CHECK-NEXT:    Other: 0

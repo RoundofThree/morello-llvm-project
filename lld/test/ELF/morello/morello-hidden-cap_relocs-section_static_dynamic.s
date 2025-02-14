@@ -12,23 +12,25 @@
  .balign 16
 hello:
  .string "Hello World"
+ .size hello, . - hello
 
  .type ptr1, %object
  .size ptr1, 16
 ptr1:
  .capinit hello + 8
  .8byte 0
- .8byte 12
+ .8byte 0
 
  .type ptr2, %object
  .size ptr2, 16
 ptr2:
  .capinit bye
  .8byte 0
- .8byte 10
+ .8byte 0
 
 bye:
  .string "Bye World"
+ .size bye, . - bye
 
  .globl __rela_dyn_start
  .globl __rela_dyn_end
@@ -45,7 +47,7 @@ bye:
 // CHECK     :   Symbol {
 // CHECK:          Name: hello
 // CHECK-NEXT:     Value: 0x30
-// CHECK-NEXT:     Size: 0
+// CHECK-NEXT:     Size: 12
 // CHECK-NEXT:     Binding: Local
 // CHECK-NEXT:     Type: None
 // CHECK-NEXT:     Other: 0
@@ -75,7 +77,7 @@ bye:
 // CHECK     :   Symbol {
 // CHECK:          Name: bye
 // CHECK-NEXT:     Value: 0x5C
-// CHECK-NEXT:     Size: 0
+// CHECK-NEXT:     Size: 10
 // CHECK-NEXT:     Binding: Local
 // CHECK-NEXT:     Type: None
 // CHECK-NEXT:     Other: 0

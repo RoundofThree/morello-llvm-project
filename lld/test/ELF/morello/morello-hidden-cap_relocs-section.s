@@ -13,23 +13,25 @@
  .balign 16
 hello:
  .string "Hello World"
+ .size hello, . - hello
 
  .type ptr1, %object
  .size ptr1, 16
 ptr1:
  .capinit hello + 8
  .8byte 0
- .8byte 12
+ .8byte 0
 
  .type ptr2, %object
  .size ptr2, 16
 ptr2:
  .capinit bye
  .8byte 0
- .8byte 10
+ .8byte 0
 
 bye:
  .string "Bye World"
+ .size bye, . - bye
 
  .globl __cap_relocs_start
  .globl __cap_relocs_end

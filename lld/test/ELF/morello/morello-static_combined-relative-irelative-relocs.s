@@ -8,13 +8,14 @@
  .balign 16
 hello:
  .string "Hello World"
+ .size hello, . - hello
 
  .type foo, %object
  .size foo, 16
 foo:
  .capinit hello
  .8byte 0
- .8byte 12
+ .8byte 0
 
 .text
 .type ifunc STT_GNU_IFUNC
@@ -52,7 +53,7 @@ _start:
 // CHECK:      Symbol {
 // CHECK:        Name: hello
 // CHECK-NEXT:   Value: 0x220250
-// CHECK-NEXT:   Size: 0
+// CHECK-NEXT:   Size: 12
 // CHECK-NEXT:   Binding: Local
 // CHECK-NEXT:   Type: None
 // CHECK-NEXT:   Other: 0

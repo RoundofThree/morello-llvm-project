@@ -386,8 +386,13 @@ static uint64_t getTargetSize(const CheriCapRelocLocation &location,
                     !config->shared)
                        ? read64le(buf + 8)
                        : read64le(buf);
-      if (targetSize)
-        return targetSize;
+      if (targetSize != 0) {
+        errorOrWarn(
+            "setting the symbol size in .capinit is no longer supported; saw " +
+            Twine(targetSize) + " for symbol " + toString(*targetSym) +
+            getLocationMessage(*location.section, *targetSym, location.offset));
+        targetSize = 0;
+      }
     }
 
     // Otherwise warn about missing sizes for symbols

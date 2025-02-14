@@ -19,17 +19,18 @@
 ptr1:
  .capinit str + 8
  .8byte 0
- .8byte 12
+ .8byte 0
 
  .type ptr2, %object
  .size ptr2, 16
 ptr2:
  .capinit str
  .8byte 0
- .8byte 12
+ .8byte 0
 
 str:
  .string "Hello World"
+ .size str, . - str
 
  .globl __cap_relocs_start
  .globl __cap_relocs_end

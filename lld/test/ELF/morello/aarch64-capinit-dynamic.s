@@ -23,14 +23,14 @@ _start:
 ptr1:
  .capinit str + 8
  .8byte 0
- .8byte 12
+ .8byte 0
 
  .type ptr2, %object
  .size ptr2, 16
 ptr2:
  .capinit str
  .8byte 0
- .8byte 12
+ .8byte 0
 
  .type ptr3, %object
  .size ptr3, 16
@@ -39,14 +39,14 @@ ptr3:
  .8byte 0
  .8byte 0
 
-/// Check that the linker uses the size in the fragment (0xA)
+/// Check that the linker uses the remaining size of the output section (0x14)
 /// when the size is not provided in the symbol table.
  .type ptr4, %object
  .size ptr4, 16
 ptr4:
  .capinit unsized_str
  .8byte 0
- .8byte 10
+ .8byte 0
 
  .local str
  .type str, %object
@@ -72,7 +72,7 @@ foo:
 // DATA:       30430 70040300 00000000 0c000000 00000002
 // DATA-NEXT:  30440 70040300 00000000 0c000000 00000002
 // DATA-NEXT:  30450 86040300 00000000 08000000 00000002
-// DATA-NEXT:  30460 7c040300 00000000 0a000000 00000002
+// DATA-NEXT:  30460 7c040300 00000000 14000000 00000002
 // DATA-NEXT:  30470 48656c6c 6f20576f 726c6400 42796520 Hello World.Bye
 // DATA-NEXT:  30480 576f726c 64000000 00000000 00000000 World
 
