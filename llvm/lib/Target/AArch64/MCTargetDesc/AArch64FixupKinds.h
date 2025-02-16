@@ -73,8 +73,6 @@ enum Fixups {
   // Same as fixup_aarch64_pcrel_branch19. Identifies the branch source as C64.
   fixup_morello_pcrel_branch19,
 
-  fixup_morello_capinit,
-
   // Marker
   LastTargetFixupKind,
   NumTargetFixupKinds = LastTargetFixupKind - FirstTargetFixupKind

@@ -337,8 +337,7 @@ void AArch64ELFStreamer::emitCapInit(const MCExpr *Value) {
   flushPendingLabels(DF, DF->getContents().size());
   // Don't resize this, the user will emit the data.
   DF->getFixups().push_back(
-      MCFixup::create(DF->getContents().size(), Value,
-                      MCFixupKind(AArch64::fixup_morello_capinit)));
+      MCFixup::create(DF->getContents().size(), Value, MCFixupKind::FK_Cap_16));
 }
 
 void AArch64ELFStreamer::EmitCheriCapability(const MCExpr *Value,

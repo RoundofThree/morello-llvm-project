@@ -95,7 +95,6 @@ RISCVAsmBackend::getFixupKindInfo(MCFixupKind Kind) const {
       {"fixup_riscv_sub_6b", 2, 6, 0},
 
       {"fixup_riscv_captab_pcrel_hi20", 12, 20, MCFixupKindInfo::FKF_IsPCRel},
-      {"fixup_riscv_capability", 0, 0, MCFixupKindInfo::FKF_Provenance},
       {"fixup_riscv_tprel_cincoffset", 0, 0, 0},
       {"fixup_riscv_tls_ie_captab_pcrel_hi20", 12, 20,
        MCFixupKindInfo::FKF_IsPCRel},
@@ -408,7 +407,8 @@ static uint64_t adjustFixupValue(const MCFixup &Fixup, uint64_t Value,
   case RISCV::fixup_riscv_tls_got_hi20:
   case RISCV::fixup_riscv_tls_gd_hi20:
   case RISCV::fixup_riscv_captab_pcrel_hi20:
-  case RISCV::fixup_riscv_capability:
+  case FK_Cap_8:
+  case FK_Cap_16:
   case RISCV::fixup_riscv_tls_ie_captab_pcrel_hi20:
   case RISCV::fixup_riscv_tls_gd_captab_pcrel_hi20:
     llvm_unreachable("Relocation should be unconditionally forced\n");

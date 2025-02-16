@@ -536,7 +536,7 @@ unsigned AArch64ELFObjectWriter::getRelocType(MCContext &Ctx,
       return ELF::R_AARCH64_NONE;
     case AArch64::fixup_morello_tlsdesc_call:
       return ELF::R_MORELLO_TLSDESC_CALL;
-    case AArch64::fixup_morello_capinit:
+    case FK_Cap_16:
       if (Target.getAccessVariant() == MCSymbolRefExpr::VK_CHERI_CODE)
         return ELF::R_MORELLO_CODE_CAPINIT;
       return IsDescABI
