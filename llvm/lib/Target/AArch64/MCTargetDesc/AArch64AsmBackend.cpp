@@ -75,7 +75,7 @@ public:
         {"fixup_morello_tlsdesc_call", 0, 0, 0},
         {"fixup_morello_pcrel_branch14", 5, 14, PCRelFlagVal},
         {"fixup_morello_pcrel_branch19", 5, 19, PCRelFlagVal},
-        {"fixup_morello_capinit", 0, 0, 0}};
+        {"fixup_morello_capinit", 0, 0, MCFixupKindInfo::FKF_Provenance}};
 
     // Fixup kinds from .reloc directive are like R_AARCH64_NONE. They do not
     // require any extra processing.

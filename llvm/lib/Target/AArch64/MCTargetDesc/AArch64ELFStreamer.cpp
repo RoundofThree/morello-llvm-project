@@ -229,8 +229,8 @@ public:
   }
 
 protected:
-  void EmitCheriCapabilityImpl(const MCSymbol *Symbol, const MCExpr *Addend,
-                               unsigned CapSize, bool Code, SMLoc Loc) override;
+  void EmitCheriCapability(const MCExpr *Value, unsigned CapSize,
+                           SMLoc Loc) override;
   void emitCheriIntcap(const MCExpr *Expr, unsigned CapSize,
                        SMLoc Loc) override;
   void emitCapInit(const MCExpr *Value) override;
@@ -341,27 +341,16 @@ void AArch64ELFStreamer::emitCapInit(const MCExpr *Value) {
                       MCFixupKind(AArch64::fixup_morello_capinit)));
 }
 
-void AArch64ELFStreamer::EmitCheriCapabilityImpl(const MCSymbol *Symbol,
-    const MCExpr *Addend,
-    unsigned CapSize, bool Code, SMLoc Loc) {
-  assert(Addend && "Should have received a MCConstExpr(0) instead of nullptr");
+void AArch64ELFStreamer::EmitCheriCapability(const MCExpr *Value,
+                                             unsigned CapSize, SMLoc Loc) {
   assert(CapSize == 16 && "Unexpected capability size");
-  visitUsedSymbol(*Symbol);
-  MCContext &Context = getContext();
-  MCSymbolRefExpr::VariantKind VK;
-  if (Code)
-    VK = MCSymbolRefExpr::VK_CHERI_CODE;
-  else
-    VK = MCSymbolRefExpr::VK_None;
-  const MCSymbolRefExpr *SRE =
-      MCSymbolRefExpr::create(Symbol, VK, Context, Loc);
-  const MCBinaryExpr *CapExpr = MCBinaryExpr::createAdd(SRE, Addend, Context);
+  visitUsedExpr(*Value);
 
   // Pad to ensure that the capability is aligned
   // TODO: in the future we should check alignment when emitting relocations
   //  instead of adding alignment for all capabilities.
   emitValueToAlignment(CapSize, 0, 1, 0);
-  emitCapInit(CapExpr);
+  emitCapInit(Value);
   emitIntValue(0, 8);
   emitIntValue(0, 8);
 }
