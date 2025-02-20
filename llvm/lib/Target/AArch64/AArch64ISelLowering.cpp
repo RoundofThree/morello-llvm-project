@@ -114,6 +114,8 @@ cl::opt<bool> EnableAArch64ELFLocalDynamicTLSGeneration(
     cl::desc("Allow AArch64 Local Dynamic TLS code generation"),
     cl::init(false));
 
+extern cl::opt<bool> CheriEmitCodePtrRelocs;
+
 static cl::opt<bool>
 EnableOptimizeLogicalImm("aarch64-enable-logical-imm", cl::Hidden,
                          cl::desc("Enable AArch64 logical imm instruction "
@@ -8054,12 +8056,14 @@ SDValue AArch64TargetLowering::LowerGlobalAddress(SDValue Op,
     }
   }
 
-  // Dervive function addresses from PCC
+  // Dervive function addresses from PCC, unless we distinguish between function
+  // and code pointers, in which case the function pointer must be obtained from
+  // the GOT instead.
   bool IsDescABI =
      (MCTargetOptions::cheriCapabilityTableABI() ==
       CheriCapabilityTableABI::FunctionDescriptor);
   if (Op.getSimpleValueType() == MVT::iFATPTR128 && dyn_cast<Function>(GV) &&
-      !IsDescABI)
+      !IsDescABI && !CheriEmitCodePtrRelocs)
     return DAG.getNode(AArch64ISD::CapSealImm, DL, MVT::iFATPTR128,
                        getFatAddr(GN, DAG, OpFlags),
                        DAG.getConstant(1, DL, MVT::i32));
