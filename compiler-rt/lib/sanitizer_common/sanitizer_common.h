@@ -420,7 +420,9 @@ inline usize MostSignificantSetBitIndex(u64 x) {
 inline usize MostSignificantSetBitIndex(u32 x) {
   return MostSignificantSetBitIndex((usize)x);
 }
-usize MostSignificantSetBitIndex(uptr x) = delete;
+inline usize MostSignificantSetBitIndex(uptr x) {
+  return MostSignificantSetBitIndex((usize)x);
+}
 #endif
 
 inline usize LeastSignificantSetBitIndex(usize x) {
