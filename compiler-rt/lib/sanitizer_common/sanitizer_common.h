@@ -217,7 +217,7 @@ class LowLevelAllocator {
 };
 // Set the min alignment of LowLevelAllocator to at least alignment.
 void SetLowLevelAllocateMinAlignment(usize alignment);
-typedef void (*LowLevelAllocateCallback)(uptr ptr, usize size);
+typedef void (*LowLevelAllocateCallback)(uptr ptr, uptr size);
 // Allows to register tool-specific callbacks for LowLevelAllocator.
 // Passing NULL removes the callback.
 void SetLowLevelAllocateCallback(LowLevelAllocateCallback callback);
@@ -460,12 +460,14 @@ inline u64 RoundUpToPowerOfTwo(u64 size) {
   return 1ULL << (up + 1);
 }
 #ifdef __CHERI_PURE_CAPABILITY__
-uptr RoundUpToPowerOfTwo(uptr size) = delete;
 inline u32 RoundUpToPowerOfTwo(u32 x) {
   return (u32)RoundUpToPowerOfTwo((u64)x);
 }
 inline usize RoundUpToPowerOfTwo(usize x) {
   return (usize)RoundUpToPowerOfTwo((u64)x);
+}
+inline usize RoundUpToPowerOfTwo(uptr size) {
+  return RoundUpToPowerOfTwo((usize)size);
 }
 #endif
 

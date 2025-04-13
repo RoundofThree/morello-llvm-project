@@ -301,8 +301,8 @@ AsanThread *CreateMainThread() {
 // OS-specific implementations that need more information passed through.
 void AsanThread::SetThreadStackAndTls(const InitOptions *options) {
   DCHECK_EQ(options, nullptr);
-  uptr tls_size = 0;
-  uptr stack_size = 0;
+  usize tls_size = 0;
+  usize stack_size = 0;
   GetThreadStackAndTls(tid() == kMainTid, &stack_bottom_, &stack_size,
                        &tls_begin_, &tls_size);
   stack_top_ = RoundDownTo(stack_bottom_ + stack_size, ASAN_SHADOW_GRANULARITY);

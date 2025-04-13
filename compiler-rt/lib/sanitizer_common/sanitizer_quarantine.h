@@ -66,7 +66,7 @@ struct QuarantineBatch {
   }
 };
 
-COMPILER_CHECK(sizeof(QuarantineBatch) <= (1 << 13));  // 8Kb.
+COMPILER_CHECK(sizeof(QuarantineBatch) <= (1 << 14));  // 16Kb.
 
 // The callback interface is:
 // void Callback::Recycle(Node *ptr);

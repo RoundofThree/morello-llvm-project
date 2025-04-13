@@ -18,8 +18,8 @@
 #include "asan_mapping.h"
 #include "interception/interception.h"
 
-DECLARE_REAL(void*, memcpy, void *to, const void *from, uptr size)
-DECLARE_REAL(void*, memset, void *block, int c, uptr size)
+DECLARE_REAL(void*, memcpy, void *to, const void *from, __asan::usize size)
+DECLARE_REAL(void*, memset, void *block, int c, __asan::usize size)
 
 namespace __asan {
 
