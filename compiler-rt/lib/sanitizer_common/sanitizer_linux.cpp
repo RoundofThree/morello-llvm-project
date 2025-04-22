@@ -248,11 +248,11 @@ uptr internal_mremap(void *old_address, usize old_size, usize new_size, int flag
 }
 #endif
 
-int internal_mprotect(void *addr, uptr length, int prot) {
+int internal_mprotect(void *addr, usize length, int prot) {
   return internal_syscall(SYSCALL(mprotect), (uptr)addr, length, prot);
 }
 
-int internal_madvise(uptr addr, uptr length, int advice) {
+int internal_madvise(uptr addr, usize length, int advice) {
   return internal_syscall(SYSCALL(madvise), addr, length, advice);
 }
 
@@ -495,7 +495,7 @@ usize internal_dup2(int oldfd, int newfd) {
 #endif
 }
 
-usize internal_readlink(const char *path, char *buf, uptr bufsize) {
+usize internal_readlink(const char *path, char *buf, usize bufsize) {
 #    if SANITIZER_LINUX
   return internal_syscall(SYSCALL(readlinkat), AT_FDCWD, (uptr)path, (uptr)buf,
                           bufsize);
@@ -1186,7 +1186,7 @@ usize GetPageSize() {
 }
 #endif // !SANITIZER_ANDROID
 
-uptr ReadBinaryName(/*out*/char *buf, uptr buf_len) {
+usize ReadBinaryName(/*out*/char *buf, usize buf_len) {
 #if SANITIZER_SOLARIS
   const char *default_module_name = getexecname();
   CHECK_NE(default_module_name, NULL);
