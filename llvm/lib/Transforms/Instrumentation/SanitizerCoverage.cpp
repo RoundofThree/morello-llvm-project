@@ -31,6 +31,7 @@
 #include "llvm/IR/Type.h"
 #include "llvm/InitializePasses.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/Process.h"
 #include "llvm/Support/SpecialCaseList.h"
 #include "llvm/Support/VirtualFileSystem.h"
 #include "llvm/Transforms/Instrumentation.h"
@@ -379,6 +380,10 @@ bool ModuleSanitizerCoverage::instrumentModule(
   DL = &M.getDataLayout();
   CurModule = &M;
   CurModuleUniqueId = getUniqueModuleId(CurModule);
+  if (CurModuleUniqueId.empty()) {
+    CurModuleUniqueId = "clangPidTime_" + llvm::itostr(sys::Process::getProcessId()) +
+      "_" + llvm::itostr(time(nullptr));
+  }
   TargetTriple = Triple(M.getTargetTriple());
   FunctionGuardArray = nullptr;
   Function8bitCounterArray = nullptr;
@@ -700,7 +705,7 @@ GlobalVariable *ModuleSanitizerCoverage::CreateFunctionLocalArrayInSection(
   ArrayType *ArrayTy = ArrayType::get(Ty, NumElements);
   auto Array = new GlobalVariable(
       *CurModule, ArrayTy, false, GlobalVariable::PrivateLinkage,
-      Constant::getNullValue(ArrayTy), "__sancov_gen_");
+      Constant::getNullValue(ArrayTy), Twine("__sancov_gen_") + Twine(CurModuleUniqueId));
 
   if (TargetTriple.supportsCOMDAT() &&
       (TargetTriple.isOSBinFormatELF() || !F.isInterposable()))
@@ -838,7 +843,7 @@ void ModuleSanitizerCoverage::InjectTraceForSwitch(
       GlobalVariable *GV = new GlobalVariable(
           *CurModule, ArrayOfInt64Ty, false, GlobalVariable::InternalLinkage,
           ConstantArray::get(ArrayOfInt64Ty, Initializers),
-          "__sancov_gen_cov_switch_values");
+          Twine("__sancov_gen_cov_switch_values_") + Twine(CurModuleUniqueId));
       IRB.CreateCall(SanCovTraceSwitchFunction,
                      {Cond, IRB.CreatePointerCast(GV, GlobalsInt64PtrTy)});
     }
